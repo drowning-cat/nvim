@@ -966,5 +966,11 @@ require('lazy').setup({
   },
 })
 
+-- Vim language
+vim.opt.keymap = 'russian-jcukenwin'
+vim.opt.iminsert = 0
+vim.opt.imsearch = 0
+vim.keymap.set({ 'i', 'n', 'v' }, '<A-`>', '<C-^>', { noremap = true, silent = true })
+vim.keymap.set({ 'i', 'n', 'v' }, '<A-Space>', '<C-^>', { noremap = true, silent = true })
+
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et

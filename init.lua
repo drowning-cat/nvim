@@ -1039,5 +1039,18 @@ require('lazy').setup({
   },
 })
 
+-- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
+vim.wo.foldmethod = 'expr'
+vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+
+-- Turn off extra column to display information on folds
+vim.wo.foldcolumn = '0'
+-- The first line of the fold will be syntax highlighted, rather than all be one colour
+vim.wo.foldtext = ''
+-- Disable folding on startup
+vim.wo.foldlevel = 99
+-- This limits how deeply code gets folded. Helps to toggle larger chunks of nested code as they are treated as one fold
+-- vim.wo.foldnestmax = 5
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

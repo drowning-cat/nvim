@@ -189,6 +189,26 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Prevent certain control commands from being printed:
+--
+-- stylua: ignore
+for _, lhs in ipairs {
+  'q', 'o', 'a', 'z', 'v', 'b', '_',
+  'w', 'u', 'd', 't', 'f',
+  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+} do
+  vim.keymap.set('i', '<C-' .. lhs .. '>', '<nop>')
+end
+--
+vim.keymap.set('n', '<C-r', '<nop>')
+--
+-- Initial command actions in insert mode:
+-- <C-w> - delete word
+-- <C-u> - delete line before cursor
+-- <C-d> - indent back
+-- <C-t> - indent forward
+-- <C-f> - align the line
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

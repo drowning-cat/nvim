@@ -174,6 +174,17 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
+-- Configure listchars option
+vim.opt.listchars:append {
+  eol = '¶',
+}
+vim.opt.list = false
+
+-- Toggle the visibility of listchars
+vim.keymap.set('n', '<leader>tl', function()
+  vim.opt.list = not vim.api.nvim_get_option_value('list', {})
+end, { desc = '[T]oggle [L]istchars visibility' })
+
 -- TIP: Disable arrow keys in normal mode
 -- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')

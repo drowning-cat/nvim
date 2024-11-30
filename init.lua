@@ -958,9 +958,11 @@ require('lazy').setup({
   },
 
   { -- Highlight, edit, and navigate code
+    -- :Inspect, :InspectTree, :EditQuery
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-context',
+      'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
@@ -1009,6 +1011,148 @@ require('lazy').setup({
         desc = '[G]oto [T]op context line',
       },
     },
+  },
+
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    lazy = true,
+    config = function()
+      require('nvim-treesitter.configs').setup { ---@diagnostic disable-line: missing-fields
+        textobjects = {
+          select = {
+            enable = true,
+            -- Automatically jump forward to textobj, similar to targets.vim
+            lookahead = true,
+            keymaps = {
+              ['af'] = '@function.outer',
+              ['if'] = '@function.inner',
+              ['ia'] = '@parameter.inner',
+              ['aa'] = '@parameter.outer',
+              ['ib'] = '@block.inner',
+              ['ab'] = '@block.outer',
+              ['ic'] = '@class.inner',
+              ['ac'] = '@class.outer',
+              ['ii'] = '@conditional.inner',
+              ['ai'] = '@conditional.outer',
+              ['il'] = '@loop.inner',
+              ['al'] = '@loop.outer',
+              ['a/'] = '@comment.outer',
+              ['i/'] = '@comment.inner',
+            },
+            -- You can choose the select mode (default is charwise 'v')
+            --
+            -- Can also be a function which gets passed a table with the keys
+            -- * query_string: eg '@function.inner'
+            -- * method: eg 'v' or 'o'
+            -- and should return the mode ('v', 'V', or '<c-v>') or a table
+            -- mapping query_strings to modes.
+            -- selection_modes = {
+            --   ['@parameter.outer'] = 'v', -- charwise
+            --   ['@function.outer'] = 'V', -- linewise
+            --   ['@class.outer'] = '<c-v>', -- blockwise
+            -- },
+            -- If you set this to `true` (default is `false`) then any textobject is
+            -- extended to include preceding or succeeding whitespace. Succeeding
+            -- whitespace has priority in order to act similarly to eg the built-in
+            -- `ap`.
+            --
+            -- Can also be a function which gets passed a table with the keys
+            -- * query_string: eg '@function.inner'
+            -- * selection_mode: eg 'v'
+            -- and should return true or false
+            include_surrounding_whitespace = true,
+          },
+          swap = {
+            enable = true,
+            swap_next = {
+              ['<leader>a'] = '@parameter.inner',
+            },
+            swap_previous = {
+              ['<leader>A'] = '@parameter.inner',
+            },
+          },
+          move = {
+            enable = true,
+            set_jumps = true, -- whether to set jumps in the jumplist
+            goto_next_start = {
+              [']f'] = { query = '@function.outer', desc = 'Goto next [F]unction' },
+              ['gj'] = { query = '@function.outer', desc = 'Goto next function' },
+              [']c'] = { query = '@class.outer', desc = 'Goto next [C]lass' },
+              [']b'] = { query = '@block.outer', desc = 'Goto next [B]lock' },
+              [']a'] = { query = '@parameter.inner', desc = 'Goto next [A]rgument' },
+              [']i'] = { query = '@conditional.inner', desc = 'Goto next [I]f conditional' },
+              [']l'] = { query = '@loop.*', desc = 'Goto next [L]oop' },
+              -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
+              -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
+              [']s'] = { query = '@local.scope', query_group = 'locals', desc = 'Goto next [S]cope' },
+              [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
+            },
+            goto_next_end = {
+              [']F'] = { query = '@function.outer', desc = 'Goto next:end [F]unction' },
+              ['gJ'] = { query = '@function.outer', desc = 'Goto next:end function' },
+              [']C'] = { query = '@class.outer', desc = 'Goto next:end [C]lass' },
+              [']B'] = { query = '@block.outer', desc = 'Goto next:end [B]lock' },
+              [']A'] = { query = '@parameter.inner', desc = 'Goto next:end [P]arameter' },
+              [']I'] = { query = '@conditional.inner', desc = 'Goto next:end [C]onditional' },
+              [']L'] = { query = '@loop.*', desc = 'Goto next:end [L]oop' },
+            },
+            goto_previous_start = {
+              ['[f'] = { query = '@function.outer', desc = 'Goto prev [F]unction' },
+              ['gk'] = { query = '@function.outer', desc = 'Goto prev function' },
+              ['[c'] = { query = '@class.outer', desc = 'Goto prev [C]lass' },
+              ['[b'] = { query = '@block.outer', desc = 'Goto prev [B]lock' },
+              ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [P]arameter' },
+              ['[i'] = { query = '@conditional.inner', desc = 'Goto prev [C]onditional' },
+              ['[l'] = { query = '@loop.*', desc = 'Goto prev [L]oop' },
+              ['[s'] = { query = '@local.scope', query_group = 'locals', desc = 'Goto prev [S]cope' },
+              ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
+            },
+            goto_previous_end = {
+              ['[F'] = { query = '@function.outer', desc = 'Goto prev:end [F]unction' },
+              ['gK'] = { query = '@function.outer', desc = 'Goto prev:end function' },
+              ['[C'] = { query = '@class.outer', desc = 'Goto prev:end [C]lass' },
+              ['[B'] = { query = '@block.outer', desc = 'Goto prev:end [B]lock' },
+              ['[A'] = { query = '@parameter.inner', desc = 'Goto prev:end [P]arameter' },
+              ['[I'] = { query = '@conditional.inner', desc = 'Goto prev:end [C]onditional' },
+              ['[L'] = { query = '@loop.*', desc = 'Goto prev:end [L]oop' },
+            },
+            -- Below will go to either the start or the end, whichever is closer.
+            -- Use if you want more granular movements
+            -- Make it even more gradual by adding multiple queries and regex.
+            -- goto_next = {
+            --   [']i'] = { query = '@conditional.outer', desc = 'Goto next @conditional' },
+            -- },
+            -- goto_previous = {
+            --   ['[i'] = { query = '@conditional.outer', desc = 'Goto prev @conditional' },
+            -- },
+          },
+          lsp_interop = {
+            enable = true,
+            border = 'none',
+            floating_preview_opts = {},
+            peek_definition_code = {
+              ['<leader>df'] = { query = '@function.outer', desc = 'Peek @function definition' },
+              ['<leader>dF'] = { query = '@class.outer', desc = 'Peek @class definition' },
+            },
+          },
+        },
+      }
+      local ts_repeat_move = require 'nvim-treesitter.textobjects.repeatable_move'
+      -- Repeat movement with ; and ,
+      -- ensure ; goes forward and , goes backward regardless of the last direction
+      vim.keymap.set({ 'n', 'x', 'o' }, ';', ts_repeat_move.repeat_last_move_next)
+      vim.keymap.set({ 'n', 'x', 'o' }, ',', ts_repeat_move.repeat_last_move_previous)
+      --
+      -- vim way: ; goes to the direction you were moving.
+      -- vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move)
+      -- vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_opposite)
+      --
+      -- Optionally, make builtin f, F, t, T also repeatable with ; and ,
+      vim.keymap.set({ 'n', 'x', 'o' }, 'f', ts_repeat_move.builtin_f_expr, { expr = true })
+      vim.keymap.set({ 'n', 'x', 'o' }, 'F', ts_repeat_move.builtin_F_expr, { expr = true })
+      vim.keymap.set({ 'n', 'x', 'o' }, 't', ts_repeat_move.builtin_t_expr, { expr = true })
+      vim.keymap.set({ 'n', 'x', 'o' }, 'T', ts_repeat_move.builtin_T_expr, { expr = true })
+    end,
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the

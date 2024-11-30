@@ -1155,6 +1155,20 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'HiPhish/rainbow-delimiters.nvim',
+    lazy = true,
+    keys = {
+      {
+        '<leader>tr',
+        function()
+          require('rainbow-delimiters').toggle(vim.api.nvim_get_current_buf())
+        end,
+        desc = '[T]oggle [R]ainbow',
+      },
+    },
+  },
+
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.

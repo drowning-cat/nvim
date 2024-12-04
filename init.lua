@@ -276,14 +276,29 @@ require('lazy').setup({
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
+      current_line_blame_opts = {
+        delay = 0,
       },
+      -- signs = {
+      --   add = { text = '+' },
+      --   change = { text = '~' },
+      --   delete = { text = '_' },
+      --   topdelete = { text = '‾' },
+      --   changedelete = { text = '~' },
+      -- },
     },
+    config = function()
+      require('gitsigns').setup {
+        on_attach = function(buf)
+          local map = function(keys, func, desc, mode)
+            mode = mode or 'n'
+            vim.keymap.set(mode, keys, func, { buffer = buf, desc = 'Gitsigns: ' .. desc })
+          end
+          map('<leader>tb', require('gitsigns').toggle_current_line_blame, '[T]oggle [B]lame')
+          map('<leader>hp', require('gitsigns').preview_hunk, '[H]unk [P]review')
+        end,
+      }
+    end,
   },
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.

@@ -986,7 +986,6 @@ require('lazy').setup({
     -- :Inspect, :InspectTree, :EditQuery
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-context',
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
@@ -1022,15 +1021,18 @@ require('lazy').setup({
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
-        enable = true,
+        enable = false,
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = {
+        enable = false,
+        disable = { 'ruby' },
+      },
       incremental_selection = {
-        enable = true,
+        enable = false,
         keymaps = {
           init_selection = '<CR>',
           node_incremental = '<CR>',
@@ -1039,6 +1041,24 @@ require('lazy').setup({
         },
       },
     },
+    config = function(_, opts)
+      require('nvim-treesitter.configs').setup(opts)
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'LazyDone',
+        once = true,
+        callback = function()
+          vim.defer_fn(function()
+            vim.cmd [[ :TSToggle highlight ]]
+            vim.cmd [[ :TSToggle indent ]]
+            vim.cmd [[ :TSToggle incremental_selection ]]
+            vim.cmd [[ :TSToggle textobjects.select ]]
+            vim.cmd [[ :TSToggle textobjects.move ]]
+            vim.cmd [[ :TSToggle textobjects.swap ]]
+            vim.cmd [[ :TSToggle textobjects.lsp_interop ]]
+          end, 0)
+        end,
+      })
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
@@ -1048,29 +1068,12 @@ require('lazy').setup({
   },
 
   {
-    'nvim-treesitter/nvim-treesitter-context',
-    lazy = true,
-    opts = { multiline_threshold = 1 },
-    keys = {
-      {
-        '[t',
-        function()
-          require('treesitter-context').go_to_context(vim.v.count1)
-        end,
-        silent = true,
-        desc = '[G]oto [T]op context line',
-      },
-    },
-  },
-
-  {
     'nvim-treesitter/nvim-treesitter-textobjects',
-    lazy = true,
     config = function()
       require('nvim-treesitter.configs').setup { ---@diagnostic disable-line: missing-fields
         textobjects = {
           select = {
-            enable = true,
+            enable = false,
             -- Automatically jump forward to textobj, similar to targets.vim
             lookahead = true,
             keymaps = {
@@ -1113,7 +1116,7 @@ require('lazy').setup({
             include_surrounding_whitespace = true,
           },
           swap = {
-            enable = true,
+            enable = false,
             swap_next = {
               ['<leader>a'] = '@parameter.inner',
             },
@@ -1122,7 +1125,7 @@ require('lazy').setup({
             },
           },
           move = {
-            enable = true,
+            enable = false,
             set_jumps = true, -- whether to set jumps in the jumplist
             goto_next_start = {
               [']f'] = { query = '@function.outer', desc = 'Goto next [F]unction' },
@@ -1177,7 +1180,7 @@ require('lazy').setup({
             -- },
           },
           lsp_interop = {
-            enable = true,
+            enable = false,
             border = 'none',
             floating_preview_opts = {},
             peek_definition_code = {
@@ -1203,6 +1206,22 @@ require('lazy').setup({
       vim.keymap.set({ 'n', 'x', 'o' }, 't', ts_repeat_move.builtin_t_expr, { expr = true })
       vim.keymap.set({ 'n', 'x', 'o' }, 'T', ts_repeat_move.builtin_T_expr, { expr = true })
     end,
+  },
+
+  {
+    'nvim-treesitter/nvim-treesitter-context',
+    lazy = true,
+    opts = { multiline_threshold = 1 },
+    keys = {
+      {
+        '[t',
+        function()
+          require('treesitter-context').go_to_context(vim.v.count1)
+        end,
+        silent = true,
+        desc = '[G]oto [T]op context line',
+      },
+    },
   },
 
   {

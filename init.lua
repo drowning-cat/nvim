@@ -1103,18 +1103,8 @@ require('lazy').setup({
     end,
   },
 
-  -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins
-  --
-  -- require 'plugins.indent_line',
-  require 'plugins.debug',
-  require 'plugins.lint',
-  require 'plugins.autopairs',
-  require 'plugins.neo-tree',
-  require 'plugins.gitsigns', -- adds gitsigns recommend keymaps
-  require 'plugins.marks', -- adds gitsigns recommend keymaps
-
   --  Uncomment the following line to add all plugins from `plugins/*.lua` folder
-  -- { import = 'plugins' },
+  { import = 'plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 }, {

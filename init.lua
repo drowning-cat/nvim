@@ -886,6 +886,9 @@ require('lazy').setup({
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    -- Drastically improves startup time by lazy loading syntax highlighting
+    -- and other nvim-treesitter features
+    event = 'VeryLazy',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -938,8 +941,24 @@ require('lazy').setup({
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+  },
+
+  { -- Show your current context
+    -- https://github.com/nvim-treesitter/nvim-treesitter-context
+    'nvim-treesitter/nvim-treesitter-context',
+    event = 'VeryLazy',
+    opts = { multiline_threshold = 1 },
+    keys = {
+      {
+        '[t',
+        function()
+          require('treesitter-context').go_to_context(vim.v.count1)
+        end,
+        silent = true,
+        desc = '[G]oto [T]op context line',
+      },
+    },
   },
 
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins

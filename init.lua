@@ -109,6 +109,45 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Show/hide all listchars symbols
+--
+local list_toggle = function()
+  vim.opt.list = not vim.opt.list:get() ---@diagnostic disable-line: undefined-field
+end
+
+-- Show/hide the specific listchar symbol, e.g. 'eol'
+--
+local listchar_toggle = function(opts)
+  local char = opts.char
+  local val_true = opts.val_true
+  local val_false = opts.val_false or nil
+  local val_init = opts.val_init or false
+
+  local toggle_option = function(force)
+    local listchars = vim.opt.listchars:get()
+    local true_case = listchars[char] ~= val_true
+    if force ~= nil then
+      true_case = force
+    end
+    if true_case then
+      vim.opt.listchars:remove { char }
+      vim.opt.listchars:append { [char] = val_true }
+    else
+      vim.opt.listchars:remove { char }
+      if val_false then
+        vim.opt.listchars:append { [char] = val_false }
+      end
+    end
+  end
+
+  toggle_option(val_init)
+
+  return toggle_option
+end
+
+vim.keymap.set('n', '<leader>tl', list_toggle, { desc = '[T]oggle [L]istchars' })
+vim.keymap.set('n', '<leader>tp', listchar_toggle { char = 'eol', val_true = '¶' }, { desc = '[T]oggle [L]istchars' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

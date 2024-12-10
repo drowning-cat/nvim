@@ -204,6 +204,7 @@ vim.opt.rtp:prepend(lazypath)
 --
 require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-fugitive', -- Vim integration with git, see `:help fugitive`
 
   -- Use `opts = {}` to force a plugin to be loaded.
 

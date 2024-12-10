@@ -473,6 +473,12 @@ require('lazy').setup({
             })
           end
 
+          -- Toggle inline LSP diagnostic messaged
+          --
+          map('<leader>td', function()
+            vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
+          end, '[T]oggle [D]iagnostic')
+
           -- The following code creates a keymap to toggle inlay hints in your
           -- code, if the language server you are using supports them
           --

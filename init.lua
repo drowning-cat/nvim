@@ -740,18 +740,31 @@ require('lazy').setup({
         -- chosen, you will need to read `:help ins-completion`
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<C-n>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          ['<C-n>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
+          ['<C-p>'] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
+          ['<C-j>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Select },
+          ['<C-k>'] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Select },
 
-          -- Scroll the documentation window [b]ack / [f]orward
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          -- Scroll the documentation window: [v]ack / [f]orward
+          -- Remapped <C-b> to avoid conflict with tmux
+          ['<C-v>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Up>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-Down>'] = cmp.mapping.scroll_docs(4),
 
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = function(key_action)
+            if cmp.visible() then
+              cmp.select_next_item { behavior = cmp.SelectBehavior.Insert, count = 0 }
+              cmp.abort()
+            else
+              key_action()
+            end
+          end,
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -763,6 +776,18 @@ require('lazy').setup({
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
           ['<C-Space>'] = cmp.mapping.complete {},
+
+          -- Keymaps for aborting or closing current completion:
+          --  - "abort" cancels the completion, discarding any active suggestions.
+          --  - "close" hides the completion menu but keeps active suggestion text.
+          ['<C-c>'] = cmp.mapping.abort(),
+          ['<C-e>'] = cmp.mapping.close(),
+          ['<ESC>'] = function(key_action)
+            if cmp.visible() then
+              cmp.close()
+            end
+            key_action()
+          end,
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:

@@ -81,6 +81,27 @@ vim.opt.scrolloff = 10
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+-- Prevent certain keymaps from being printed:
+-- stylua: ignore
+for _, lhs in ipairs {
+  'C-q', 'C-o', 'C-a', 'C-h', 'C-j', 'C-k', 'C-l', 'C-z', 'C-v', 'C-b', 'C-_', 'C-/', 'C-\\', 'S-Del',
+  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+  'C-F1', 'C-F2', 'C-F3', 'C-F4', 'C-F5', 'C-F6', 'C-F7', 'C-F8', 'C-F9', 'C-F10', 'C-F11', 'C-F12',
+} do
+  vim.keymap.set('i', '<' .. lhs .. '>', '<nop>')
+end
+--
+-- Initial command actions in insert mode:
+-- <C-w> - delete word
+-- <C-u> - delete text before cursor
+-- <C-t> - indent line forward
+-- <C-d> - indent line back
+-- <C-f> - indent line automatically
+--
+-- Remap <C-u> to <C-x> because it is too close to <C-y>
+-- vim.keymap.set('i', '<C-u>', '<nop>')
+-- vim.keymap.set('i', '<C-x>', '<C-o>0<C-o>D')
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')

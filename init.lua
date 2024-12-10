@@ -1108,6 +1108,7 @@ require('lazy').setup({
   require 'plugins.autopairs',
   require 'plugins.neo-tree',
   require 'plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'plugins.marks', -- adds gitsigns recommend keymaps
 
   --  Uncomment the following line to add all plugins from `plugins/*.lua` folder
   -- { import = 'plugins' },

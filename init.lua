@@ -934,6 +934,21 @@ require('lazy').setup({
     },
   },
 
+  { -- Show rainbow delimiters
+    -- https://github.com/HiPhish/rainbow-delimiters.nvim
+    'HiPhish/rainbow-delimiters.nvim',
+    event = 'VeryLazy',
+    keys = {
+      {
+        '<leader>tr',
+        function()
+          require('rainbow-delimiters').toggle(vim.api.nvim_get_current_buf())
+        end,
+        desc = '[T]oggle [R]ainbow',
+      },
+    },
+  },
+
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins
   --
   -- require 'plugins.indent_line',

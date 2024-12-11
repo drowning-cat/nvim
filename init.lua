@@ -40,9 +40,15 @@ vim.opt.showmode = false
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.opt.clipboard = 'unnamedplus'
-end)
+-- vim.schedule(function()
+--   vim.opt.clipboard = 'unnamedplus'
+-- end)
+
+-- Set up keymaps to use the system clipboard
+vim.keymap.set({ 'n', 'x' }, 'y', '"+y')
+vim.keymap.set({ 'n', 'x' }, 'd', '"+d')
+vim.keymap.set({ 'n', 'x' }, '<leader>p', '"+p', { desc = '[p]aste from system clipboard' })
+vim.keymap.set({ 'n', 'x' }, '<leader>P', '"+P', { desc = '[P]aste after cursor from system clipboard' })
 
 -- Enable break indent
 vim.opt.breakindent = true

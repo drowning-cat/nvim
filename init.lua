@@ -84,6 +84,20 @@ vim.opt.cursorline = true
 -- sometimes referred to as scroll padding
 vim.opt.scrolloff = 10
 
+-- Setup the spell checker.
+-- Useful keymaps:
+--  * zg - add the word to the dictionary
+--  * z= - find suggestions for misspelled words
+--  * [s - move to the prev misspelled word
+--  * ]s - move to the next misspelled word
+-- ```sh
+--  mkdir -p ~/.local/share/nvim/site/spell/ru.utf-8.spl
+--  curl https://ftp.nluug.nl/pub/vim/runtime/spell/ru.utf-8.spl -o ~/.local/share/nvim/site/spell/ru.utf-8.spl
+--  curl https://ftp.nluug.nl/pub/vim/runtime/spell/ru.utf-8.sug -o ~/.local/share/nvim/site/spell/ru.utf-8.sug
+-- ```
+vim.opt.spelllang = 'en_us,ru'
+vim.opt.spell = true
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -1029,7 +1043,6 @@ require('lazy').setup({
               [']l'] = { query = '@loop.*', desc = 'Goto next [l]oop' },
               -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
               -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
-              [']s'] = { query = '@local.scope', query_group = 'locals', desc = 'Goto next [s]cope' },
               [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
             },
             goto_next_end = {
@@ -1049,7 +1062,6 @@ require('lazy').setup({
               ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
               ['[i'] = { query = '@conditional.inner', desc = 'Goto prev [i]f conditional' },
               ['[l'] = { query = '@loop.*', desc = 'Goto prev [l]oop' },
-              ['[s'] = { query = '@local.scope', query_group = 'locals', desc = 'Goto prev [s]cope' },
               ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
             },
             goto_previous_end = {

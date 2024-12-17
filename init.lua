@@ -68,12 +68,6 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
--- Sets how neovim will display certain whitespace characters in the editor.
---  See `:help 'list'`
---  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
-
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
 
@@ -110,13 +104,11 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- Show/hide all listchars symbols
---
 local list_toggle = function()
   vim.opt.list = not vim.opt.list:get() ---@diagnostic disable-line: undefined-field
 end
 
 -- Show/hide the specific listchar symbol, e.g. 'eol'
---
 local listchar_toggle = function(opts)
   local char = opts.char
   local val_true = opts.val_true
@@ -145,8 +137,15 @@ local listchar_toggle = function(opts)
   return toggle_option
 end
 
+-- Sets how neovim will display certain whitespace characters in the editor.
+--  See `:help 'list'`
+--  and `:help 'listchars'`
+--  Example: tab = '» ', trail = '·', nbsp = '␣'
+vim.opt.list = true
+vim.opt.listchars = { tab = '» ', nbsp = '␣' }
+
 vim.keymap.set('n', '<leader>tl', list_toggle, { desc = '[T]oggle [L]istchars' })
-vim.keymap.set('n', '<leader>tp', listchar_toggle { char = 'eol', val_true = '¶' }, { desc = '[T]oggle [L]istchars' })
+vim.keymap.set('n', '<leader>tp', listchar_toggle { char = 'eol', val_true = '¶' }, { desc = '[T]oggle [P]aragraph' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -830,6 +829,16 @@ require('lazy').setup({
       statusline.section_location = function()
         return '%2l:%-2v'
       end
+
+      -- Work with trailing whitespace
+      -- `:help mini.trailspace`
+      require('mini.trailspace').setup()
+      vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
+      vim.keymap.set('n', '<leader>dw', MiniTrailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
+
+      -- Highlight trailing whitespaces
+      -- vim.api.nvim_set_hl(0, 'TrailingWhitespace', { bg = '#832929' })
+      -- vim.fn.matchadd('TrailingWhitespace', [[\s\+$]])
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim

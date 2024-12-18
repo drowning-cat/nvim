@@ -1,9 +1,7 @@
--- A powerful autopair plugin for Neovim that supports multiple characters
---
 return {
   'windwp/nvim-autopairs',
   event = 'InsertEnter',
-  -- Optional dependency
+  -- Optional
   dependencies = { 'hrsh7th/nvim-cmp' },
   config = function()
     require('nvim-autopairs').setup {}

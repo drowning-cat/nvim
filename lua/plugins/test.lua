@@ -1,5 +1,3 @@
--- A framework for interacting with tests within Neovim
---
 return {
   'nvim-neotest/neotest',
   dependencies = {
@@ -8,7 +6,7 @@ return {
     'antoinemadec/FixCursorHold.nvim',
     'nvim-treesitter/nvim-treesitter',
 
-    -- Adapters
+    -- Adapters:
     'marilari88/neotest-vitest',
     'nvim-neotest/neotest-jest',
     'nvim-neotest/neotest-go',

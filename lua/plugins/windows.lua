@@ -1,4 +1,5 @@
--- Tile-like keymaps for managing windows
+-- Define keymaps for managing Neovim windows similar to
+-- those used in tiling window managers
 --
 return {
   {

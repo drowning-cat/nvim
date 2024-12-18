@@ -1,5 +1,3 @@
--- Git integration with Neovim
---
 return {
   { 'tpope/vim-fugitive', cmd = { 'Git', 'G' } },
 

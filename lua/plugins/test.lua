@@ -1,6 +1,5 @@
--- A framework for interacting with tests within NeoVim
--- https://github.com/nvim-neotest/neotest
-
+-- A framework for interacting with tests within Neovim
+--
 return {
   'nvim-neotest/neotest',
   dependencies = {

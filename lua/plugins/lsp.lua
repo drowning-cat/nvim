@@ -321,10 +321,10 @@ return {
           ['<C-j>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Select },
           ['<C-k>'] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Select },
 
-          -- Scroll the documentation window: [v]ack / [f]orward
+          -- Scroll the documentation window
           -- Remapped <C-b> to avoid conflict with tmux
-          ['<C-v>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-_>'] = cmp.mapping.scroll_docs(-4), -- <C-/>
+          ['<C-]>'] = cmp.mapping.scroll_docs(4),
           ['<C-Up>'] = cmp.mapping.scroll_docs(-4),
           ['<C-Down>'] = cmp.mapping.scroll_docs(4),
 

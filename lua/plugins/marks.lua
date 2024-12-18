@@ -1,6 +1,5 @@
 -- A better user experience for interacting with and manipulating Vim marks
--- https://github.com/chentoast/marks.nvim
-
+--
 return {
   'chentoast/marks.nvim',
   event = 'VeryLazy',

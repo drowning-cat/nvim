@@ -1,27 +1,5 @@
--- What is LSP?
---
--- LSP stands for Language Server Protocol. It's a protocol that helps editors
--- and language tooling communicate in a standardized fashion.
---
--- In general, you have a "server" which is some tool built to understand a particular
--- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc.). These Language Servers
--- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
--- processes that communicate with some "client" - in this case, Neovim!
---
--- LSP provides Neovim with features like:
---  - Go to definition
---  - Find references
---  - Autocompletion
---  - Symbol Search
---  - and more!
---
--- Thus, Language Servers are external tools that must be installed separately from
--- Neovim. This is where `mason` and related plugins come into play.
---
 return {
-  { -- Lua LSP
-    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
-    -- used for completion, annotations and signatures of Neovim apis
+  { -- Neovim lua LSP
     'folke/lazydev.nvim',
     ft = 'lua',
     opts = {
@@ -32,7 +10,7 @@ return {
     },
   },
 
-  { -- Luvit definitions
+  { -- Load luvit definitions
     'Bilal2453/luvit-meta',
     lazy = true,
   },
@@ -191,8 +169,6 @@ return {
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
-        --
-
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -280,7 +256,7 @@ return {
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        -- Conform can also run multiple formatters sequentially
+        -- Can also run multiple formatters sequentially
         -- python = { 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
@@ -339,11 +315,7 @@ return {
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
 
-        -- For an understanding of why these mappings were
-        -- chosen, you will need to read `:help ins-completion`
         mapping = cmp.mapping.preset.insert {
-          -- Select the [n]ext item
-          -- Select the [p]revious item
           ['<C-n>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
           ['<C-p>'] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },
           ['<C-j>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Select },
@@ -380,20 +352,12 @@ return {
             cmp.close()
           end,
 
-          -- If you prefer more traditional completion keymaps,
-          -- you can uncomment the following lines
-          --['<CR>'] = cmp.mapping.confirm { select = true },
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
-
-          -- Manually trigger a completion from nvim-cmp.
-          --  Generally you don't need this, because nvim-cmp will display
-          --  completions whenever it has completion options available.
+          -- Manually trigger a completion from nvim-cmp
           ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Keymaps for aborting or closing current completion:
-          --  - "abort" cancels the completion, discarding any active suggestions.
-          --  - "close" hides the completion menu but keeps active suggestion text.
+          --  * "abort" cancels the completion, discarding any active suggestions
+          --  * "close" hides the completion menu but keeps active suggestion text
           ['<C-c>'] = cmp.mapping.abort(),
           ['<C-e>'] = cmp.mapping.close(),
           ['<ESC>'] = function(key_action)
@@ -403,14 +367,14 @@ return {
             key_action()
           end,
 
-          -- Think of <c-l> as moving to the right of your snippet expansion.
+          -- Think of <C-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
           --  function $name($args)
           --    $body
           --  end
           --
-          -- <c-l> will move you to the right of each of the expansion locations.
-          -- <c-h> is similar, except moving you backwards.
+          -- <C-l> will move you to the right of each of the expansion locations.
+          -- <C-h> is similar, except moving you backwards.
           ['<C-l>'] = cmp.mapping(function()
             if luasnip.expand_or_locally_jumpable() then
               luasnip.expand_or_jump()

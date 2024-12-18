@@ -1,5 +1,3 @@
--- Treesitter related stuff, nvim-treesitter and other plugins
---
 return {
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -8,7 +6,6 @@ return {
     event = 'VeryLazy',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       -- stylua: ignore
       ensure_installed = {
@@ -17,8 +14,6 @@ return {
         'json', 'jsonc', 'toml', 'yaml',
         'diff', 'query', 'regex', 'printf',
       },
-
-      -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
         enable = true,
@@ -39,9 +34,6 @@ return {
         },
       },
     },
-    -- config = function(_, opts)
-    --   require('nvim-treesitter.configs').setup(opts)
-    -- end,
     init = function()
       -- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
       vim.wo.foldmethod = 'expr'
@@ -55,6 +47,9 @@ return {
       -- This limits how deeply code gets folded. Helps to toggle larger chunks of nested code as they are treated as one fold
       -- vim.wo.foldnestmax = 5
     end,
+    -- config = function(_, opts)
+    --   require('nvim-treesitter.configs').setup(opts)
+    -- end,
   },
 
   { -- Show your current context
@@ -94,7 +89,7 @@ return {
         textobjects = {
           select = {
             enable = true,
-            -- Automatically jump forward to textobj, similar to targets.vim
+            -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
               ['af'] = '@function.outer',
@@ -114,25 +109,21 @@ return {
             },
             -- You can choose the select mode (default is charwise 'v')
             --
-            -- Can also be a function which gets passed a table with the keys
-            -- * query_string: eg '@function.inner'
-            -- * method: eg 'v' or 'o'
-            -- and should return the mode ('v', 'V', or '<c-v>') or a table
-            -- mapping query_strings to modes.
+            -- ** Can also be a function which gets passed a table
+            --
             -- selection_modes = {
             --   ['@parameter.outer'] = 'v', -- charwise
             --   ['@function.outer'] = 'V', -- linewise
             --   ['@class.outer'] = '<c-v>', -- blockwise
             -- },
+
             -- If you set this to `true` (default is `false`) then any textobject is
             -- extended to include preceding or succeeding whitespace. Succeeding
             -- whitespace has priority in order to act similarly to eg the built-in
             -- `ap`.
             --
-            -- Can also be a function which gets passed a table with the keys
-            -- * query_string: eg '@function.inner'
-            -- * selection_mode: eg 'v'
-            -- and should return true or false
+            -- ** Can also be a function which gets passed a table
+            --
             include_surrounding_whitespace = true,
           },
           swap = {
@@ -188,15 +179,6 @@ return {
               ['[I'] = { query = '@conditional.inner', desc = 'Goto prev:end [I]f conditional' },
               ['[L'] = { query = '@loop.*', desc = 'Goto prev:end [L]oop' },
             },
-            -- Below will go to either the start or the end, whichever is closer.
-            -- Use if you want more granular movements
-            -- Make it even more gradual by adding multiple queries and regex.
-            -- goto_next = {
-            --   [']i'] = { query = '@conditional.outer', desc = 'Goto next [i]f conditional' },
-            -- },
-            -- goto_previous = {
-            --   ['[i'] = { query = '@conditional.outer', desc = 'Goto prev [i]f conditional' },
-            -- },
           },
           lsp_interop = {
             enable = true,

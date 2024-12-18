@@ -1,3 +1,5 @@
+-- Tile-like keymaps for managing windows
+--
 return {
   {
     'mrjones2014/smart-splits.nvim',

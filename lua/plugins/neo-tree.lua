@@ -1,5 +1,3 @@
--- Neovim plugin to browse the file system
---
 return {
   'nvim-neo-tree/neo-tree.nvim',
   version = '*',

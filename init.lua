@@ -1,30 +1,10 @@
---[[
-
- NOTE: Helpful resources:
-
-Lua language:
-  - https://learnxinyminutes.com/docs/lua
-Lua with neovim:
-  - `:help lua-guide` or https://neovim.io/doc/user/lua-guide.html
-
-Neovim documentation:
-   - `:Tutor`
-   - `:help x`, keymap `<space>sh` to [S]earch the [H]elp documentation
-
---]]
-
--- Set <space> as the leader key
--- See `:help mapleader`
+-- Set <Space> as the leader key
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
-
--- [[ Setting options ]]
--- See `:help vim.opt`
--- NOTE: For more options, you can see `:help option-list`
 
 -- Make line numbers default
 vim.opt.number = true
@@ -36,13 +16,9 @@ vim.opt.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
--- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.opt.clipboard = 'unnamedplus'
-end)
+-- Sync clipboard between OS and Neovim
+-- stylua: ignore
+vim.schedule(function() vim.opt.clipboard = 'unnamedplus' end)
 
 -- Enable break indent
 vim.opt.breakindent = true
@@ -68,9 +44,9 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
--- Sets how neovim will display certain whitespace characters in the editor.
---  See `:help 'list'`
---  and `:help 'listchars'`
+-- Sets how neovim will display certain whitespace characters in the editor
+--  See `:help list`
+--  and `:help listchars`
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
@@ -84,20 +60,24 @@ vim.opt.cursorline = true
 -- sometimes referred to as scroll padding
 vim.opt.scrolloff = 10
 
--- Setup the spell checker
--- `help spell`
-vim.opt.spelllang = 'en_us,ru'
-vim.opt.spell = true
--- Useful default keymaps:
+-- Setup the spell checker.
+-- Useful keymaps:
 --  - zg - add the word to the dictionary
 --  - z= - find suggestions for misspelled words
 --  - [s - move to the prev misspelled word
 --  - ]s - move to the next misspelled word
+vim.opt.spelllang = 'en_us,ru'
+vim.opt.spell = true
 
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
+-- Some command actions in insert mode:
+-- <C-w> - delete word
+-- <C-u> - delete text before cursor
+-- <C-t> - indent line forward
+-- <C-d> - indent line back
+-- <C-f> - indent line automatically
 
 -- Prevent certain keymaps from being printed:
+--
 -- stylua: ignore
 for _, lhs in ipairs {
   'C-q', 'C-e', 'C-o', 'C-a', 'C-h', 'C-j', 'C-k', 'C-l', 'C-z', 'C-v', 'C-b', 'C-_', 'C-/', 'C-\\', 'S-Del',
@@ -106,37 +86,17 @@ for _, lhs in ipairs {
 } do
   vim.keymap.set('i', '<' .. lhs .. '>', '<nop>')
 end
---
--- Initial command actions in insert mode:
--- <C-w> - delete word
--- <C-u> - delete text before cursor
--- <C-t> - indent line forward
--- <C-d> - indent line back
--- <C-f> - indent line automatically
---
--- Remap <C-u> to <C-x> because it is too close to <C-y>
--- vim.keymap.set('i', '<C-u>', '<nop>')
--- vim.keymap.set('i', '<C-x>', '<C-o>0<C-o>D')
 
--- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+-- Clear highlights on search when pressing <ESC>
+vim.keymap.set('n', '<ESC>', '<cmd>nohlsearch<CR>')
 
--- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
--- Exit terminal mode in the builtin terminal with a bit easier shortcut.
--- Otherwise, you normally need to press <C-\><C-n>
---
--- WARNING: This may not work in all terminal emulators/tmux/etc
+-- Exit terminal mode in the builtin terminal with a bit easier shortcut
+-- NOTE: This may not work in all terminal emulators/tmux/etc
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
-
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.highlight.on_yank()`
+-- Highlight when copying text
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
@@ -145,8 +105,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- [[ Install `lazy.nvim` plugin manager ]]
---    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
+-- Install `lazy.nvim` plugin manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
@@ -157,18 +116,17 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
--- [[ Configure and install plugins ]]
+-- Configure and install plugins
 --
---  To check the current status of your plugins, run
---    :Lazy
+--  To check the current status of your plugins, run `:Lazy`
 --
---  You can press `?` in this menu for help. Use `:q` to close the window
+--  For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 --
 require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
-  {
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
+  { -- Colorscheme
+    -- To see already installed colorschemes use `:Telescope colorscheme`
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins
     init = function()
@@ -186,14 +144,10 @@ require('lazy').setup({
     opts = { signs = false },
   },
 
-  --  Uncomment the following line to add all plugins from `plugins/*.lua` folder
+  -- Import files from `lua/plugins/*.lua`
   { import = 'plugins' },
-  --
-  -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 }, {
   ui = {
-    -- If you are using a Nerd Font: set icons to an empty table which will use the
-    -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',
       config = '🛠',

@@ -30,6 +30,7 @@ return {
               ['<C-CR>'] = 'to_fuzzy_refine',
               ['<C-j>'] = 'move_selection_next',
               ['<C-k>'] = 'move_selection_previous',
+              ['<C-f>'] = function() end,
             },
           },
         },

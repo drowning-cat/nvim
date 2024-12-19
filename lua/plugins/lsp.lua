@@ -305,6 +305,7 @@ return {
       'hrsh7th/cmp-path',
       -- Optional: adds vscode-like pictograms
       -- 'onsails/lspkind.nvim',
+      'brenoprata10/nvim-highlight-colors',
     },
     config = function()
       -- See `:help cmp`
@@ -320,16 +321,25 @@ return {
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
         formatting = { ---@diagnostic disable-line: missing-fields
-          format = function(entry, vim_item)
-            vim_item.kind = string.format(' %s ', vim_item.kind)
-            vim_item.menu = ({
+          format = function(entry, item)
+            item.kind = string.format(' %s ', item.kind)
+            item.menu = ({
               nvim_lsp = '[LSP]',
               buffer = '[Buf]',
               luasnip = '[Snip]',
               nvim_lua = '[Lua]',
               latex_symbols = '[LaTeX]',
             })[entry.source.name]
-            return vim_item
+            -- local color_item = require('nvim-highlight-colors').format(entry, { kind = item.kind })
+            -- item = require('lspkind').cmp_format {
+            --   -- Any lspkind format settings here
+            -- }(entry, item)
+            -- if color_item.abbr_hl_group then
+            --   item.kind_hl_group = color_item.abbr_hl_group
+            --   item.kind = color_item.abbr
+            -- end
+            -- return item
+            return require('nvim-highlight-colors').format(entry, item)
           end,
         },
         mapping = cmp.mapping.preset.insert {

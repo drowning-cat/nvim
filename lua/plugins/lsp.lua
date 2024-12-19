@@ -300,6 +300,8 @@ return {
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      -- Optional: adds vscode-like pictograms
+      -- 'onsails/lspkind.nvim',
     },
     config = function()
       -- See `:help cmp`
@@ -314,7 +316,19 @@ return {
           end,
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
-
+        formatting = { ---@diagnostic disable-line: missing-fields
+          format = function(entry, vim_item)
+            vim_item.kind = string.format(' %s ', vim_item.kind)
+            vim_item.menu = ({
+              nvim_lsp = '[LSP]',
+              buffer = '[Buf]',
+              luasnip = '[Snip]',
+              nvim_lua = '[Lua]',
+              latex_symbols = '[LaTeX]',
+            })[entry.source.name]
+            return vim_item
+          end,
+        },
         mapping = cmp.mapping.preset.insert {
           ['<C-n>'] = cmp.mapping.select_next_item { behavior = cmp.SelectBehavior.Insert },
           ['<C-p>'] = cmp.mapping.select_prev_item { behavior = cmp.SelectBehavior.Insert },

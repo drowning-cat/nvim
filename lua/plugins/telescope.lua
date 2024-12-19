@@ -26,6 +26,10 @@ return {
       require('telescope').setup {
         defaults = {
           mappings = {
+            n = {
+              ['V'] = 'select_vertical',
+              ['H'] = 'select_horizontal',
+            },
             i = {
               ['<C-CR>'] = 'to_fuzzy_refine',
               ['<C-j>'] = 'move_selection_next',

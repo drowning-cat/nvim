@@ -88,6 +88,7 @@ for _, lhs in ipairs {
 end
 
 -- Clear highlights on search when pressing <ESC>
+-- Overridden by multicursor.nvim
 vim.keymap.set('n', '<ESC>', '<cmd>nohlsearch<CR>')
 
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })

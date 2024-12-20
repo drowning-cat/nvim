@@ -87,6 +87,10 @@ for _, lhs in ipairs {
   vim.keymap.set('i', '<' .. lhs .. '>', '<nop>')
 end
 
+-- Remap <C-u> to <C-x> because it is too close to <C-y>
+vim.keymap.set('i', '<C-x>', '<C-u>', { noremap = true })
+vim.keymap.set('i', '<C-u>', '<nop>')
+
 -- Clear highlights on search when pressing <ESC>
 vim.keymap.set('n', '<ESC>', '<cmd>nohlsearch<CR>')
 

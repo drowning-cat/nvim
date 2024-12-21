@@ -13,7 +13,6 @@ return {
   },
   -- stylua: ignore
   keys = {
-    { '<leader>T', '', desc = '+Test'},
     { '<leader>Tf', function() require('neotest').run.run(vim.fn.expand('%')) end, desc = 'Run test [f]ile' },
     { '<leader>TF', function() require('neotest').run.run(vim.uv.cwd()) end, desc = 'Run all test [F]iles' },
     { '<leader>Tr', function() require('neotest').run.run() end, desc = 'Run nea[r]east test' },

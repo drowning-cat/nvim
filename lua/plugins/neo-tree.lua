@@ -15,7 +15,15 @@ return {
       window = {
         mappings = {
           ['\\'] = 'close_window',
+          ['<leftrelease>'] = 'open',
+          ['l'] = 'open_nofocus',
         },
+      },
+      commands = {
+        open_nofocus = function(state)
+          require('neo-tree.sources.filesystem.commands').open(state)
+          vim.cmd [[Neotree focus]]
+        end,
       },
     },
   },

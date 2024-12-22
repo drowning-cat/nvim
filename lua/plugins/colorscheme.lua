@@ -25,10 +25,11 @@ return {
     opts = {},
     -- stylua: ignore
     keys = {
-      { '<leader>co', function() require('huez.pickers').themes() end, desc = '[Co]lorscheme' },
-      { '<leader>col', function() require('huez.pickers').live() end, desc = '[Co]lorscheme [L]ive' },
-      { '<leader>coe', function() require('huez.pickers').ensured() end, desc = '[Co]lorscheme [E]nsured' },
-      { '<leader>cof', function() require('huez.pickers').favorites() end, desc = '[Co]lorscheme [F]avorites' },
+      { '<leader>tt', function() require('huez.pickers').themes() end, desc = '[T]oggle [T]heme' },
+      { '<leader>H', function() require('huez.pickers').themes() end, desc = '[H]uez' },
+      { '<leader>Hl', function() require('huez.pickers').live() end, desc = '[H]uez [L]ive' },
+      { '<leader>He', function() require('huez.pickers').ensured() end, desc = '[H]uez [E]nsured' },
+      { '<leader>Hf', function() require('huez.pickers').favorites() end, desc = '[H]uez [F]avorites' },
     },
   },
 }

@@ -17,8 +17,17 @@ vim.opt.mouse = 'a'
 vim.opt.showmode = false
 
 -- Sync clipboard between OS and Neovim
--- stylua: ignore
-vim.schedule(function() vim.opt.clipboard = 'unnamedplus' end)
+-- vim.schedule(function()
+--   vim.opt.clipboard = 'unnamedplus'
+-- end)
+vim.keymap.set({ 'n', 'v' }, '<leader>y', '"+y')
+vim.keymap.set({ 'n', 'v' }, '<leader>Y', '"+Y')
+vim.keymap.set({ 'n', 'v' }, '<leader>c', '"+c')
+vim.keymap.set({ 'n', 'v' }, '<leader>C', '"+C')
+vim.keymap.set({ 'n', 'v' }, '<leader>d', '"+d')
+vim.keymap.set({ 'n', 'v' }, '<leader>D', '"+D')
+vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p')
+vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P')
 
 -- Enable break indent
 vim.opt.breakindent = true

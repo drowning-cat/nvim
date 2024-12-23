@@ -53,12 +53,6 @@ vim.opt.timeoutlen = 300
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 
--- Sets how neovim will display certain whitespace characters in the editor
---  See `:help list`
---  and `:help listchars`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
-
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
 
@@ -108,6 +102,65 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- Exit terminal mode in the builtin terminal with a bit easier shortcut
 -- NOTE: This may not work in all terminal emulators/tmux/etc
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+
+local list_reset = function()
+  -- Sets how neovim will display certain whitespace characters in the editor
+  -- Example: tab = '» ', trail = '·', nbsp = '␣'
+  vim.opt.list = true
+  vim.opt.listchars = { tab = '» ', nbsp = '␣' }
+end
+list_reset()
+
+local list_toggle = function()
+  vim.opt.list = not vim.api.nvim_get_option_value('list', {})
+end
+
+--- @class ListcharToggleOptions
+--- @field char string
+--- @field val_true string
+--- @field val_false? string
+--- @field force? boolean
+---
+--- @param opts ListcharToggleOptions
+local listchar_toggle = function(opts)
+  local char = opts.char
+  local val_true = opts.val_true
+  local val_false = opts.val_false or nil
+  local force = opts.force or nil
+
+  if vim.api.nvim_get_option_value('list', {}) == false then
+    list_reset()
+  end
+
+  local listchars = vim.opt.listchars:get()
+  local true_case = listchars[char] ~= val_true
+  if force ~= nil then
+    true_case = force
+  end
+  if true_case then
+    vim.opt.listchars:remove { char }
+    vim.opt.listchars:append { [char] = val_true }
+  else
+    vim.opt.listchars:remove { char }
+    if val_false then
+      vim.opt.listchars:append { [char] = val_false }
+    end
+  end
+end
+
+local listchar_toggle_eol = function()
+  listchar_toggle { char = 'eol', val_true = '¶' }
+end
+
+local listchar_toggle_space = function()
+  listchar_toggle { char = 'trail', val_true = '·' }
+  listchar_toggle { char = 'lead', val_true = '·' }
+end
+
+vim.keymap.set('n', '<leader>tp', listchar_toggle_eol, { desc = '[T]oggle [P]aragraph (=tle)' })
+vim.keymap.set('n', '<leader>tl', list_toggle, { desc = '[T]oggle [L]istchars' })
+vim.keymap.set('n', '<leader>tle', listchar_toggle_eol, { desc = '[T]oggle [L]istchar [E]ol' })
+vim.keymap.set('n', '<leader>tls', listchar_toggle_space, { desc = '[T]oggle [L]istchar [S]space' })
 
 -- Highlight when copying text
 vim.api.nvim_create_autocmd('TextYankPost', {

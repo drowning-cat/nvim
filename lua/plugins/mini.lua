@@ -14,6 +14,11 @@ return {
       --  * sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      -- Navigate and manipulate file system
+      local files = require 'mini.files'
+      files.setup {}
+      vim.keymap.set('n', '<leader>of', files.open, { desc = '[O]pen [f]iles mini' })
+
       -- Simple and easy statusline
       --
       local statusline = require 'mini.statusline'

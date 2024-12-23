@@ -786,6 +786,16 @@ require('lazy').setup({
         return '%2l:%-2v'
       end
 
+      -- Work with trailing whitespace
+      -- `:help mini.trailspace`
+      require('mini.trailspace').setup()
+      vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
+      vim.keymap.set('n', '<leader>dw', MiniTrailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
+
+      -- Highlight trailing whitespaces
+      -- vim.api.nvim_set_hl(0, 'TrailingWhitespace', { bg = '#832929' })
+      -- vim.fn.matchadd('TrailingWhitespace', [[\s\+$]])
+
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,

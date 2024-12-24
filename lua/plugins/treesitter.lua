@@ -70,15 +70,20 @@ return {
   { -- Show rainbow delimiters
     'HiPhish/rainbow-delimiters.nvim',
     event = 'VeryLazy',
+    -- stylua: ignore
     keys = {
-      {
-        '<leader>tr',
-        function()
-          require('rainbow-delimiters').toggle(vim.api.nvim_get_current_buf())
-        end,
-        desc = '[T]oggle [R]ainbow',
-      },
+      { '<leader>tr', function() require('rainbow-delimiters').toggle(0) end, desc = '[T]oggle [R]ainbow' },
     },
+    config = function()
+      require('rainbow-delimiters.setup').setup {}
+      vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+        group = vim.api.nvim_create_augroup('rainbow-delimiters-off', {}),
+        pattern = '*',
+        callback = function()
+          require('rainbow-delimiters').disable(0)
+        end,
+      })
+    end,
   },
 
   { -- Interact code AST using queries

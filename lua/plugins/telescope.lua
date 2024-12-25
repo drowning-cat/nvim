@@ -23,32 +23,55 @@ return {
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     },
     config = function()
-      require('telescope').setup {
+      local telescope = require 'telescope'
+      local actions = require 'telescope.actions'
+      local action_state = require 'telescope.actions.state'
+      local themes = require 'telescope.themes'
+
+      local accept_help = function()
+        local entry = action_state.get_selected_entry()
+        actions.select_default()
+        vim.fn.histadd('cmd', 'h ' .. entry.display)
+      end
+
+      telescope.setup {
         defaults = {
           mappings = {
-            n = {
-              ['V'] = 'select_vertical',
-              ['H'] = 'select_horizontal',
-            },
             i = {
               ['<C-CR>'] = 'to_fuzzy_refine',
               ['<C-j>'] = 'move_selection_next',
               ['<C-k>'] = 'move_selection_previous',
               ['<C-f>'] = function() end,
             },
+            n = {
+              ['V'] = 'select_vertical',
+              ['H'] = 'select_horizontal',
+            },
           },
         },
-        -- pickers = {}
+        pickers = {
+          help_tags = {
+            mappings = {
+              i = {
+                ['<CR>'] = accept_help,
+                ['<C-y>'] = accept_help,
+              },
+              n = {
+                ['<CR>'] = accept_help,
+              },
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
-            require('telescope.themes').get_dropdown(),
+            themes.get_dropdown(),
           },
         },
       }
 
       -- Enable Telescope extensions if they are installed
-      pcall(require('telescope').load_extension, 'fzf')
-      pcall(require('telescope').load_extension, 'ui-select')
+      pcall(telescope.load_extension, 'fzf')
+      pcall(telescope.load_extension, 'ui-select')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -71,7 +94,7 @@ return {
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+        builtin.current_buffer_fuzzy_find(themes.get_dropdown {
           winblend = 10,
           previewer = false,
         })

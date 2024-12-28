@@ -82,6 +82,58 @@ end
 
 return {
   {
+    'romgrk/barbar.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      'lewis6991/gitsigns.nvim',
+      'nvim-tree/nvim-web-devicons',
+    },
+    opts = {
+      hide_on_start = true,
+      animation = false,
+      icons = {
+        separator = { left = '', right = '' },
+        inactive = { separator = { left = '', right = '' } },
+        separator_at_end = false,
+      },
+      maximum_padding = 2,
+    },
+    init = function()
+      vim.g.barbar_auto_setup = false
+    end,
+    config = function(_, opts)
+      require('barbar').setup(opts)
+
+      vim.opt.showtabline = 0
+
+      vim.keymap.set('n', '<leader><Tab>h', '<cmd>BufferPrevious<CR>', { desc = '[B]ar select left tab' })
+      vim.keymap.set('n', '<leader><Tab>l', '<cmd>BufferNext<CR>', { desc = '[B]ar select right tab' })
+
+      vim.keymap.set('n', '<leader><Tab>n', '<cmd>BufferMoveNext<CR>', { desc = '[B]ar swap with [n]ext tab' })
+      vim.keymap.set('n', '<leader><Tab>p', '<cmd>BufferMovePrevious<CR>', { desc = '[B]ar swap with [p]revious tab' })
+
+      vim.keymap.set('n', '<leader><Tab>t', '<cmd>BufferPin<CR>', { desc = '[B]ar [t]oggle tab' })
+      vim.keymap.set('n', '<leader><Tab>c', '<cmd>BufferClose<CR>', { desc = '[B]ar [c]lose tab' })
+      vim.keymap.set('n', '<leader><Tab>w', '<cmd>BufferWipeout<CR>', { desc = '[B]ar [w]ipeout tabs' })
+
+      local toggle_bar = function()
+        vim.o.showtabline = vim.o.showtabline ~= 2 and 2 or 0
+      end
+      vim.keymap.set('n', '<leader><Tab><Tab>', toggle_bar, { desc = 'Toggle bar' })
+
+      vim.keymap.set('n', '<C-1>', '<Cmd>BufferGoto 1<CR>', { desc = 'Tab [1] ' })
+      vim.keymap.set('n', '<C-2>', '<Cmd>BufferGoto 2<CR>', { desc = 'Tab [2]' })
+      vim.keymap.set('n', '<C-3>', '<Cmd>BufferGoto 3<CR>', { desc = 'Tab [3]' })
+      vim.keymap.set('n', '<C-4>', '<Cmd>BufferGoto 4<CR>', { desc = 'Tab [4]' })
+      vim.keymap.set('n', '<C-5>', '<Cmd>BufferGoto 5<CR>', { desc = 'Tab [5]' })
+      vim.keymap.set('n', '<C-6>', '<Cmd>BufferGoto 6<CR>', { desc = 'Tab [6]' })
+      vim.keymap.set('n', '<C-7>', '<Cmd>BufferGoto 7<CR>', { desc = 'Tab [7]' })
+      vim.keymap.set('n', '<C-8>', '<Cmd>BufferGoto 8<CR>', { desc = 'Tab [8]' })
+      vim.keymap.set('n', '<C-9>', '<Cmd>BufferGoto 9<CR>', { desc = 'Tab [9]' })
+      vim.keymap.set('n', '<C-0>', '<Cmd>BufferLast<CR>', { desc = 'Tab last' })
+    end,
+  },
+  {
     'declancm/maximize.nvim',
     -- stylua: ignore
     keys = {

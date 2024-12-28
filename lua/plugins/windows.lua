@@ -119,12 +119,73 @@ vim.keymap.set('n', '<C-S-Right>', swap_buf 'right', { desc = 'Swap with buffer 
 
 return {
   {
+    'romgrk/barbar.nvim',
+    event = { 'FileType', 'VimEnter' },
+    dependencies = {
+      'lewis6991/gitsigns.nvim',
+      'nvim-tree/nvim-web-devicons',
+    },
+    init = function()
+      vim.g.barbar_auto_setup = false
+    end,
+    opts = {
+      animation = false,
+      auto_hide = 0,
+      exclude_ft = {
+        'minifiles',
+        'snacks_dashboard',
+        'man',
+        'qf',
+      },
+      icons = {
+        button = '',
+        separator = { left = '', right = '' },
+        inactive = { separator = { left = '', right = '' } },
+        separator_at_end = false,
+      },
+      maximum_padding = 3,
+    },
+    keys = {
+      {
+        '<leader><Tab><Tab>',
+        function()
+          local buffers = require('barbar.state').buffers
+          if not vim.tbl_isempty(buffers) then
+            vim.o.showtabline = vim.o.showtabline ~= 0 and 0 or 2
+          end
+        end,
+        desc = '[T]oggle [T]ab bar',
+      },
+      { '[b', '<cmd>BufferPrevious<CR>', desc = '[B]uffer next' },
+      { ']b', '<cmd>BufferNext<CR>', desc = '[B]uffer prev' },
+      { '<leader><Tab>h', '<cmd>BufferPrevious<CR>', desc = '[T]ab select left' },
+      { '<leader><Tab>l', '<cmd>BufferNext<CR>', desc = '[T]ab select right' },
+      { '<leader><Tab>k', '<cmd>BufferMoveNext<CR>', desc = '[T]ab move next' },
+      { '<leader><Tab>j', '<cmd>BufferMovePrevious<CR>', desc = '[T]ab move prev' },
+      { '<leader><Tab>p', '<cmd>BufferPin<CR>', desc = '[T]ab [P]in' },
+      { '<leader><Tab>q', '<cmd>BufferClose<CR>', desc = '[T]ab [q]uit' },
+      { '<leader><Tab>w', '<cmd>BufferCloseAllButCurrentOrPinned<CR>', desc = '[T]ab [w]ipeout tabs' },
+      { '<leader><Tab>1', '<Cmd>BufferGoto 1<CR>', desc = 'Tab [1] ' },
+      { '<leader><Tab>2', '<Cmd>BufferGoto 2<CR>', desc = 'Tab [2]' },
+      { '<leader><Tab>3', '<Cmd>BufferGoto 3<CR>', desc = 'Tab [3]' },
+      { '<leader><Tab>4', '<Cmd>BufferGoto 4<CR>', desc = 'Tab [4]' },
+      { '<leader><Tab>5', '<Cmd>BufferGoto 5<CR>', desc = 'Tab [5]' },
+      { '<leader><Tab>6', '<Cmd>BufferGoto 6<CR>', desc = 'Tab [6]' },
+      { '<leader><Tab>7', '<Cmd>BufferGoto 7<CR>', desc = 'Tab [7]' },
+      { '<leader><Tab>8', '<Cmd>BufferGoto 8<CR>', desc = 'Tab [8]' },
+      { '<leader><Tab>9', '<Cmd>BufferGoto 9<CR>', desc = 'Tab [9]' },
+      { '<leader><Tab>0', '<Cmd>BufferLast<CR>', desc = 'Tab last' },
+    },
+  },
+
+  {
     'declancm/maximize.nvim',
     -- stylua: ignore
     keys = {
       { '<C-f>', function() require('maximize').toggle() end, desc = 'Toggle [F]ullscreen' },
     },
   },
+
   {
     'pogyomo/submode.nvim',
     keys = { '<C-w>r', '<C-w><C-r>' },

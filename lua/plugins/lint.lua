@@ -27,6 +27,17 @@ return {
       lint.linters_by_ft['rst'] = nil ------ { 'vale' }
       lint.linters_by_ft['ruby'] = nil ----- { 'ruby' }
 
+      vim.g.cspell = false
+
+      vim.keymap.set('n', '<leader>ts', function()
+        if vim.g.cspell then
+          vim.diagnostic.reset(lint.get_namespace 'cspell')
+        else
+          lint.try_lint 'cspell'
+        end
+        vim.g.cspell = not vim.g.cspell
+      end, { desc = '[T]oggle c[s]pell linter' })
+
       -- Create autocommand which carries out the actual linting on the specified events
       local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })
       vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
@@ -37,6 +48,9 @@ return {
           -- describe the hovered symbol using Markdown
           if vim.opt_local.modifiable:get() then
             lint.try_lint()
+            if vim.g.cspell then
+              lint.try_lint 'cspell'
+            end
           end
         end,
       })

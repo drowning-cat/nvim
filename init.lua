@@ -187,30 +187,8 @@ vim.opt.rtp:prepend(lazypath)
 -- May be extended in other files
 vim.g.mason_install = {} --- @type string[]
 
--- Extend `vim` object with utility functions for `vim.g.mason_install`
--- NOTE: vim.g options cannot be mutated and must be reassigned
-vim.u = {}
-
-vim.u.list_concat = function(list1, ...)
-  local join_list = {}
-  for _, list in ipairs { list1, ... } do
-    for _, value in ipairs(list) do
-      table.insert(join_list, value)
-    end
-  end
-  return join_list
-end
-
-vim.u.list_remove_dups_mut = function(list)
-  local has_value = {}
-  for index, value in ipairs(list) do
-    if has_value[value] then
-      table.remove(list, index)
-    else
-      has_value[value] = true
-    end
-  end
-end
+-- Assign utility functions to `vim.u`, `vim.util`
+require('utils').setup()
 
 -- Configure and install plugins
 --

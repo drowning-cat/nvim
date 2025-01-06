@@ -29,6 +29,38 @@ function M.list_remove_dups_mut(list)
   end
 end
 
+--- @class NotifyOpts
+--- @field duration? integer: Time in milliseconds to show the notification.
+--- @field force? boolean: Whether to show over active notification.
+
+--- @param message string: The notification message to display.
+--- @param opts? NotifyOpts: Settings for the notification.
+--- @description A wrapper around `vim.notify` that adds support for delayed notifications.
+function M.notify(message, opts)
+  opts = vim.tbl_extend('keep', opts or {}, {
+    duration = nil,
+    force = true,
+  })
+
+  local get_last_message = function()
+    local messages = vim.fn.execute 'messages'
+    local lines = vim.split(messages, '\n', { trimempty = false })
+    return lines[#lines] or ''
+  end
+
+  if opts.force or get_last_message() ~= '' then
+    vim.notify(message)
+  end
+
+  if opts.duration then
+    vim.defer_fn(function()
+      if get_last_message() == message then
+        vim.notify ''
+      end
+    end, opts.duration)
+  end
+end
+
 --- @description Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

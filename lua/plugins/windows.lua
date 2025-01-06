@@ -187,10 +187,10 @@ return {
         leave = { '<Esc>', 'q', '<C-c>' },
         hook = {
           on_enter = function()
-            vim.notify 'Use { h, j, k, l } or { <Left>, <Down>, <Up>, <Right> } to resize the window'
+            vim.u.notify 'Use { h, j, k, l } or { <Left>, <Down>, <Up>, <Right> } to resize the window'
           end,
           on_leave = function()
-            vim.notify ''
+            vim.u.notify('', { force = false })
           end,
         },
         default = function(register)

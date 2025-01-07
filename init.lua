@@ -103,7 +103,7 @@ vim.keymap.set('i', '<C-u>', '<nop>')
 -- Overridden by multicursor.nvim
 vim.keymap.set('n', '<ESC>', '<cmd>nohlsearch<CR>')
 
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>Q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
 -- Exit terminal mode in the builtin terminal with a bit easier shortcut
 -- NOTE: This may not work in all terminal emulators/tmux/etc

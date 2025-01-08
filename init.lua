@@ -29,6 +29,35 @@ vim.keymap.set({ 'n', 'v' }, '<leader>D', '"+D')
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p')
 vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P')
 
+vim.paste = (function(overridden)
+  return function(lines, phase)
+    local mode = vim.fn.mode()
+    if lines[#lines] == '' then
+      table.remove(lines, #lines)
+    end
+    if mode == 'n' then
+      vim.api.nvim_put(lines, 'l', true, false) -- paste
+    elseif mode == 'V' then
+      vim.fn.execute [[ exe "silent normal! \<Del>" ]] -- Delete selection
+      vim.api.nvim_put(lines, 'l', false, false) -- Paste
+      local select_end = vim.fn.getpos "']" -- Get selection end-position
+      select_end[3] = 0 -- Move cursor to start of line
+      vim.fn.setpos('.', select_end)
+    else
+      overridden(lines, phase)
+    end
+  end
+end)(vim.paste)
+
+-- Highlight when copying text
+vim.api.nvim_create_autocmd('TextYankPost', {
+  desc = 'Highlight when yanking (copying) text',
+  group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
+  callback = function()
+    vim.highlight.on_yank()
+  end,
+})
+
 -- Enable break indent
 vim.opt.breakindent = true
 
@@ -167,15 +196,6 @@ vim.keymap.set('n', '<leader>tp', listchar_toggle_eol, { desc = '[T]oggle [P]ara
 vim.keymap.set('n', '<leader>tl', list_toggle, { desc = '[T]oggle [L]istchars' })
 vim.keymap.set('n', '<leader>tle', listchar_toggle_eol, { desc = '[T]oggle [L]istchar [E]ol' })
 vim.keymap.set('n', '<leader>tls', listchar_toggle_space, { desc = '[T]oggle [L]istchar [S]space' })
-
--- Highlight when copying text
-vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
-  callback = function()
-    vim.highlight.on_yank()
-  end,
-})
 
 -- Install `lazy.nvim` plugin manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'

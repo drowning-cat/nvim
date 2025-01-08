@@ -204,16 +204,8 @@ require('utils').setup()
 require('lazy').setup({
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
-  { -- Highlight todo, notes, etc in comments
-    'folke/todo-comments.nvim',
-    event = 'VimEnter',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-    opts = { signs = false },
-  },
-
-  -- Import files from `lua/plugins/*.lua`
-  { import = 'plugins' },
-}, {
+  { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
+}, { --- @diagnostic disable-line: missing-fields
   ui = {
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',

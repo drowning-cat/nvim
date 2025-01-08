@@ -16,6 +16,16 @@ return {
       --  * sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      -- Extend f, F, t, T to work on multiple lines. Repeat jump by pressing ; or f, F, t, T again
+      --
+      require('mini.jump').setup {
+        silent = true,
+      }
+
+      -- Visualize scope with animated vertical line
+      --
+      -- require('mini.indentscope').setup()
+
       -- Navigate and manipulate file system
       --
       local files = require 'mini.files'

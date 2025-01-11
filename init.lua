@@ -101,27 +101,54 @@ vim.opt.scrolloff = 10
 vim.opt.spelllang = 'en_us,ru'
 vim.opt.spell = true
 
--- Some command actions in insert mode:
--- <C-w> - delete word
--- <C-u> - delete text before cursor
--- <C-t> - indent line forward
--- <C-d> - indent line back
--- <C-f> - indent line automatically
-
 -- Prevent certain keymaps from being printed:
---
 -- stylua: ignore
 for _, lhs in ipairs {
   'C-q', 'C-e', 'C-o', 'C-a', 'C-h', 'C-j', 'C-k', 'C-l', 'C-z', 'C-v', 'C-b', 'C-_', 'C-/', 'C-\\', 'S-Del',
   'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
   'C-F1', 'C-F2', 'C-F3', 'C-F4', 'C-F5', 'C-F6', 'C-F7', 'C-F8', 'C-F9', 'C-F10', 'C-F11', 'C-F12',
 } do
-  vim.keymap.set('i', '<' .. lhs .. '>', '<nop>')
+  vim.keymap.set({ 'i', 'c' }, '<' .. lhs .. '>', '<nop>')
 end
 
--- Remap <C-u> to <C-x> because it is too close to <C-y>
-vim.keymap.set('i', '<C-x>', '<C-u>', { noremap = true })
-vim.keymap.set('i', '<C-u>', '<nop>')
+-- Add empty lines in normal mode
+vim.keymap.set('n', '<leader>O', "<cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>", { desc = 'Add blank line above' })
+vim.keymap.set('n', '<leader>o', "<cmd>call append(line('.'),     repeat([''], v:count1))<CR>", { desc = 'Add blank line below' })
+
+-- Move selection up or down
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { noremap = true })
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { noremap = true })
+
+-- Move selection left or right
+vim.keymap.set('v', '<', '<gv', { noremap = true })
+vim.keymap.set('v', '>', '>gv', { noremap = true })
+
+-- Additional insert motions using
+vim.keymap.set('i', '<C-S-h>', '<Left>', { noremap = true })
+vim.keymap.set('i', '<C-S-j>', '<Down>', { noremap = true })
+vim.keymap.set('i', '<C-S-k>', '<Up>', { noremap = true })
+vim.keymap.set('i', '<C-S-l>', '<Right>', { noremap = true })
+--
+vim.keymap.set('i', '<C-h>', '<Left>', { noremap = true })
+vim.keymap.set('i', '<C-j>', '<Down>', { noremap = true })
+vim.keymap.set('i', '<C-k>', '<Up>', { noremap = true })
+vim.keymap.set('i', '<C-l>', '<Right>', { noremap = true })
+
+-- Default actions in insert mode:
+-- + <C-w> - delete word
+-- + <C-f> - indent line automatically
+-- ~ <C-d> -> <C-S-Tab> - indent line back
+-- ~ <C-t> +> <C-Tab>   - indent line forward
+-- ~ <C-u> -> <C-x>     - delete text before cursor
+
+-- Remap some of the default insert commands:
+--  * <C-d> is used to scroll the completion menu down
+vim.keymap.set('i', '<C-S-Tab>', '<C-d>', { noremap = true })
+vim.keymap.set('i', '<C-Tab>', '<C-t>', { noremap = true })
+--  * <C-u> is used to scroll the completion menu up
+--  * <C-u> is also too close to <C-y>, which could lead to accidental presses
+vim.keymap.set({ 'i', 'c' }, '<C-x>', '<C-u>', { noremap = true })
+vim.keymap.set({ 'i', 'c' }, '<C-u>', '<nop>')
 
 -- Clear highlights on search when pressing <ESC>
 -- Overridden by multicursor.nvim

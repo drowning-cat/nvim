@@ -46,7 +46,7 @@ return {
           trim_right = '>',
         },
       }
-      vim.keymap.set('n', '<leader>of', files.open, { desc = '[O]pen [f]iles mini' })
+      vim.keymap.set('n', '<leader>F', files.open, { desc = '[O]pen [f]iles mini' })
 
       vim.api.nvim_create_autocmd('FileType', {
         pattern = { 'TelescopePrompt', 'mason', 'lazy' },
@@ -74,6 +74,14 @@ return {
 
           map('n', '<CR>', go_in_plus)
           map('n', '<Esc>', files.close)
+
+          local ci = vim.u.keymap_get('n', '<C-i>')
+          local co = vim.u.keymap_get('n', '<C-o>')
+
+          -- stylua: ignore
+          map('n', '<C-i>', function() files.close(); ci() end)
+          -- stylua: ignore
+          map('n', '<C-o>', function() files.close(); co() end)
         end,
       })
 

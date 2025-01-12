@@ -61,6 +61,27 @@ function M.notify(message, opts)
   end
 end
 
+--- @param mode string: Mode to check (e.g. 'n', 'v', ...)
+--- @param lhs string Key sequence to look up
+--- @description Returns the function defined via vim.keymap.set
+function M.keymap_get(mode, lhs)
+  for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
+    if lhs == map.lhs then
+      if map.callback then
+        return map.callback
+      end
+      if map.rhs then
+        return function()
+          vim.fn.feedkeys(vim.api.nvim_replace_termcodes(map.rhs, true, false, true), 'n')
+        end
+      end
+    end
+  end
+  return function()
+    vim.fn.feedkeys(vim.api.nvim_replace_termcodes(lhs, true, false, true), 'n')
+  end
+end
+
 --- @description Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

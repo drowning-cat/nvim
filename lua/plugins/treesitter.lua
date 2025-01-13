@@ -1,10 +1,11 @@
 return {
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    build = ':TSUpdate',
+    cmd = { 'TSUpdateSync', 'TSUpdate', 'TSInstall' },
     -- Drastically improves startup time by lazy loading syntax highlighting
     -- and other nvim-treesitter features
     event = 'VeryLazy',
-    build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     opts = {
       -- stylua: ignore
@@ -35,17 +36,34 @@ return {
       },
     },
     init = function()
-      -- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
+      -- https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/util/ui.lua
+      _G.foldexpr = function()
+        local buf = vim.api.nvim_get_current_buf()
+        if vim.b[buf].ts_folds == nil then
+          if vim.bo[buf].filetype == '' then
+            return '0'
+          end
+          if vim.bo[buf].filetype:find 'dashboard' then
+            vim.b[buf].ts_folds = false
+          else
+            vim.b[buf].ts_folds = pcall(vim.treesitter.get_parser, buf)
+          end
+        end
+        return vim.b[buf].ts_folds and vim.treesitter.foldexpr() or '0'
+      end
+
+      -- Tree-sitter based folding
       vim.wo.foldmethod = 'expr'
-      vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      vim.wo.foldexpr = 'v:lua.foldexpr()'
+      vim.wo.foldtext = ''
       -- Turn off extra column to display information on folds
       vim.wo.foldcolumn = '0'
-      -- The first line of the fold will be syntax highlighted, rather than all be one colour
+      -- The first line of the fold will be syntax highlighted, rather than all be one color
       vim.wo.foldtext = ''
       -- Disable folding on startup
       vim.wo.foldlevel = 99
       -- This limits how deeply code gets folded. Helps to toggle larger chunks of nested code as they are treated as one fold
-      -- vim.wo.foldnestmax = 5
+      vim.wo.foldnestmax = 7
     end,
     -- config = function(_, opts)
     --   require('nvim-treesitter.configs').setup(opts)

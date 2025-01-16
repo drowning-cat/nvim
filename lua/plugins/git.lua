@@ -1,9 +1,25 @@
 return {
   'tpope/vim-fugitive', -- Vim integration with git, see `:help fugitive`
 
+  { -- A plugin to visualise and resolve conflicts in neovim
+    'akinsho/git-conflict.nvim',
+    lazy = false,
+    keys = {
+      { 'co', '<Plug>(git-conflict-ours)', { desc = 'Git [C]onflict [O]urs' } },
+      { 'ct', '<Plug>(git-conflict-theirs)', { desc = 'Git [C]onflict [T]heirs' } },
+      { 'cb', '<Plug>(git-conflict-both)', { desc = 'Git [C]onflict [B]oth' } },
+      { 'c0', '<Plug>(git-conflict-none)', { desc = 'Git [C]onflict none' } },
+      { '[x', '<Plug>(git-conflict-prev-conflict)', { desc = 'Goto previous conflict' } },
+      { ']x', '<Plug>(git-conflict-next-conflict)', { desc = 'Goto next conflict' } },
+    },
+    opts = {
+      default_mappings = false,
+    },
+  },
+
   { -- Open lazygit - a lightweight, terminal user interface for git
     'kdheepak/lazygit.nvim',
-    lazy = true,
+    event = 'VeryLazy',
     cmd = {
       'LazyGit',
       'LazyGitConfig',
@@ -21,6 +37,7 @@ return {
 
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
+    event = 'VeryLazy',
     opts = {
       current_line_blame_opts = {
         delay = 0,

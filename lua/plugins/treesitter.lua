@@ -115,8 +115,8 @@ return {
             -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
-              ['af'] = '@function.outer',
-              ['if'] = '@function.inner',
+              ['aF'] = '@function.outer',
+              ['iF'] = '@function.inner',
               ['ia'] = '@parameter.inner',
               ['aa'] = '@parameter.outer',
               ['ib'] = '@block.inner',

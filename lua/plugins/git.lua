@@ -12,8 +12,6 @@ return {
       { 'ct', '<Plug>(git-conflict-theirs)', desc = 'Git [C]onflict [T]heirs' },
       { 'cb', '<Plug>(git-conflict-both)', desc = 'Git [C]onflict [B]oth' },
       { 'c0', '<Plug>(git-conflict-none)', desc = 'Git [C]onflict none' },
-      { '[x', '<Plug>(git-conflict-prev-conflict)', desc = 'Goto previous conflict' },
-      { ']x', '<Plug>(git-conflict-next-conflict)', desc = 'Goto next conflict' },
     },
   },
 

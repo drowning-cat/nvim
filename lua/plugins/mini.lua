@@ -16,15 +16,25 @@ return {
       --  * sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      -- Extend f, F, t, T to work on multiple lines. Repeat jump by pressing ; or f, F, t, T again
+      -- Configurable Lua functions to go forward/backward to a certain target
       --
-      require('mini.jump').setup {
-        silent = true,
+      -- stylua: ignore
+      require('mini.bracketed').setup {
+        buffer     = { suffix = ''  },
+        comment    = { suffix = ''  },
+        conflict   = { suffix = 'x' },
+        diagnostic = { suffix = 'd' },
+        file       = { suffix = ''  },
+        indent     = { suffix = '<Tab>' },
+        jump       = { suffix = 'j' },
+        location   = { suffix = 'l' },
+        oldfile    = { suffix = 'o' },
+        quickfix   = { suffix = 'q' },
+        treesitter = { suffix = ''  },
+        undo       = { suffix = 'u' },
+        window     = { suffix = 'w' },
+        yank       = { suffix = 'y' },
       }
-
-      -- Visualize scope with animated vertical line
-      --
-      -- require('mini.indentscope').setup()
 
       -- Navigate and manipulate file system
       --

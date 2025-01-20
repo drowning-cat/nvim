@@ -58,11 +58,11 @@ return {
     opts = { multiline_threshold = 1 },
     keys = {
       {
-        '[t',
+        'gc',
         function()
           require('treesitter-context').go_to_context(vim.v.count1)
         end,
-        desc = '[G]oto [T]op context line',
+        desc = '[G]oto treesitter [C]ontext',
       },
     },
   },
@@ -97,6 +97,8 @@ return {
             -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
+              ['if'] = '@call.inner',
+              ['af'] = '@call.outer',
               ['aF'] = '@function.outer',
               ['iF'] = '@function.inner',
               ['ia'] = '@parameter.inner',
@@ -113,9 +115,6 @@ return {
               ['i/'] = '@comment.inner',
             },
             -- You can choose the select mode (default is charwise 'v')
-            --
-            -- ** Can also be a function which gets passed a table
-            --
             -- selection_modes = {
             --   ['@parameter.outer'] = 'v', -- charwise
             --   ['@function.outer'] = 'V', -- linewise
@@ -126,10 +125,13 @@ return {
             -- extended to include preceding or succeeding whitespace. Succeeding
             -- whitespace has priority in order to act similarly to eg the built-in
             -- `ap`.
-            --
-            -- ** Can also be a function which gets passed a table
-            --
-            include_surrounding_whitespace = true,
+            include_surrounding_whitespace = function(ctx)
+              local excluded_queries = {
+                '@call.inner',
+                '@call.outer',
+              }
+              return not vim.tbl_contains(excluded_queries, ctx.query_string)
+            end,
           },
           swap = {
             enable = true,
@@ -148,7 +150,6 @@ return {
               [']f'] = { query = '@function.outer', desc = 'Goto next [f]unction' },
               ['gj'] = { query = '@function.outer', desc = 'Goto next function' },
               [']c'] = { query = '@class.outer', desc = 'Goto next [c]lass' },
-              [']b'] = { query = '@block.outer', desc = 'Goto next [b]lock' },
               [']a'] = { query = '@parameter.inner', desc = 'Goto next [a]rgument' },
               [']i'] = { query = '@conditional.inner', desc = 'Goto next [i]f conditional' },
               [']l'] = { query = '@loop.*', desc = 'Goto next [l]oop' },
@@ -160,7 +161,6 @@ return {
               [']F'] = { query = '@function.outer', desc = 'Goto next:end [F]unction' },
               ['gJ'] = { query = '@function.outer', desc = 'Goto next:end function' },
               [']C'] = { query = '@class.outer', desc = 'Goto next:end [C]lass' },
-              [']B'] = { query = '@block.outer', desc = 'Goto next:end [B]lock' },
               [']A'] = { query = '@parameter.inner', desc = 'Goto next:end [A]rgument' },
               [']I'] = { query = '@conditional.inner', desc = 'Goto next:end [I]f conditional' },
               [']L'] = { query = '@loop.*', desc = 'Goto next:end [L]oop' },
@@ -169,7 +169,6 @@ return {
               ['[f'] = { query = '@function.outer', desc = 'Goto prev [f]unction' },
               ['gk'] = { query = '@function.outer', desc = 'Goto prev function' },
               ['[c'] = { query = '@class.outer', desc = 'Goto prev [c]lass' },
-              ['[b'] = { query = '@block.outer', desc = 'Goto prev [b]lock' },
               ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
               ['[i'] = { query = '@conditional.inner', desc = 'Goto prev [i]f conditional' },
               ['[l'] = { query = '@loop.*', desc = 'Goto prev [l]oop' },
@@ -179,7 +178,6 @@ return {
               ['[F'] = { query = '@function.outer', desc = 'Goto prev:end [F]unction' },
               ['gK'] = { query = '@function.outer', desc = 'Goto prev:end function' },
               ['[C'] = { query = '@class.outer', desc = 'Goto prev:end [C]lass' },
-              ['[B'] = { query = '@block.outer', desc = 'Goto prev:end [B]lock' },
               ['[A'] = { query = '@parameter.inner', desc = 'Goto prev:end [A]rgument' },
               ['[I'] = { query = '@conditional.inner', desc = 'Goto prev:end [I]f conditional' },
               ['[L'] = { query = '@loop.*', desc = 'Goto prev:end [L]oop' },

@@ -25,10 +25,8 @@ local swap_buf = function(dir, move_cursor)
     vim.api.nvim_set_option_value('foldenable', false, { win = win_2 })
 
     -- Store views
-    vim.fn.win_gotoid(win_1)
-    local view_1 = vim.fn.winsaveview()
-    vim.fn.win_gotoid(win_2)
-    local view_2 = vim.fn.winsaveview()
+    local view_1 = vim.api.nvim_win_call(win_1, vim.fn.winsaveview)
+    local view_2 = vim.api.nvim_win_call(win_2, vim.fn.winsaveview)
 
     -- Swap buffers
     vim.api.nvim_win_set_buf(win_1, buf_2)
@@ -39,10 +37,12 @@ local swap_buf = function(dir, move_cursor)
     vim.api.nvim_set_option_value('list', win_2_list, { win = win_1 })
 
     -- Swap views
-    vim.fn.win_gotoid(win_1)
-    vim.fn.winrestview(view_2)
-    vim.fn.win_gotoid(win_2)
-    vim.fn.winrestview(view_1)
+    vim.api.nvim_win_call(win_1, function()
+      vim.fn.winrestview(view_2)
+    end)
+    vim.api.nvim_win_call(win_2, function()
+      vim.fn.winrestview(view_1)
+    end)
 
     -- Restore `vim.opt.foldenable`
     vim.api.nvim_set_option_value('foldenable', win_1_folds_enabled, { win = win_1 })
@@ -50,8 +50,6 @@ local swap_buf = function(dir, move_cursor)
 
     if move_cursor == true then
       vim.fn.win_gotoid(win_2)
-    else
-      vim.fn.win_gotoid(win_1)
     end
   end
 

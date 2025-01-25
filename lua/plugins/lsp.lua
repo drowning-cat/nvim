@@ -28,7 +28,7 @@ return {
       'saghen/blink.cmp',
     },
     init = function()
-      vim.g.mason_install = vim.u.list_concat(vim.g.mason_install, {
+      vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
         'clangd',
         'cssls',
         'eslint',
@@ -212,7 +212,6 @@ return {
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, vim.g.mason_install or {})
-      vim.u.list_remove_dups_mut(ensure_installed)
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup { ---@diagnostic disable-line: missing-fields

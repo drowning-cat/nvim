@@ -39,7 +39,7 @@ return {
       },
     },
     init = function()
-      vim.g.mason_install = vim.u.list_concat(vim.g.mason_install, {
+      vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
         'prettierd',
         'stylua',
         'isort',

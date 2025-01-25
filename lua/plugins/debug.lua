@@ -26,7 +26,7 @@ return {
     { '<F7>', function() require('dapui').toggle() end, desc = 'Debug: See last session result.' },
   },
   init = function()
-    vim.g.mason_install = vim.u.list_concat(vim.g.mason_install, {
+    vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
       'delve',
       'js-debug-adapter',
     })

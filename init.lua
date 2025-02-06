@@ -209,29 +209,15 @@ require('util').setup()
 --
 --  For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
 --
-require('lazy').setup({
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-
-  { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
-}, { --- @diagnostic disable-line: missing-fields
-  ui = {
-    icons = vim.g.have_nerd_font and {} or {
-      cmd = '⌘',
-      config = '🛠',
-      event = '📅',
-      ft = '📂',
-      init = '⚙',
-      keys = '🗝',
-      plugin = '🔌',
-      runtime = '💻',
-      require = '🌙',
-      source = '📄',
-      start = '🚀',
-      task = '📌',
-      lazy = '💤 ',
-    },
+require('lazy').setup {
+  spec = {
+    { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
+    { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
   },
-})
+  install = {
+    colorscheme = { require('persist-colors').get_colorscheme 'habamax' },
+  },
+}
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

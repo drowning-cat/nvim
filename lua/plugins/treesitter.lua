@@ -26,7 +26,7 @@ return {
       indent = { enable = true, disable = { 'ruby' } },
       -- See `:help nvim-treesitter-incremental-selection-mod`
       incremental_selection = {
-        enable = true,
+        enable = false,
         keymaps = {
           init_selection = '<CR>',
           node_incremental = '<CR>',

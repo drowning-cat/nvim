@@ -39,7 +39,7 @@ return {
       },
     },
     init = function()
-      vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
+      vim.g.mason_install_extend {
         'prettierd',
         'stylua',
         'isort',
@@ -47,7 +47,7 @@ return {
         'markdownlint',
         'beautysh',
         'deno',
-      })
+      }
       vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
     end,
     opts = {

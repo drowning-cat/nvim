@@ -28,7 +28,7 @@ return {
       'saghen/blink.cmp',
     },
     init = function()
-      vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
+      vim.g.mason_install_extend {
         'clangd',
         'cssls',
         'emmet_ls',
@@ -41,7 +41,7 @@ return {
         'rust_analyzer',
         'tailwindcss',
         'ts_ls',
-      })
+      }
     end,
     config = function()
       --  This function gets run when an LSP attaches to a particular buffer.

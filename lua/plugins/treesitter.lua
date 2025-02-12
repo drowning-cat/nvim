@@ -6,6 +6,8 @@ return {
     -- Drastically improves startup time by lazy loading syntax highlighting
     -- and other nvim-treesitter features
     event = 'VeryLazy',
+    -- Load treesitter early when opening a file from the cmdline
+    lazy = vim.fn.argc(-1) == 0,
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     opts = {
       -- stylua: ignore

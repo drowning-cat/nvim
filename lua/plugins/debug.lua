@@ -26,10 +26,10 @@ return {
     { '<F7>', function() require('dapui').toggle() end, desc = 'Debug: See last session result.' },
   },
   init = function()
-    vim.g.mason_install = vim.list_extend(vim.g.mason_install, {
+    vim.g.mason_install_extend {
       'delve',
       'js-debug-adapter',
-    })
+    }
   end,
   config = function()
     local dap = require 'dap'

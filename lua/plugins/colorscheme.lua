@@ -9,6 +9,9 @@ return {
     { 'rose-pine/neovim', name = 'rose-pine', opts = {
       styles = { italic = false },
     } },
+    {
+      'EdenEast/nightfox.nvim',
+    },
   },
 
   { -- Highlight todo, notes, etc in comments

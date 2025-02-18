@@ -43,10 +43,10 @@ return {
       }
     end,
     config = function()
-      --  This function gets run when an LSP attaches to a particular buffer.
-      --    That is to say, every time a new file is opened that is associated with
-      --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
-      --    function will be executed to configure the current buffer
+      -- This function gets run when an LSP attaches to a particular buffer.
+      --   That is to say, every time a new file is opened that is associated with
+      --   an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
+      --   function will be executed to configure the current buffer
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
         callback = function(event)
@@ -58,7 +58,7 @@ return {
           end
 
           -- Rename the variable under your cursor.
-          --  Most Language Servers support renaming across files, etc.
+          -- Most Language Servers support renaming across files, etc.
           map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
@@ -66,26 +66,27 @@ return {
           map('<leader>ra', vim.lsp.buf.code_action, '[R]un [A]ction', { 'n', 'x' })
 
           -- Opens a popup that displays documentation about the word under your cursor
-          -- See `:help K` for why this keymap
+          --   See `:help K` for why this keymap
           map('K', vim.lsp.buf.hover, 'Hover documentation')
+
+          local client = vim.lsp.get_client_by_id(event.data.client_id)
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
-          --    See `:help CursorHold` for information about when this is executed
+          --   See `:help CursorHold` for information about when this is executed
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
-          local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-            local highlight_augroup = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
+            local hl_aug = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
-              group = highlight_augroup,
+              group = hl_aug,
               callback = vim.lsp.buf.document_highlight,
             })
 
             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
               buffer = event.buf,
-              group = highlight_augroup,
+              group = hl_aug,
               callback = vim.lsp.buf.clear_references,
             })
 
@@ -97,6 +98,85 @@ return {
               end,
             })
           end
+
+          -- Disable 'DiagnosticUnnecessary' highlight when cursor is over diagnostic
+          -- https://github.com/neovim/neovim/discussions/32513
+          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_publishDiagnostics) then
+            local diagnostic_unnecessary_aug = vim.api.nvim_create_augroup('diagnostic_unnecessary_undim', { clear = false })
+
+            local ns = vim.api.nvim_create_namespace 'diagnostic_unnecessary_hl_override'
+            vim.api.nvim_set_hl(0, 'DiagnosticUnnecessaryOverride', { fg = '#4447A3' })
+            -- Disable 'DiagnosticUnnecessary'
+            vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', {})
+
+            local clear_hl = function()
+              -- Clear 'DiagnosticUnnecessaryOverride' highlight
+              vim.api.nvim_buf_clear_namespace(event.buf, ns, 0, -1)
+            end
+
+            local refresh_hl = function()
+              local search_diagnostics = vim.diagnostic.get(event.buf, { severity = vim.diagnostic.severity.HINT })
+              if vim.tbl_isempty(search_diagnostics) then
+                return
+              end
+              -- Clear 'DiagnosticUnnecessaryOverride'
+              clear_hl()
+              -- Reapply 'DiagnosticUnnecessaryOverride' in the same way as 'DiagnosticUnnecessary'
+              local lnum = vim.fn.line '.' - 1
+              for _, diagnostic in ipairs(search_diagnostics) do
+                if diagnostic._tags and diagnostic._tags.unnecessary then
+                  if lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum then
+                  else
+                    local start = { diagnostic.lnum, diagnostic.col }
+                    local finish = { diagnostic.end_lnum, diagnostic.end_col }
+                    vim.hl.range(event.buf, ns, 'DiagnosticUnnecessaryOverride', start, finish)
+                  end
+                end
+              end
+            end
+
+            -- Undim in any mode except Normal
+            vim.api.nvim_create_autocmd('ModeChanged', {
+              buffer = event.buf,
+              group = diagnostic_unnecessary_aug,
+              callback = function()
+                local mode = vim.fn.mode()
+                if mode == 'c' then
+                  return
+                elseif mode == 'n' then
+                  refresh_hl()
+                else
+                  clear_hl()
+                end
+              end,
+            })
+
+            local lastlnum = nil
+
+            -- Refresh highlighting when the cursor moves in Normal mode
+            vim.api.nvim_create_autocmd('CursorMoved', {
+              buffer = event.buf,
+              group = diagnostic_unnecessary_aug,
+              callback = function()
+                local mode = vim.fn.mode()
+
+                if mode ~= 'n' then
+                  return
+                end
+
+                -- Skip if the cursor moves horizontally but not vertically
+                local lnum = vim.fn.line '.' - 1
+                if lnum == lastlnum then
+                  return
+                end
+                lastlnum = lnum
+
+                refresh_hl()
+              end,
+            })
+          end
+
+          --
         end,
       })
 

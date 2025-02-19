@@ -16,6 +16,11 @@ return {
       --  * sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      -- Insert or delete brackets, parens, quotes in pair
+      -- Default pairs: () [] {} "" '' ``
+      --
+      require('mini.pairs').setup()
+
       -- Configurable Lua functions to go forward/backward to a certain target
       --
       -- stylua: ignore

@@ -304,7 +304,7 @@ vim.g.mason_install_extend = function(list)
 end
 
 -- Assign utility functions to `vim.u`, `vim.util`
-require('util').setup()
+require('custom.util').setup()
 
 -- Configure and install plugins
 --
@@ -318,7 +318,7 @@ require('lazy').setup {
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
   },
   install = {
-    colorscheme = { require('persist-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('custom.persist-colors').get_colorscheme 'habamax' },
   },
 }
 

@@ -1,99 +1,4 @@
--- Define keymaps for managing Neovim windows similar to
--- those used in tiling window managers
-
---- @alias Direction 'down'|'left'|'right'|'up'
-
---- @param dir Direction
---- @param move_cursor? boolean
-local swap_buf = function(dir, move_cursor)
-  move_cursor = move_cursor or true
-
-  local swap_win_buf = function(win_1_nr, win_2_nr)
-    -- Get `win_id`, `buf_id` from the window number
-    local win_1, buf_1 = vim.fn.win_getid(win_1_nr), vim.fn.winbufnr(win_1_nr)
-    local win_2, buf_2 = vim.fn.win_getid(win_2_nr), vim.fn.winbufnr(win_2_nr)
-
-    -- Store `vim.opt.list`
-    local win_1_list = vim.api.nvim_get_option_value('list', { win = win_1 })
-    local win_2_list = vim.api.nvim_get_option_value('list', { win = win_2 })
-
-    -- Store `vim.opt.foldenable`
-    local win_1_folds_enabled = vim.api.nvim_get_option_value('foldenable', { win = win_1 })
-    local win_2_folds_enabled = vim.api.nvim_get_option_value('foldenable', { win = win_2 })
-    -- Disable `vim.opt.foldenable`
-    vim.api.nvim_set_option_value('foldenable', false, { win = win_1 })
-    vim.api.nvim_set_option_value('foldenable', false, { win = win_2 })
-
-    -- Store views
-    local view_1 = vim.api.nvim_win_call(win_1, vim.fn.winsaveview)
-    local view_2 = vim.api.nvim_win_call(win_2, vim.fn.winsaveview)
-
-    -- Swap buffers
-    vim.api.nvim_win_set_buf(win_1, buf_2)
-    vim.api.nvim_win_set_buf(win_2, buf_1)
-
-    -- Swap `vim.opt.list`
-    vim.api.nvim_set_option_value('list', win_1_list, { win = win_2 })
-    vim.api.nvim_set_option_value('list', win_2_list, { win = win_1 })
-
-    -- Swap views
-    vim.api.nvim_win_call(win_1, function()
-      vim.fn.winrestview(view_2)
-    end)
-    vim.api.nvim_win_call(win_2, function()
-      vim.fn.winrestview(view_1)
-    end)
-
-    -- Restore `vim.opt.foldenable`
-    vim.api.nvim_set_option_value('foldenable', win_1_folds_enabled, { win = win_1 })
-    vim.api.nvim_set_option_value('foldenable', win_2_folds_enabled, { win = win_2 })
-
-    if move_cursor == true then
-      vim.fn.win_gotoid(win_2)
-    end
-  end
-
-  return function()
-    if dir == 'left' then
-      swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'h')
-    elseif dir == 'right' then
-      swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'l')
-    elseif dir == 'up' then
-      swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'k')
-    elseif dir == 'down' then
-      swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'j')
-    end
-  end
-end
-
---- @param dir Direction
-local resize = function(dir)
-  local step = {
-    h = 4,
-    v = 2,
-  }
-  return function()
-    -- 1. Horizontal resize
-    if dir == 'left' then
-      vim.fn.win_move_separator(vim.fn.winnr 'h', -step.h)
-    elseif dir == 'right' then
-      vim.fn.win_move_separator(vim.fn.winnr 'h', step.h)
-    -- 2. Vertical resize
-    -- elseif vim.fn.winnr() == vim.fn.winnr 'k' then -- Prevent the statusline from resizing vertically
-    --   return
-    elseif dir == 'up' then
-      vim.fn.win_move_statusline(vim.fn.winnr 'k', -step.v)
-    elseif dir == 'down' then
-      vim.fn.win_move_statusline(vim.fn.winnr 'k', step.v)
-    end
-  end
-end
-
--- Close
-vim.keymap.set('n', '<C-q>', function()
-  vim.bo.bufhidden = 'delete'
-  vim.cmd 'q'
-end, { desc = 'Close the window' })
+local win = require 'custom.win-util'
 
 -- Move
 vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Move focus left' })
@@ -105,15 +10,18 @@ vim.keymap.set('n', '<C-Down>', '<C-w>j', { desc = 'Move focus down' })
 vim.keymap.set('n', '<C-Up>', '<C-w>k', { desc = 'Move focus up' })
 vim.keymap.set('n', '<C-Right>', '<C-w>l', { desc = 'Move focus right' })
 
+-- Close
+vim.keymap.set('n', '<C-q>', win.close, { desc = 'Close the window' })
+
 -- Swap
-vim.keymap.set('n', '<C-S-h>', swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-j>', swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-k>', swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-l>', swap_buf 'right', { desc = 'Swap with buffer right' })
-vim.keymap.set('n', '<C-S-Left>', swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-Down>', swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-Up>', swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-Right>', swap_buf 'right', { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-h>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-j>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-k>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-l>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-Left>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-Down>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-Up>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-Right>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
 
 return {
   {
@@ -202,13 +110,12 @@ return {
           end,
         },
         default = function(register)
-          --- @param dir Direction
-          --- Patched resize function to redraw vim.notify messages during statusline resizing
+          ---Patched resize function to redraw vim.notify messages during statusline resizing
+          ---@param dir Direction
           local resize_patched = function(dir)
-            local resize_fn = resize(dir)
             return function()
-              resize_fn()
-              vim.cmd [[ messages ]]
+              win.resize(dir)
+              vim.cmd 'messages'
             end
           end
           register('h', resize_patched 'left', { desc = 'Resize left' })

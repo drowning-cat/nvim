@@ -318,7 +318,7 @@ require('lazy').setup {
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
   },
   install = {
-    colorscheme = { require('custom.persist-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('custom.save-colors').get_colorscheme 'habamax' },
   },
 }
 

@@ -21,8 +21,8 @@ vim.opt.showmode = false
 vim.opt.backupdir = vim.fn.stdpath 'state' .. '/backup'
 vim.opt.backup = true
 
--- Enable break indent
-vim.opt.breakindent = true
+-- Disable break indent
+vim.opt.breakindent = false
 
 -- Save undo history
 vim.opt.undofile = true

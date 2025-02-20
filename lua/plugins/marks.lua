@@ -24,11 +24,11 @@ return {
   },
   keys = {
     {
-      '<leader>tm',
+      '<leader>tM',
       function()
         require('marks').toggle_signs(vim.api.nvim_get_current_buf())
       end,
-      desc = '[T]oggle [m]arks',
+      desc = '[T]oggle [M]arks',
     },
   },
 }

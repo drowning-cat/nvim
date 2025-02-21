@@ -58,6 +58,8 @@ return {
       -- Scroll
       ['<C-d>'] = { 'scroll_documentation_down' },
       ['<C-u>'] = { 'scroll_documentation_up' },
+      ['<C-]>'] = { 'scroll_documentation_down' },
+      ['<C-_>'] = { 'scroll_documentation_up' },
       -- Snippet
       ['<C-l>'] = { 'snippet_forward', 'fallback' },
       ['<C-h>'] = { 'snippet_backward', 'fallback' },

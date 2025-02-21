@@ -49,6 +49,12 @@ function M.keymap_get(mode, lhs)
   end
 end
 
+--- @param message unknown
+--- @description Calls `vim.fn.system { 'notify-send', message }`
+function M.notify_send(message)
+  vim.fn.system { 'notify-send', tostring(message) }
+end
+
 --- @description Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

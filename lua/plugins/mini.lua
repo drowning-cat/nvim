@@ -88,8 +88,18 @@ return {
 
       vim.keymap.set('n', '<leader>F', files_open, { desc = '[O]pen [f]iles mini' })
 
+      ---@module 'snacks'
+      if Snacks then
+        local pick = Snacks.picker.pick
+        ---@type fun(source?: string, opts?: snacks.picker.Config)
+        Snacks.picker.pick = function(source, opts) ---@diagnostic disable-line
+          MiniFiles.close()
+          return pick(source, opts)
+        end
+      end
+
       vim.api.nvim_create_autocmd('FileType', {
-        pattern = { 'TelescopePrompt', 'mason', 'lazy' },
+        pattern = { 'mason', 'lazy' },
         callback = function()
           local win = vim.fn.win_getid()
           files.close()
@@ -189,9 +199,11 @@ return {
       -- Work with trailing whitespace
       --
       local trailspace = require 'mini.trailspace'
-      trailspace.setup()
-      vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
-      vim.keymap.set('n', '<leader>dw', trailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
+      vim.schedule(function()
+        trailspace.setup()
+        vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
+        vim.keymap.set('n', '<leader>dw', trailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
+      end)
       --
       -- Native, without `mini.trailspace`
       --

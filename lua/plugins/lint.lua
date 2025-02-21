@@ -2,33 +2,30 @@ return {
   {
     'mfussenegger/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
+    init = function()
+      vim.g.mason_install = vim.u.list_concat(vim.g.mason_install, {
+        'hadolint',
+        'jsonlint',
+        'vale',
+        'tflint',
+      })
+    end,
     config = function()
       local lint = require 'lint'
 
       lint.linters_by_ft = lint.linters_by_ft or {}
-      lint.linters_by_ft['markdown'] = { 'markdownlint' }
+      lint.linters_by_ft['dockerfile'] = { 'hadolint' }
+      lint.linters_by_ft['json'] = { 'jsonlint' }
+      lint.linters_by_ft['markdown'] = { 'vale' }
+      lint.linters_by_ft['text'] = { 'vale' }
+      lint.linters_by_ft['terraform'] = { 'tflint' }
 
-      -- Disable default linters:
-      --  * clojure = { "clj-kondo" },
-      --  * dockerfile = { "hadolint" },
-      --  * inko = { "inko" },
-      --  * janet = { "janet" },
-      --  * json = { "jsonlint" },
-      --  * markdown = { "vale" },
-      --  * rst = { "vale" },
-      --  * ruby = { "ruby" },
-      --  * terraform = { "tflint" },
-      --  * text = { "vale" }
-      lint.linters_by_ft['clojure'] = nil
-      lint.linters_by_ft['dockerfile'] = nil
-      lint.linters_by_ft['inko'] = nil
-      lint.linters_by_ft['janet'] = nil
-      lint.linters_by_ft['json'] = nil
-      lint.linters_by_ft['markdown'] = nil
-      lint.linters_by_ft['rst'] = nil
-      lint.linters_by_ft['ruby'] = nil
-      lint.linters_by_ft['terraform'] = nil
-      lint.linters_by_ft['text'] = nil
+      -- Disable default linters
+      lint.linters_by_ft['clojure'] = nil -- { 'clj-kondo' }
+      lint.linters_by_ft['inko'] = nil ----- { 'inko' }
+      lint.linters_by_ft['janet'] = nil ---- { 'janet' }
+      lint.linters_by_ft['rst'] = nil ------ { 'vale' }
+      lint.linters_by_ft['ruby'] = nil ----- { 'ruby' }
 
       -- Create autocommand which carries out the actual linting on the specified events
       local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })

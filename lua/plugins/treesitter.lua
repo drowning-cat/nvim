@@ -90,7 +90,7 @@ return {
     event = 'VeryLazy',
     -- stylua: ignore
     keys = {
-      { '<leader>tr', function() require('rainbow-delimiters').toggle(0) end, desc = '[T]oggle [R]ainbow' },
+      { '<leader>tr', function() require('rainbow-delimiters').toggle(0) end, desc = '[T]oggle [r]ainbow delimiters' },
     },
     config = function()
       require('rainbow-delimiters.setup').setup {}

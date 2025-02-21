@@ -28,7 +28,7 @@ return {
       function()
         require('marks').toggle_signs(vim.api.nvim_get_current_buf())
       end,
-      desc = '[T]oggle [M]arks',
+      desc = '[T]oggle [m]arks',
     },
   },
 }

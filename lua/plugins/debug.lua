@@ -25,6 +25,12 @@ return {
     -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception
     { '<F7>', function() require('dapui').toggle() end, desc = 'Debug: See last session result.' },
   },
+  init = function()
+    vim.g.mason_install = vim.u.list_concat(vim.g.mason_install, {
+      'delve',
+      'js-debug-adapter',
+    })
+  end,
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
@@ -32,10 +38,7 @@ return {
     require('mason-nvim-dap').setup {
       automatic_installation = true,
       handlers = {},
-      ensure_installed = {
-        'delve',
-        'js-debug-adapter',
-      },
+      ensure_installed = {},
     }
 
     dapui.setup { ---@diagnostic disable-line: missing-fields

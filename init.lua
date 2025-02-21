@@ -255,7 +255,7 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mason_install = {} --- @type string[]
 
 -- Assign utility functions to `vim.u`, `vim.util`
-require('utils').setup()
+require('util').setup()
 
 -- Configure and install plugins
 --

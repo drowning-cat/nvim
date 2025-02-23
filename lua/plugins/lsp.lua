@@ -55,6 +55,7 @@ return {
           -- Opens a popup that displays documentation about the word under your cursor
           --   See `:help K` for why this keymap
           buf_map('K', vim.lsp.buf.hover, 'Hover documentation')
+          buf_map('<C-K>', vim.diagnostic.open_float, 'Hover diagnostic')
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
 

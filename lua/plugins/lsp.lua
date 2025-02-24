@@ -41,7 +41,7 @@ return {
     config = function()
       -- This function gets run when an LSP attaches to a particular buffer
       vim.api.nvim_create_autocmd('LspAttach', {
-        group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
+        group = vim.api.nvim_create_augroup('lsp_attach', { clear = true }),
         callback = function(event)
           local buf_map = function(keys, func, desc, mode)
             mode = mode or 'n'
@@ -62,24 +62,22 @@ return {
           -- word under your cursor when your cursor rests there for a little while.
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           if client and client:supports_method 'textDocument/documentHighlight' then
-            local hl_aug = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
+            local hl_aug = vim.api.nvim_create_augroup('lsp_highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               group = hl_aug,
               callback = vim.lsp.buf.document_highlight,
             })
-
             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
               buffer = event.buf,
               group = hl_aug,
               callback = vim.lsp.buf.clear_references,
             })
-
             vim.api.nvim_create_autocmd('LspDetach', {
-              group = vim.api.nvim_create_augroup('lsp-detach', { clear = true }),
+              group = vim.api.nvim_create_augroup('lsp_detach', { clear = true }),
               callback = function(event2)
                 vim.lsp.buf.clear_references()
-                vim.api.nvim_clear_autocmds { group = 'lsp-highlight', buffer = event2.buf }
+                vim.api.nvim_clear_autocmds { group = hl_aug, buffer = event2.buf }
               end,
             })
           end

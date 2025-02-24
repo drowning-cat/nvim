@@ -81,7 +81,7 @@ end
 ---@param plugins ColorschemeSpec[]
 ---@return LazyPluginSpec[]
 function M.lazy_setup(plugins)
-  local aug = vim.api.nvim_create_augroup('save-colors', { clear = true })
+  local aug = vim.api.nvim_create_augroup('save_colors', { clear = true })
 
   vim.api.nvim_create_autocmd('User', {
     pattern = 'LazyDone',

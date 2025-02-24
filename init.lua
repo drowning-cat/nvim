@@ -291,6 +291,13 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   end,
 })
 
+-- Start `q:` with insert mode
+vim.api.nvim_create_autocmd('CmdwinEnter', {
+  group = augroup 'q_startinsert',
+  pattern = ':',
+  command = 'startinsert',
+})
+
 -- Install `lazy.nvim` plugin manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then

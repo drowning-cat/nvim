@@ -97,7 +97,7 @@ return {
     config = function()
       require('rainbow-delimiters.setup').setup {}
       vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
-        group = vim.api.nvim_create_augroup('rainbow-delimiters-off', {}),
+        group = vim.api.nvim_create_augroup('rainbow_delimiters_off', {}),
         pattern = '*',
         callback = function()
           require('rainbow-delimiters').disable(0)

@@ -307,7 +307,16 @@ vim.g.mason_install_extend = function(list)
 end
 
 -- Assign utility functions to `vim.u`, `vim.util`
-require('custom.util').setup()
+local util = require 'custom.util'
+util.setup()
+
+-- Set up smart autochange of current directory
+-- https://www.reddit.com/r/neovim/comments/zy5s0l/you_dont_need_vimrooter_usually_or_how_to_set_up
+local root_augroup = vim.api.nvim_create_augroup('auto_root', {})
+vim.api.nvim_create_autocmd('BufEnter', {
+  group = root_augroup,
+  callback = util.cdroot,
+})
 
 -- Configure and install plugins
 --

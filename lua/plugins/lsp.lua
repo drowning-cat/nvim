@@ -88,8 +88,16 @@ return {
             local diagnostic_unnecessary_aug = vim.api.nvim_create_augroup('diagnostic_unnecessary_undim', { clear = false })
 
             local ns = vim.api.nvim_create_namespace 'diagnostic_unnecessary_hl_override'
-            vim.api.nvim_set_hl(0, 'DiagnosticUnnecessaryOverride', { fg = '#4447A3' })
-            vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', {})
+
+            if Snacks then ---@module 'snacks'
+              Snacks.util.set_hl {
+                DiagnosticUnnecessaryOverride = { fg = '#444A73' },
+                DiagnosticUnnecessary = {},
+              }
+            else
+              vim.api.nvim_set_hl(0, 'DiagnosticUnnecessaryOverride', { fg = '#444A73' })
+              vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', {})
+            end
 
             local clear_hl = function()
               if vim.api.nvim_buf_is_valid(event.buf) then

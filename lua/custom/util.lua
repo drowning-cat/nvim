@@ -1,12 +1,12 @@
 local M = {}
 
---- @class NotifyOpts
---- @field duration? integer: Time in milliseconds to show the notification.
---- @field force? boolean: Whether clear after duration over active notification.
+---@class NotifyOpts
+---@field duration? integer: Time in milliseconds to show the notification
+---@field force? boolean: Whether clear after duration over active notification
 
---- @param message string: The notification message to display.
---- @param opts? NotifyOpts: Settings for the notification.
---- @description A wrapper around `vim.notify` that adds support for delayed notifications.
+-- A wrapper around `vim.notify` that adds support for delayed notifications
+---@param message string: The notification message to display
+---@param opts? NotifyOpts: Settings for the notification
 function M.notify(message, opts)
   opts = vim.tbl_extend('keep', opts or {}, {
     duration = nil,
@@ -28,10 +28,11 @@ function M.notify(message, opts)
   end
 end
 
---- @param mode string: Mode to check (e.g. 'n', 'v', ...)
---- @param lhs string Key sequence to look up
---- @description Returns the function defined via vim.keymap.set
-function M.keymap_get(mode, lhs)
+-- Returns the function defined via vim.keymap.set
+---@param mode string: Mode to check (e.g. 'n', 'v', ...)
+---@param lhs string Key sequence to look up
+---@param fallback? boolean
+function M.keym_fn(mode, lhs, fallback)
   for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
     if lhs == map.lhs then
       if map.callback then
@@ -44,18 +45,22 @@ function M.keymap_get(mode, lhs)
       end
     end
   end
-  return function()
-    vim.fn.feedkeys(vim.api.nvim_replace_termcodes(lhs, true, false, true), 'n')
+  if fallback == nil or fallback == false then
+    return nil
+  else
+    return function()
+      vim.fn.feedkeys(vim.api.nvim_replace_termcodes(lhs, true, false, true), 'n')
+    end
   end
 end
 
---- @param message unknown
---- @description Calls `vim.fn.system { 'notify-send', message }`
+-- Calls `vim.fn.system { 'notify-send', message }`
+---@param message unknown
 function M.notify_send(message)
   vim.fn.system { 'notify-send', tostring(message) }
 end
 
---- @description Assigns utility functions to `vim.u`, `vim.util` namespaces
+-- Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M
   vim.util = M

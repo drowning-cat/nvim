@@ -144,11 +144,10 @@ return {
           buf_map('n', '<C-k>', '<Up>', { noremap = true })
           buf_map('n', '<C-l>', '<Right>', { noremap = true })
 
-          local ci = vim.u.keymap_get('n', '<C-i>')
-          local co = vim.u.keymap_get('n', '<C-o>')
-          -- stylua: ignore
+          local ci = vim.u.keym_fn('n', '<C-i>', true) --[[@as function]]
+          local co = vim.u.keym_fn('n', '<C-o>', true) --[[@as function]]
+          -- stylua: ignore start
           buf_map('n', '<C-i>', function() files.close(); ci() end)
-          -- stylua: ignore
           buf_map('n', '<C-o>', function() files.close(); co() end)
         end,
       })

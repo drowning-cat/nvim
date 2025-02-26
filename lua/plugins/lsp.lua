@@ -85,8 +85,6 @@ return {
           -- Disable 'DiagnosticUnnecessary' highlight when cursor is over diagnostic
           -- https://github.com/neovim/neovim/discussions/32513
           if client and client:supports_method 'textDocument/publishDiagnostics' then
-            local diagnostic_unnecessary_aug = vim.api.nvim_create_augroup('diagnostic_unnecessary_undim', { clear = false })
-
             local ns = vim.api.nvim_create_namespace 'diagnostic_unnecessary_hl_override'
 
             if Snacks then ---@module 'snacks'
@@ -104,58 +102,81 @@ return {
             end
 
             local refresh_hl = function()
-              local search_diagnostics = vim.diagnostic.get(event.buf, { severity = vim.diagnostic.severity.HINT })
-              if vim.tbl_isempty(search_diagnostics) then
-                return
-              end
               clear_hl()
+              --
+              local search_diagnostics = vim.diagnostic.get(event.buf, { severity = vim.diagnostic.severity.HINT })
               local lnum = vim.fn.line '.' - 1
               for _, diagnostic in ipairs(search_diagnostics) do
                 if diagnostic._tags and diagnostic._tags.unnecessary then
                   if lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum then
                   else
-                    local start = { diagnostic.lnum, diagnostic.col }
-                    local finish = { diagnostic.end_lnum, diagnostic.end_col }
-                    vim.hl.range(event.buf, ns, 'DiagnosticUnnecessaryOverride', start, finish)
+                    vim.api.nvim_buf_set_extmark(event.buf, ns, diagnostic.lnum, diagnostic.col, {
+                      hl_group = 'DiagnosticUnnecessaryOverride',
+                      end_line = diagnostic.end_lnum,
+                      end_col = diagnostic.end_col,
+                      strict = false,
+                    })
                   end
                 end
               end
             end
 
-            vim.api.nvim_create_autocmd('ModeChanged', {
-              buffer = event.buf,
-              group = diagnostic_unnecessary_aug,
+            ---@param name string
+            ---@param opts vim.api.keyset.create_autocmd
+            local autocmd = function(name, opts)
+              vim.api.nvim_create_autocmd(
+                name,
+                vim.tbl_extend('keep', opts or {}, {
+                  buffer = event.buf,
+                  group = vim.api.nvim_create_augroup('diagnostic_unnecessary_undim', { clear = false }),
+                })
+              )
+            end
+
+            local timer = vim.uv.new_timer()
+
+            autocmd('TextChanged', {
               callback = function()
-                local mode = vim.fn.mode()
-                if mode == 'c' then
-                  return
-                elseif mode == 'n' then
-                  refresh_hl()
-                else
-                  clear_hl()
-                end
+                timer:again()
+                timer:start(750, 0, function()
+                  vim.schedule(refresh_hl)
+                  timer:stop()
+                end)
               end,
             })
 
-            local lastlnum = nil
-
-            vim.api.nvim_create_autocmd('CursorMoved', {
-              buffer = event.buf,
-              group = diagnostic_unnecessary_aug,
+            autocmd('ModeChanged', {
               callback = function()
-                local mode = vim.fn.mode()
-                if mode ~= 'n' then
-                  return
-                end
-                local lnum = vim.fn.line '.' - 1
-                if lnum == lastlnum then
-                  return
-                end
-                lastlnum = lnum
+                vim.schedule(function()
+                  local mode = vim.fn.mode()
+                  if timer:is_active() then
+                  elseif mode == 'c' then
+                  elseif mode == 'n' then
+                    refresh_hl()
+                  else
+                    clear_hl()
+                  end
+                end)
+              end,
+            })
+
+            autocmd('DiagnosticChanged', {
+              callback = function()
                 refresh_hl()
+                timer:stop()
+              end,
+            })
+
+            autocmd('CursorHold', {
+              callback = function()
+                if timer:is_active() then
+                else
+                  refresh_hl()
+                end
               end,
             })
           end
+          --
         end,
       })
 

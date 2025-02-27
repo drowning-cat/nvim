@@ -33,6 +33,22 @@ return {
         silent = true,
       }
 
+      -- Move visual selection
+      --
+      -- stylua: ignore
+      require('mini.move').setup {
+        mappings = {
+          left  = '<C-h>',
+          down  = '<C-j>',
+          up    = '<C-k>',
+          right = '<C-l>',
+          line_left  = '',
+          line_down  = '',
+          line_up    = '',
+          line_right = '',
+        }
+      }
+
       -- Configurable Lua functions to go forward/backward to a certain target
       --
       -- stylua: ignore

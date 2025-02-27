@@ -21,6 +21,12 @@ return {
       --
       require('mini.pairs').setup()
 
+      -- Extend f, F, t, T to work on multiple lines
+      --
+      require('mini.jump').setup {
+        delay = { highlight = math.huge },
+      }
+
       -- Configurable Lua functions to go forward/backward to a certain target
       --
       -- stylua: ignore

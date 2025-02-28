@@ -33,6 +33,17 @@ return {
         silent = true,
       }
 
+      -- Text edit operators for cool kids
+      --
+      -- stylua: ignore
+      require('mini.operators').setup {
+        evaluate = { prefix = 'g=' },
+        exchange = { prefix = 'gx' },
+        multiply = { prefix = 'gm' },
+        replace  = { prefix = 'gr' },
+        sort     = { prefix = 'gs' },
+      }
+
       -- Move visual selection
       --
       -- stylua: ignore

@@ -54,6 +54,20 @@ return {
     -- end,
   },
 
+  { -- Treesitter based splitjoin
+    'Wansmer/treesj',
+    event = 'VeryLazy',
+    -- stylua: ignore
+    keys = {
+      { 'gS', function() require('treesj').toggle() end, desc = '[R]un [S]plitjoin' },
+    },
+    opts = {
+      use_default_keymaps = false,
+      max_join_length = 500,
+      check_syntax_error = false,
+    },
+  },
+
   { -- Show your current context
     'nvim-treesitter/nvim-treesitter-context',
     event = 'VeryLazy',

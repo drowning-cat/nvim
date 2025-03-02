@@ -12,6 +12,12 @@ return {
         silent = true,
       }
 
+      -- Mini miscellaneous functions
+      --
+      local misc = require 'mini.misc'
+      misc.setup_restore_cursor()
+      misc.setup_auto_root { '.git', 'Makefile', 'package.json' }
+
       -- Add/delete/replace surroundings (brackets, quotes, etc.):
       --
       --  * saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren

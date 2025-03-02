@@ -13,7 +13,6 @@ return {
       }
 
       -- Mini miscellaneous functions
-      --
       local misc = require 'mini.misc'
       misc.setup_restore_cursor()
       misc.setup_auto_root { '.git', 'Makefile', 'package.json' }
@@ -29,18 +28,15 @@ return {
 
       -- Insert or delete brackets, parens, quotes in pair
       -- Default pairs: () [] {} "" '' ``
-      --
       require('mini.pairs').setup()
 
       -- Extend f, F, t, T to work on multiple lines
-      --
       require('mini.jump').setup {
         delay = { highlight = math.huge },
         silent = true,
       }
 
       -- Text edit operators for cool kids
-      --
       -- stylua: ignore
       require('mini.operators').setup {
         evaluate = { prefix = 'g=' },
@@ -51,7 +47,6 @@ return {
       }
 
       -- Move visual selection
-      --
       -- stylua: ignore
       require('mini.move').setup {
         mappings = {
@@ -67,7 +62,6 @@ return {
       }
 
       -- Configurable Lua functions to go forward/backward to a certain target
-      --
       -- stylua: ignore
       require('mini.bracketed').setup {
         buffer     = { suffix = ''  },
@@ -87,7 +81,6 @@ return {
       }
 
       -- Navigate and manipulate file system
-      --
       local files = require 'mini.files'
       files.setup {
         -- stylua: ignore
@@ -195,7 +188,6 @@ return {
       })
 
       -- Simple and easy statusline
-      --
       local statusline = require 'mini.statusline'
       statusline.setup {
         content = {
@@ -242,21 +234,12 @@ return {
       }
 
       -- Work with trailing whitespace
-      --
       local trailspace = require 'mini.trailspace'
       vim.schedule(function()
         trailspace.setup()
         vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
         vim.keymap.set('n', '<leader>dw', trailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
       end)
-      --
-      -- Native, without `mini.trailspace`
-      --
-      -- vim.api.nvim_set_hl(0, 'TrailingWhitespace', { bg = '#832929' })
-      -- vim.fn.matchadd('TrailingWhitespace', [[\s\+$]])
-
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
 }

@@ -66,6 +66,16 @@ return {
       },
     }
 
+    vim.api.nvim_create_autocmd('BufWinEnter', {
+      callback = function()
+        local ft = vim.bo.ft
+        if ft == 'dap-repl' or ft:match '^dapui_' then
+          vim.wo.statuscolumn = ''
+          vim.b.ministatusline_disable = true
+        end
+      end,
+    })
+
     -- Change breakpoint icons
     --
     -- vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })

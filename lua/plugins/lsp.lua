@@ -5,10 +5,12 @@ return {
     dependencies = {
       'Bilal2453/luvit-meta',
     },
+    opts_extend = { 'library' },
     opts = {
       library = {
         -- Load luvit types when the `vim.uv` word is found
         { path = 'luvit-meta/library', words = { 'vim%.uv' } },
+        'nvim-dap-ui',
       },
     },
   },

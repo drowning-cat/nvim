@@ -1,8 +1,16 @@
 return {
   'mfussenegger/nvim-dap',
+  event = 'VeryLazy',
   dependencies = {
-    'rcarriga/nvim-dap-ui', -- Creates a debugger User Interface
-    'nvim-neotest/nvim-nio', -- Required dependency for `nvim-dap-ui`
+    { -- Creates a debugger User Interface
+      'rcarriga/nvim-dap-ui',
+      dependencies = {
+        'nvim-neotest/nvim-nio',
+      },
+      specs = {
+        { 'folke/lazydev.nvim', library = { 'nvim-dap-ui' } },
+      },
+    },
 
     -- Utilities for installing debug adapters
     'williamboman/mason.nvim',

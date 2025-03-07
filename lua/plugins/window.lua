@@ -96,8 +96,65 @@ return {
     'pogyomo/submode.nvim',
     keys = { '<C-w>r', '<C-w><C-r>' },
     config = function()
+      local submode = require 'submode'
+
+      ---@param mode string
+      ---@param pattern 'SubmodeEnterPre'|'SubmodeEnterPost'|'SubmodeLeavePre'|'SubmodeLeavePost'
+      ---@param opts vim.api.keyset.create_autocmd
+      local autocmd = function(mode, pattern, opts)
+        vim.api.nvim_create_autocmd('User', {
+          pattern = pattern,
+          group = vim.api.nvim_create_augroup(mode, { clear = false }),
+          callback = function(e)
+            if mode and e.data.name ~= mode then
+              return
+            end
+            opts.callback(e)
+          end,
+        })
+      end
+
+      ---Patched resize function to redraw vim.notify messages during statusline resizing
+      ---@param dir Direction
+      local resize_patched = function(dir)
+        return function()
+          win.resize(dir)
+          vim.cmd 'messages'
+        end
+      end
+
+      autocmd('WinResize', 'SubmodeEnterPost', {
+        callback = function()
+          for _, buf in ipairs(submode.state.leave_bufs) do
+            submode.set('WinResize', 'h', resize_patched 'left', { desc = 'Resize left', buffer = buf })
+            submode.set('WinResize', 'j', resize_patched 'down', { desc = 'Resize down', buffer = buf })
+            submode.set('WinResize', 'k', resize_patched 'up', { desc = 'Resize up', buffer = buf })
+            submode.set('WinResize', 'l', resize_patched 'right', { desc = 'Resize right', buffer = buf })
+            submode.set('WinResize', '<Left>', resize_patched 'left', { desc = 'Resize left', buffer = buf })
+            submode.set('WinResize', '<Down>', resize_patched 'down', { desc = 'Resize down', buffer = buf })
+            submode.set('WinResize', '<Up>', resize_patched 'up', { desc = 'Resize up', buffer = buf })
+            submode.set('WinResize', '<Right>', resize_patched 'right', { desc = 'Resize right', buffer = buf })
+          end
+        end,
+      })
+
+      autocmd('WinResize', 'SubmodeLeavePre', {
+        callback = function()
+          for _, buf in ipairs(submode.state.leave_bufs) do
+            submode.del('WinResize', 'h', { buffer = buf })
+            submode.del('WinResize', 'j', { buffer = buf })
+            submode.del('WinResize', 'k', { buffer = buf })
+            submode.del('WinResize', 'l', { buffer = buf })
+            submode.del('WinResize', '<Left>', { buffer = buf })
+            submode.del('WinResize', '<Down>', { buffer = buf })
+            submode.del('WinResize', '<Up>', { buffer = buf })
+            submode.del('WinResize', '<Right>', { buffer = buf })
+          end
+        end,
+      })
+
       -- Resize
-      require('submode').create('WinResize', {
+      submode.create('WinResize', {
         mode = 'n',
         enter = { '<C-w>r', '<C-w><C-r>' },
         leave = { '<Esc>', 'q', '<C-c>' },
@@ -109,24 +166,6 @@ return {
             vim.u.notify('', { force = false })
           end,
         },
-        default = function(register)
-          ---Patched resize function to redraw vim.notify messages during statusline resizing
-          ---@param dir Direction
-          local resize_patched = function(dir)
-            return function()
-              win.resize(dir)
-              vim.cmd 'messages'
-            end
-          end
-          register('h', resize_patched 'left', { desc = 'Resize left' })
-          register('j', resize_patched 'down', { desc = 'Resize down' })
-          register('k', resize_patched 'up', { desc = 'Resize up' })
-          register('l', resize_patched 'right', { desc = 'Resize right' })
-          register('<Left>', resize_patched 'left', { desc = 'Resize left' })
-          register('<Down>', resize_patched 'down', { desc = 'Resize down' })
-          register('<Up>', resize_patched 'up', { desc = 'Resize up' })
-          register('<Right>', resize_patched 'right', { desc = 'Resize right' })
-        end,
       })
     end,
   },

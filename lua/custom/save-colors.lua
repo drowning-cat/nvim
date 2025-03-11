@@ -65,7 +65,7 @@ function M.tune_colorscheme_plugins(plugins)
     end)
   end
 
-  local colorscheme = M.get_colorscheme()
+  local colorscheme = M.get_colorscheme() or 'default'
 
   plugins = plugins:map(function(plug)
     if match_colorscheme(plug, colorscheme) then

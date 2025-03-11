@@ -71,7 +71,11 @@ return {
   { -- Show your current context
     'nvim-treesitter/nvim-treesitter-context',
     event = 'VeryLazy',
-    opts = { multiline_threshold = 1 },
+    opts = {
+      max_lines = 3,
+      multiline_threshold = 1,
+      trim_scope = 'inner',
+    },
     -- stylua: ignore
     keys = {
       { 'gC', function() require('treesitter-context').go_to_context(vim.v.count1) end, desc = '[G]oto treesitter [C]ontext' },

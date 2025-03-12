@@ -107,10 +107,10 @@ vim.keymap.set('i', '<C-S-h>', '<Left>', { noremap = true })
 vim.keymap.set('i', '<C-S-j>', '<Down>', { noremap = true })
 vim.keymap.set('i', '<C-S-k>', '<Up>', { noremap = true })
 vim.keymap.set('i', '<C-S-l>', '<Right>', { noremap = true })
-vim.keymap.set('i', '<C-h>', '<Left>', { noremap = true })
-vim.keymap.set('i', '<C-j>', '<Down>', { noremap = true })
-vim.keymap.set('i', '<C-k>', '<Up>', { noremap = true })
-vim.keymap.set('i', '<C-l>', '<Right>', { noremap = true })
+vim.keymap.set('i', '<C-h>', '<nop>')
+vim.keymap.set('i', '<C-j>', '<nop>') -- Move completion down
+vim.keymap.set('i', '<C-k>', '<nop>') -- Move completion up
+vim.keymap.set('i', '<C-l>', '<nop>')
 
 -- Fast commenting below or above
 vim.keymap.set('n', 'gcj', 'o<esc>Vcx<esc><cmd>normal gcc<cr>fxa<bs>', { desc = 'Add comment below' })

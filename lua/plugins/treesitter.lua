@@ -162,8 +162,8 @@ return {
             enable = true,
             set_jumps = true, -- whether to set jumps in the jumplist
             goto_next_start = {
+              ['gj'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next function' },
               [']f'] = { query = '@function.outer', desc = 'Goto next [f]unction' },
-              ['gj'] = { query = '@function.outer', desc = 'Goto next function' },
               [']c'] = { query = '@class.outer', desc = 'Goto next [c]lass' },
               [']a'] = { query = '@parameter.inner', desc = 'Goto next [a]rgument' },
               [']i'] = { query = '@conditional.inner', desc = 'Goto next [i]f conditional' },
@@ -173,16 +173,16 @@ return {
               [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
             },
             goto_next_end = {
+              ['gJ'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next:end function' },
               [']F'] = { query = '@function.outer', desc = 'Goto next:end [F]unction' },
-              ['gJ'] = { query = '@function.outer', desc = 'Goto next:end function' },
               [']C'] = { query = '@class.outer', desc = 'Goto next:end [C]lass' },
               [']A'] = { query = '@parameter.inner', desc = 'Goto next:end [A]rgument' },
               [']I'] = { query = '@conditional.inner', desc = 'Goto next:end [I]f conditional' },
               [']L'] = { query = '@loop.*', desc = 'Goto next:end [L]oop' },
             },
             goto_previous_start = {
+              ['gk'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev function' },
               ['[f'] = { query = '@function.outer', desc = 'Goto prev [f]unction' },
-              ['gk'] = { query = '@function.outer', desc = 'Goto prev function' },
               ['[c'] = { query = '@class.outer', desc = 'Goto prev [c]lass' },
               ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
               ['[i'] = { query = '@conditional.inner', desc = 'Goto prev [i]f conditional' },
@@ -190,8 +190,8 @@ return {
               ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
             },
             goto_previous_end = {
+              ['gK'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev:end function' },
               ['[F'] = { query = '@function.outer', desc = 'Goto prev:end [F]unction' },
-              ['gK'] = { query = '@function.outer', desc = 'Goto prev:end function' },
               ['[C'] = { query = '@class.outer', desc = 'Goto prev:end [C]lass' },
               ['[A'] = { query = '@parameter.inner', desc = 'Goto prev:end [A]rgument' },
               ['[I'] = { query = '@conditional.inner', desc = 'Goto prev:end [I]f conditional' },

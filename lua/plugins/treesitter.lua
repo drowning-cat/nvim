@@ -112,41 +112,13 @@ return {
             -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
-              ['if'] = '@call.inner',
-              ['af'] = '@call.outer',
               ['aF'] = '@function.outer',
               ['iF'] = '@function.inner',
-              ['ia'] = '@parameter.inner',
-              ['aa'] = '@parameter.outer',
               ['ib'] = '@block.inner',
               ['ab'] = '@block.outer',
               ['ic'] = '@class.inner',
               ['ac'] = '@class.outer',
-              ['ii'] = '@conditional.inner',
-              ['ai'] = '@conditional.outer',
-              ['il'] = '@loop.inner',
-              ['al'] = '@loop.outer',
-              ['a/'] = '@comment.outer',
-              ['i/'] = '@comment.inner',
             },
-            -- You can choose the select mode (default is charwise 'v')
-            -- selection_modes = {
-            --   ['@parameter.outer'] = 'v', -- charwise
-            --   ['@function.outer'] = 'V', -- linewise
-            --   ['@class.outer'] = '<c-v>', -- blockwise
-            -- },
-
-            -- If you set this to `true` (default is `false`) then any textobject is
-            -- extended to include preceding or succeeding whitespace. Succeeding
-            -- whitespace has priority in order to act similarly to eg the built-in
-            -- `ap`.
-            include_surrounding_whitespace = function(ctx)
-              local excluded_queries = {
-                '@call.inner',
-                '@call.outer',
-              }
-              return not vim.tbl_contains(excluded_queries, ctx.query_string)
-            end,
           },
           swap = {
             enable = true,
@@ -162,40 +134,31 @@ return {
             enable = true,
             set_jumps = true, -- whether to set jumps in the jumplist
             goto_next_start = {
+              ['gj'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next function or class' },
               [']f'] = { query = '@function.outer', desc = 'Goto next [f]unction' },
-              ['gj'] = { query = '@function.outer', desc = 'Goto next function' },
               [']c'] = { query = '@class.outer', desc = 'Goto next [c]lass' },
               [']a'] = { query = '@parameter.inner', desc = 'Goto next [a]rgument' },
-              [']i'] = { query = '@conditional.inner', desc = 'Goto next [i]f conditional' },
-              [']l'] = { query = '@loop.*', desc = 'Goto next [l]oop' },
-              -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
-              -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
+              [']l'] = { query = { '@loop.*', '@conditional.inner' }, desc = 'Goto next [l]oop or conditiona[l]' },
+              -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path. Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
               [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
             },
             goto_next_end = {
+              ['gJ'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next:end function or class' },
               [']F'] = { query = '@function.outer', desc = 'Goto next:end [F]unction' },
-              ['gJ'] = { query = '@function.outer', desc = 'Goto next:end function' },
               [']C'] = { query = '@class.outer', desc = 'Goto next:end [C]lass' },
-              [']A'] = { query = '@parameter.inner', desc = 'Goto next:end [A]rgument' },
-              [']I'] = { query = '@conditional.inner', desc = 'Goto next:end [I]f conditional' },
-              [']L'] = { query = '@loop.*', desc = 'Goto next:end [L]oop' },
             },
             goto_previous_start = {
+              ['gk'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev function or class' },
               ['[f'] = { query = '@function.outer', desc = 'Goto prev [f]unction' },
-              ['gk'] = { query = '@function.outer', desc = 'Goto prev function' },
               ['[c'] = { query = '@class.outer', desc = 'Goto prev [c]lass' },
               ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
-              ['[i'] = { query = '@conditional.inner', desc = 'Goto prev [i]f conditional' },
-              ['[l'] = { query = '@loop.*', desc = 'Goto prev [l]oop' },
+              ['[l'] = { query = { '@loop.*', '@conditional.inner' }, desc = 'Goto next [l]oop or conditiona[l]' },
               ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
             },
             goto_previous_end = {
+              ['gK'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev:end function or class' },
               ['[F'] = { query = '@function.outer', desc = 'Goto prev:end [F]unction' },
-              ['gK'] = { query = '@function.outer', desc = 'Goto prev:end function' },
               ['[C'] = { query = '@class.outer', desc = 'Goto prev:end [C]lass' },
-              ['[A'] = { query = '@parameter.inner', desc = 'Goto prev:end [A]rgument' },
-              ['[I'] = { query = '@conditional.inner', desc = 'Goto prev:end [I]f conditional' },
-              ['[L'] = { query = '@loop.*', desc = 'Goto prev:end [L]oop' },
             },
           },
           lsp_interop = {

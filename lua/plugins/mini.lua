@@ -28,7 +28,19 @@ return {
 
       -- Insert or delete brackets, parens, quotes in pair
       -- Default pairs: () [] {} "" '' ``
-      require('mini.pairs').setup()
+      require('mini.pairs').setup {
+        mappings = {
+          ['('] = { neigh_pattern = '[^%a(\\][^%a]' },
+          ['['] = { neigh_pattern = '[^%a[\\][^%a]' },
+          ['{'] = { neigh_pattern = '[^%a{\\][^%a]' },
+          [')'] = { neigh_pattern = '[^%a)\\][^%a]' },
+          [']'] = { neigh_pattern = '[^%a]\\][^%a]' },
+          ['}'] = { neigh_pattern = '[^%a}\\][^%a]' },
+          ['"'] = { neigh_pattern = '[^%a"\\][^%a]' },
+          ["'"] = { neigh_pattern = "[^%a'\\][^%a]" },
+          ['`'] = { neigh_pattern = '[^%a`\\][^%a]' },
+        },
+      }
 
       -- Extend f, F, t, T to work on multiple lines
       require('mini.jump').setup {

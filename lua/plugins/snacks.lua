@@ -264,6 +264,13 @@ table.insert(plugins, {
         },
       },
       sources = {
+        colorschemes = {
+          confirm = function(picker, item)
+            local source = require('snacks.picker.config.sources').colorschemes
+            source.confirm(picker, item)
+            require('custom.save-colors').save_colorscheme(item.text)
+          end,
+        },
         files = {
           exclude = { '.git', 'node_modules' },
           ignored = true,

@@ -323,6 +323,12 @@ table.insert(plugins, {
         },
       },
       sources = {
+        colorschemes = {
+          confirm = function(picker, item)
+            Snacks.picker.sources.colorschemes.confirm(picker, item)
+            require('custom.save-colors').save_colorscheme(item.text)
+          end,
+        },
         files = {
           exclude = { '.git', 'node_modules' },
           include = { '.env', '.env.*' },

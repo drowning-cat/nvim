@@ -94,12 +94,6 @@ function M.lazy_setup(plugins)
       M.load_colorscheme()
     end,
   })
-  vim.api.nvim_create_autocmd('ColorScheme', {
-    group = aug,
-    callback = function()
-      M.save_colorscheme()
-    end,
-  })
   vim.api.nvim_create_autocmd('VimLeavePre', {
     group = aug,
     callback = function()

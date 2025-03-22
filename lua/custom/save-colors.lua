@@ -1,7 +1,7 @@
 local M = {}
 
 function M.sync_colorscheme()
-  vim.cmd.rshada()
+  pcall(vim.cmd.rshada)
 end
 
 ---@param fallback? string
@@ -10,7 +10,11 @@ function M.get_colorscheme(fallback)
   if not vim.g.COLORS_NAME then
     M.sync_colorscheme()
   end
-  return vim.g.COLORS_NAME or fallback
+  if vim.g.COLORS_NAME and vim.g.COLORS_NAME ~= '' then
+    return vim.g.COLORS_NAME
+  else
+    return fallback or 'default'
+  end
 end
 
 ---@param colorscheme? string
@@ -65,7 +69,7 @@ function M.tune_colorscheme_plugins(plugins)
     end)
   end
 
-  local colorscheme = M.get_colorscheme() or 'default'
+  local colorscheme = M.get_colorscheme()
 
   plugins = plugins:map(function(plug)
     if match_colorscheme(plug, colorscheme) then

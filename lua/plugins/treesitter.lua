@@ -59,7 +59,7 @@ return {
     event = 'VeryLazy',
     -- stylua: ignore
     keys = {
-      { 'gS', function() require('treesj').toggle() end, desc = '[R]un [S]plitjoin' },
+      { 'gs', function() require('treesj').toggle() end, desc = '[R]un [S]plitjoin' },
     },
     opts = {
       use_default_keymaps = false,

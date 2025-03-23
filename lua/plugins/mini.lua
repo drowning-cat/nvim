@@ -56,7 +56,7 @@ return {
         exchange = { prefix = 'gx' },
         multiply = { prefix = 'gm' },
         replace  = { prefix = 'gr' },
-        sort     = { prefix = 'gs' },
+        sort     = { prefix = 'gS' },
       }
 
       -- Move visual selection

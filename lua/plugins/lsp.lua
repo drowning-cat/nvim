@@ -20,6 +20,7 @@ return {
   { -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
+      'artemave/workspace-diagnostics.nvim',
       { 'williamboman/mason.nvim', config = true },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
@@ -233,6 +234,10 @@ return {
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+            server.on_attach = server.on_attach
+              or function(client, buf)
+                require('workspace-diagnostics').populate_workspace_diagnostics(client, buf)
+              end
             require('lspconfig')[server_name].setup(server)
           end,
         },

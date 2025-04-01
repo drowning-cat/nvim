@@ -7,6 +7,9 @@ vim.g.maplocalleader = ' '
 vim.opt.number = true
 vim.opt.relativenumber = true
 
+-- Confirm on save instead of fail
+vim.opt.confirm = true
+
 -- Enable mouse mode, can be useful for resizing splits
 vim.opt.mouse = 'a'
 

@@ -134,6 +134,35 @@ table.insert(plugins, {
     },
   },
   init = function()
+    local cmd = false
+    vim.api.nvim_create_autocmd('CmdlineLeave', {
+      callback = function()
+        cmd = true
+        vim.schedule(function()
+          cmd = false
+        end)
+      end,
+    })
+    vim.api.nvim_create_autocmd('QuitPre', {
+      callback = function()
+        if not cmd then
+          return
+        end
+        if #vim.u.list_visible_wins { ft_exclude = 'snacks_' } ~= 1 then
+          return
+        end
+        local explorers = Snacks.picker.get { source = 'explorer' }
+        if #explorers == 0 then
+          return
+        end
+        for _, exp in ipairs(explorers) do
+          exp:close()
+        end
+        vim.defer_fn(function()
+          pcall(vim.cmd.quit)
+        end, 125)
+      end,
+    })
     vim.api.nvim_create_autocmd('User', {
       pattern = 'VeryLazy',
       callback = function()
@@ -463,6 +492,7 @@ table.insert(plugins, {
         { section = 'keys', padding = 2 },
       },
     },
+    ---@type table<string, snacks.win.Config>
     styles = {
       scratch = {
         width = 125,
@@ -580,10 +610,12 @@ table.insert(plugins, {
     { '<leader>bo', function() Snacks.bufdelete.other() end, desc = '[B]uffer delete [o]ther' },
     { '<leader>bd', function() Snacks.bufdelete() end, desc = '[B]uffer [d]elete' },
     { '<leader>bD', function()
-      if #vim.fn.win_findbuf(vim.fn.bufnr('%')) > 1 then
-        vim.cmd 'quit'
+      if #vim.fn.win_findbuf(vim.fn.bufnr '') > 1 then
+        pcall(vim.cmd.quit)
+      elseif #vim.u.list_visible_wins { ft_exclude = 'snacks_' } == 1 then
+        pcall(vim.cmd.quitall)
       else
-        vim.cmd 'bdelete'
+        pcall(vim.cmd.bdelete)
       end
     end, desc = '[B]uffer and window [D]elete' },
     { '<leader>q', '<leader>bd', remap = true, desc = '[q]uit buffer (see <leader>bd)' },

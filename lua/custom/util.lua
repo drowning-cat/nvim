@@ -55,6 +55,35 @@ function M.notify_send(message)
   vim.fn.system { 'notify-send', tostring(message) }
 end
 
+---@class ListVisibleWinsOpts
+---@field float? boolean
+---@field ft_exclude? string|string[]
+
+-- Utility that filters `vim.api.nvim_list_wins()`
+---@param opts? ListVisibleWinsOpts
+function M.list_visible_wins(opts)
+  opts = vim.tbl_deep_extend('keep', opts or {}, {
+    float = false,
+    ft_exclude = {},
+  })
+  if type(opts.ft_exclude) ~= 'table' then
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    opts.ft_exclude = { opts.ft_exclude }
+  end
+  return vim
+    .iter(vim.api.nvim_list_wins())
+    :filter(function(win)
+      return opts.float or vim.api.nvim_win_get_config(win).relative == ''
+    end)
+    :filter(function(win)
+      local buf = vim.api.nvim_win_get_buf(win)
+      return vim.iter(opts.ft_exclude):all(function(exc)
+        return not string.match(vim.bo[buf].ft, exc)
+      end)
+    end)
+    :totable()
+end
+
 -- Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

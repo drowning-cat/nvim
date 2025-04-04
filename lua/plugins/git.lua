@@ -5,13 +5,14 @@ return {
     'akinsho/git-conflict.nvim',
     event = 'VimEnter',
     opts = {
-      default_mappings = false,
-    },
-    keys = {
-      { 'co', '<Plug>(git-conflict-ours)', desc = 'Git [C]onflict [O]urs' },
-      { 'ct', '<Plug>(git-conflict-theirs)', desc = 'Git [C]onflict [T]heirs' },
-      { 'cb', '<Plug>(git-conflict-both)', desc = 'Git [C]onflict [B]oth' },
-      { 'c0', '<Plug>(git-conflict-none)', desc = 'Git [C]onflict none' },
+      default_mappings = {
+        ours = 'co',
+        theirs = 'ct',
+        none = 'c0',
+        both = 'cb',
+        -- next = ']x',
+        -- prev = '[x',
+      },
     },
   },
 

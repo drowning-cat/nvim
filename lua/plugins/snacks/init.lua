@@ -15,7 +15,6 @@ table.insert(plugins, {
       override  = {
         ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
         ['vim.lsp.util.stylize_markdown'] = true,
-        ['cmp.entry.get_documentation'] = true,
       },
       progress  = { enabled = false },
       hover     = { enabled = true },
@@ -115,6 +114,8 @@ table.insert(plugins, {
   },
 })
 
+local picker = require 'plugins.snacks.picker'
+
 table.insert(plugins, {
   'folke/snacks.nvim',
   priority = 1000,
@@ -172,8 +173,12 @@ table.insert(plugins, {
   end,
   ---@type snacks.Config
   opts = {
+    picker = picker.config,
     bigfile = {
       enabled = true,
+    },
+    explorer = {
+      replace_netrw = false,
     },
     gitbrowse = {
       remote_patterns = {
@@ -207,8 +212,7 @@ table.insert(plugins, {
       },
     },
     statuscolumn = {
-      left = { 'git', 'mark', 'fold' },
-      right = {},
+      enabled = true,
     },
     toggle = {
       notify = false,
@@ -226,219 +230,6 @@ table.insert(plugins, {
         backdrop = {
           transparent = false,
           blend = 99,
-        },
-      },
-    },
-    picker = {
-      actions = {
-        custom_toggle_live_insert = function(picker)
-          picker:action 'toggle_live'
-          picker:focus 'input'
-        end,
-      },
-      previewers = {
-        git = {
-          builtin = false,
-        },
-      },
-      layout = {
-        preset = function()
-          return vim.o.columns >= 120 and 'better_telescope' or 'vertical'
-        end,
-      },
-      layouts = {
-        better_telescope = {
-          reverse = true,
-          layout = {
-            box = 'horizontal',
-            width = 0.9,
-            height = 0.9,
-            backdrop = false,
-            {
-              box = 'vertical',
-              border = 'single',
-              title = '{title} {live} {flags}',
-              { win = 'list', border = 'none' },
-              { win = 'input', height = 1, border = 'top' },
-            },
-            { win = 'preview', width = 0.6, border = 'single', title = '{preview}' },
-          },
-        },
-        floating_sidebar = {
-          cycle = true,
-          layout = {
-            box = 'horizontal',
-            position = 'float',
-            height = 0.95,
-            width = 0,
-            border = 'rounded',
-            {
-              box = 'vertical',
-              width = 40,
-              min_width = 40,
-              { win = 'input', height = 1, title = '{title} {live} {flags}', border = 'single' },
-              { win = 'list' },
-            },
-            { win = 'preview', width = 0, border = 'left' },
-          },
-        },
-      },
-      win = {
-        input = {
-          keys = {
-            ['<C-y>'] = { 'confirm', mode = { 'n', 'i' } },
-            ['<C-g>'] = { 'custom_toggle_live_insert', mode = { 'i', 'n' } },
-            ['<C-_>'] = { 'list_scroll_down', mode = { 'i', 'n' } },
-            ['<C-]>'] = { 'list_scroll_up', mode = { 'i', 'n' } },
-            ['<C-d>'] = { 'preview_scroll_down', mode = { 'i', 'n' } },
-            ['<C-u>'] = { 'preview_scroll_up', mode = { 'i', 'n' } },
-            ['H'] = 'edit_split',
-            ['V'] = 'edit_vsplit',
-            ['<M-S-i>'] = { 'toggle_hidden', mode = { 'i', 'n' } },
-          },
-        },
-        list = {
-          keys = {
-            ['<C-g>'] = 'custom_toggle_live_insert',
-            ['<C-_>'] = 'list_scroll_down',
-            ['<C-]>'] = 'list_scroll_up',
-            ['<C-d>'] = 'preview_scroll_down',
-            ['<C-u>'] = 'preview_scroll_up',
-            ['H'] = 'edit_split',
-            ['V'] = 'edit_vsplit',
-            ['<M-S-i>'] = 'toggle_hidden',
-          },
-        },
-        preview = {
-          keys = {
-            ['<C-g>'] = 'custom_toggle_live_insert',
-            ['<C-_>'] = 'list_scroll_down',
-            ['<C-]>'] = 'list_scroll_up',
-            ['<C-d>'] = 'preview_scroll_down',
-            ['<C-u>'] = 'preview_scroll_up',
-            ['H'] = 'edit_split',
-            ['V'] = 'edit_vsplit',
-            ['<M-S-i>'] = 'toggle_hidden',
-          },
-        },
-      },
-      sources = {
-        colorschemes = {
-          confirm = function(picker, item)
-            Snacks.picker.sources.colorschemes.confirm(picker, item)
-            require('custom.save-colors').save_colorscheme(item.text)
-          end,
-        },
-        files = {
-          exclude = { '.git', 'node_modules' },
-          include = { '.env', '.env.*' },
-          hidden = true,
-          ignored = false,
-        },
-        grep = {
-          exclude = { '.git', 'node_modules' },
-          include = { '.env', '.env.*' },
-          hidden = true,
-          ignored = false,
-        },
-        explorer = {
-          exclude = { '.git' },
-          hidden = true,
-          ignored = true,
-          actions = {
-            explorer_del = function(picker)
-              local actions = require 'snacks.explorer.actions'
-              local Tree = require 'snacks.explorer.tree'
-              local paths = vim.tbl_map(Snacks.picker.util.path, picker:selected { fallback = true })
-              if #paths == 0 then
-                return
-              end
-              local what = #paths == 1 and vim.fn.fnamemodify(paths[1], ':p:~:.') or #paths .. ' files'
-              actions.confirm('Delete ' .. what .. '?', function()
-                local jobs = #paths
-                local after_job = function()
-                  jobs = jobs - 1
-                  if jobs == 0 then
-                    picker.list:set_selected()
-                    actions.update(picker)
-                  end
-                end
-                for _, path in ipairs(paths) do
-                  local err_data = {}
-                  local job_id = vim.fn.jobstart('trash ' .. path, {
-                    detach = true,
-                    on_stderr = function(_, data)
-                      err_data[#err_data + 1] = table.concat(data, '\n')
-                    end,
-                    on_exit = function(_, code)
-                      pcall(function()
-                        if code == 0 then
-                          Snacks.bufdelete { file = path, force = true }
-                        else
-                          local err_msg = vim.trim(table.concat(err_data, ''))
-                          Snacks.notify.error('Failed to delete `' .. path .. '`:\n- ' .. err_msg)
-                        end
-                        Tree:refresh(vim.fs.dirname(path))
-                      end)
-                      after_job()
-                    end,
-                  })
-                  if job_id == 0 then
-                    after_job()
-                    Snacks.notify.error('Failed to start the job for: ' .. path)
-                  end
-                end
-              end)
-            end,
-            custom_root_safe_delete = function(picker)
-              local selected = picker:selected { fallback = true }
-              local has_root = vim.iter(selected):any(function(v)
-                return not v.parent
-              end)
-              if not has_root then
-                picker:action 'explorer_del'
-              end
-            end,
-          },
-          win = {
-            input = {
-              keys = {
-                ['h'] = 'focus_list',
-                ['j'] = 'focus_list',
-              },
-            },
-            list = {
-              keys = {
-                ['l'] = { 'l', { 'confirm', 'focus_list' } },
-                ['L'] = { 'L', { 'confirm', 'close' } },
-                ['o'] = { 'o', { 'pick_win', 'jump' } },
-                ['O'] = 'explorer_open',
-                ['d'] = 'custom_root_safe_delete',
-              },
-            },
-          },
-          layout = {
-            preview = 'main',
-            auto_hide = { 'preview' },
-            layout = {
-              backdrop = false,
-              width = 40,
-              min_width = 40,
-              height = 0,
-              position = 'left',
-              border = 'none',
-              box = 'vertical',
-              {
-                win = 'input',
-                height = 1,
-                border = 'single',
-                title = '{title} {live} {flags}',
-                title_pos = 'center',
-              },
-              { win = 'list', border = 'none' },
-              { win = 'preview', title = '{preview}', height = 0.4, border = 'top' },
-            },
-          },
         },
       },
     },
@@ -463,6 +254,7 @@ table.insert(plugins, {
         { section = 'keys', padding = 2 },
       },
     },
+    ---@type table<string, snacks.win.Config>
     styles = {
       scratch = {
         width = 125,
@@ -590,12 +382,18 @@ table.insert(plugins, {
     { '<leader>Q', '<leader>bD', remap = true, desc = '[Q]uit window (see <leader>bD)' },
     { '<leader>z', function() Snacks.zen() end, desc = 'Toggle [z]en mode' },
 
-    { '<leader>G', function() Snacks.lazygit() end, desc = 'Lazy[G]it' },
-    { '<leader>Gf', function() Snacks.lazygit.log_file() end, desc = 'Lazy[G]it current [f]ile history' },
-    { '<leader>Gl', function() Snacks.lazygit.log() end, desc = 'Lazy[G]it [l]og (cwd)' },
+    { '<leader>gg', function() Snacks.lazygit() end, desc = 'Lazy[g]it' },
+    { '<leader>gf', function() Snacks.lazygit.log_file() end, desc = 'Lazy[g]it current [f]ile history' },
+    { '<leader>gl', function() Snacks.lazygit.log() end, desc = 'Lazy[g]it [l]og (cwd)' },
 
     { '<leader>gB', function() Snacks.gitbrowse() end, desc = '[G]it [B]rowse', mode = { 'n', 'v' } },
 
+    { '<leader>s<space>', function() Snacks.picker() end, desc = '[S]earch all Pickers' },
+    { '<leader>ss', function() Snacks.picker.smart() end, desc = '[S]earch [s]mart' },
+    { '\\', function() Snacks.explorer() end, desc = 'Toggle explorer' },
+    { '<leader>se', function() Snacks.picker.explorer { layout = 'floating_sidebar', auto_close = true } end, desc = '[S]earch [e]xplorer' },
+
+    { '<leader>sg<space>', function() Snacks.picker.pick { source = 'git_pickers' } end, desc = '[S]earch [g]it all Pickers' },
     { '<leader>sgb', function() Snacks.picker.git_branches() end, desc = '[S]earch [g]it [b]ranches' },
     { '<leader>sgd', function() Snacks.picker.git_diff() end, desc = '[S]earch [g]it [d]iff (Hunks)' },
     { '<leader>sgf', function() Snacks.picker.git_files() end, desc = '[S]earch [g]it [f]iles' },
@@ -606,12 +404,9 @@ table.insert(plugins, {
     { '<leader>sgs', function() Snacks.picker.git_status() end, desc = '[S]earch [g]it [s]tatus' },
     { '<leader>sgS', function() Snacks.picker.git_stash() end, desc = '[S]earch [g]it [S]stash' },
 
-    { '<leader>s', function() Snacks.picker.smart() end, desc = '[S]earch [S]mart' },
-    { '<leader>sa', function() Snacks.picker() end, desc = '[S]earch [a]ll pickers' },
-    { '\\', function() Snacks.explorer() end, desc = 'Toggle explorer' },
-    { '<leader>se', function() Snacks.picker.explorer { layout = 'floating_sidebar', auto_close = true } end, desc = '[S]earch [e]xplorer' },
-
-    { '<leader>sf', function() Snacks.picker.files() end, desc = '[S]earch [f]iles' },
+    ---@diagnostic disable-next-line: assign-type-mismatch
+    { '<leader>sf', function() Snacks.picker.files { layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch files' },
+    { '<leader>sF', function() Snacks.picker.files() end, desc = '[S]earch [F]iles' },
     ---@diagnostic disable-next-line: assign-type-mismatch
     { '<leader>sN', function() Snacks.picker.files({ cwd = vim.fn.stdpath('config') }) end, desc = '[S]earch [N]eovim files' },
     { '<leader>sP', function() Snacks.picker.projects() end, desc = '[S]earch [P]rojects' },
@@ -619,6 +414,7 @@ table.insert(plugins, {
 
     { '<leader>sw', function() Snacks.picker.grep_word() end, desc = '[S]earch [w]ord or visual selection', mode = { 'n', 'x' } },
     { '<leader>s;', function() Snacks.picker.grep() end, desc = '[S]earch Grep' },
+    { '<leader><space>', function() Snacks.picker.buffers() end, desc = '[S]earch Buffers' },
     { '<leader>s,', function() Snacks.picker.buffers() end, desc = '[S]earch Buffers' },
     { '<leader>s:', function() Snacks.picker.command_history() end, desc = '[S]earch Command history' },
     { '<leader>sn', function() Snacks.picker.notifications() end, desc = '[S]earch [N]otification history' },
@@ -636,12 +432,14 @@ table.insert(plugins, {
     { '<leader>si', function() Snacks.picker.icons() end, desc = '[S]earch [i]cons' },
     { '<leader>sj', function() Snacks.picker.jumps() end, desc = '[S]earch [j]umps' },
     { '<leader>sk', function() Snacks.picker.keymaps() end, desc = '[S]earch [k]eymaps' },
-    { '<leader>sl', function() Snacks.picker.loclist() end, desc = '[S]earch [l]ocation List' },
+    { '<leader>sql', function() Snacks.picker.qflist() end, desc = '[S]earch [q]uickfix list' },
+    { '<leader>sqL', function() Snacks.picker.loclist() end, desc = '[S]earch location list' },
     { '<leader>sm', function() Snacks.picker.marks() end, desc = '[S]earch [m]arks' },
     { '<leader>sM', function() Snacks.picker.man() end, desc = '[S]earch [M]an pages' },
-    { '<leader>sq', function() Snacks.picker.qflist() end, desc = '[S]earch [q]uickfix List' },
-    { '<leader>sR', function() Snacks.picker.resume() end, desc = '[S]earch [R]esume' },
+    { '<leader>sr', function() Snacks.picker.resume() end, desc = '[S]earch [R]esume' },
     { '<leader>su', function() Snacks.picker.undo() end, desc = '[S]earch [u]ndo history' },
+
+    { '<leader>sl<space>', function() Snacks.picker.pick { source = 'lsp_pickers' } end, desc = '[S]earch [L]SP all Pickers' },
     { '<leader>sls', function() Snacks.picker.lsp_symbols() end, desc = '[S]earch [L]SP [s]ymbols' },
     { '<leader>slw', function() Snacks.picker.lsp_workspace_symbols() end, desc = '[S]earch [L]SP [w]orkspace Symbols' },
 

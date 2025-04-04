@@ -307,8 +307,25 @@ vim.g.mason_install_extend = function(list)
   return vim.g.mason_install
 end
 
--- Assign utility functions to `vim.u`, `vim.util`
-require('custom.util').setup()
+local util = require 'misc.util'
+util.setup()
+
+-- Automatically changes to the approximate root folder
+vim.o.autochdir = false -- Disable conflicting option
+local chroot = function()
+  local root = util.find_root()
+  if root then
+    vim.fn.chdir(root)
+    return root
+  end
+end
+vim.api.nvim_create_user_command('Root', function()
+  vim.print(chroot())
+end, {})
+-- local aug_root = vim.api.nvim_create_augroup('change_root', {})
+-- local chroot_callback = vim.schedule_wrap(chroot) -- no return
+-- vim.api.nvim_create_autocmd('VimEnter', { group = aug_root, callback = chroot_callback })
+-- vim.api.nvim_create_autocmd('BufLeave', { pattern = 'snacks_dashboard', group = aug_root, callback = chroot_callback })
 
 -- Configure and install plugins
 --
@@ -320,9 +337,10 @@ require('lazy').setup {
   spec = {
     { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
+    { import = 'plugins.snacks' },
   },
   install = {
-    colorscheme = { require('custom.save-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('misc.save-colors').get_colorscheme 'habamax' },
   },
 }
 

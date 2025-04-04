@@ -1,4 +1,4 @@
-local win = require 'custom.win-util'
+local win = require 'misc.util-win'
 
 -- Move
 vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Move focus left' })

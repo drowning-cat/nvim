@@ -55,6 +55,25 @@ function M.notify_send(message)
   vim.fn.system { 'notify-send', tostring(message) }
 end
 
+-- Utility for extending tables
+---@generic T
+---@param from `T`
+---@param fun? fun(copy: T): T?
+function M.extend(from, fun)
+  local copy = vim.deepcopy(from)
+  return fun and (fun(copy) or copy) or copy
+end
+
+-- Find projects root directory for the current buffer
+---@param buf? number
+function M.find_root(buf)
+  local file = vim.api.nvim_buf_get_name(buf or 0)
+  local root_markers = {}
+  root_markers = vim.list_extend(root_markers, vim.lsp.buf.list_workspace_folders())
+  root_markers = vim.list_extend(root_markers, { '.git', 'Makefile', 'package.json' })
+  return vim.fs.root(file, root_markers)
+end
+
 -- Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

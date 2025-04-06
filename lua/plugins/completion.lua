@@ -1,3 +1,5 @@
+local plugins = {}
+
 local extra = {}
 -- stylua: ignore start
 extra.select_next__auto_insert = function(cmp) cmp.select_next { auto_insert = true } end
@@ -19,8 +21,31 @@ extra.hide__no_stop = function(cmp)
   cmp.hide()
   return false
 end
+extra.smart_tab = function(cmp)
+  if cmp.snippet_active() then
+    return cmp.accept()
+  else
+    return cmp.select_and_accept()
+  end
+end
 
-return {
+---@module 'luasnip'
+table.insert(plugins, {
+  'L3MON4D3/LuaSnip',
+  build = 'make install_jsregexp',
+  lazy = true,
+  dependencies = { 'rafamadriz/friendly-snippets' },
+  config = function(_, opts)
+    require('luasnip.config').setup(opts)
+    local snippets_folder = vim.fn.stdpath 'config' .. '/snippets'
+    require('luasnip.loaders.from_lua').lazy_load { paths = { snippets_folder } }
+    require('luasnip.loaders.from_vscode').lazy_load()
+    require('luasnip.loaders.from_vscode').lazy_load { paths = { snippets_folder } }
+  end,
+})
+
+---@module 'blink.cmp'
+table.insert(plugins, {
   'saghen/blink.cmp',
   version = false,
   build = 'cargo build --release',
@@ -31,7 +56,6 @@ return {
     -- Compatibility layer for `nvim-cmp` completion sources
     -- { 'saghen/blink.compat', version = '*', opts = {} },
   },
-  ---@module 'blink.cmp'
   ---@type blink.cmp.Config
   opts = {
     keymap = {
@@ -39,13 +63,13 @@ return {
       -- Move
       ['<Down>'] = { 'select_next', 'fallback' },
       ['<Up>'] = { 'select_prev', 'fallback' },
-      ['<Tab>'] = { 'snippet_forward', 'fallback' },
-      ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
       ['<C-j>'] = { 'select_next', 'fallback' },
       ['<C-k>'] = { 'select_prev', 'fallback' },
       ['<C-n>'] = { extra.select_next__auto_insert }, -- no fallback
       ['<C-p>'] = { extra.select_prev__auto_insert }, -- no fallback
       -- Accept
+      ['<Tab>'] = { extra.smart_tab, 'snippet_forward', 'fallback' },
+      ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
       ['<C-y>'] = { 'select_and_accept' },
       ['<C-CR>'] = { extra.select_and_accept__no_expand }, -- no fallback
       -- Show
@@ -168,6 +192,9 @@ return {
       },
     },
     signature = { enabled = true },
+    snippets = {
+      preset = 'luasnip',
+    },
     sources = {
       default = { 'lazydev', 'lsp', 'path', 'snippets', 'buffer' },
       providers = {
@@ -183,4 +210,6 @@ return {
     },
   },
   opts_extend = { 'sources.default' },
-}
+})
+
+return plugins

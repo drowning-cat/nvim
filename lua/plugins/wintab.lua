@@ -26,20 +26,21 @@ vim.keymap.set('n', '<C-S-Right>', win.fn.swap_buf 'right', { desc = 'Swap with 
 return {
   {
     'romgrk/barbar.nvim',
-    event = { 'FileType', 'VimEnter' },
+    event = 'VeryLazy',
     dependencies = {
       'lewis6991/gitsigns.nvim',
       'nvim-tree/nvim-web-devicons',
     },
     init = function()
-      vim.g.barbar_auto_setup = false
+      vim.g.barbar_auto_setup = true
+      -- Show empty tabline when loading
+      vim.o.tabline = ' '
+      vim.o.showtabline = 2
     end,
     opts = {
       animation = false,
       auto_hide = 0,
       exclude_ft = {
-        'minifiles',
-        'snacks_dashboard',
         'man',
         'qf',
       },
@@ -71,7 +72,7 @@ return {
       { '<leader><Tab>p', '<cmd>BufferPin<CR>', desc = '[T]ab [P]in' },
       { '<leader><Tab>q', '<cmd>BufferClose<CR>', desc = '[T]ab [q]uit' },
       { '<leader><Tab>w', '<cmd>BufferCloseAllButCurrentOrPinned<CR>', desc = '[T]ab [w]ipeout tabs' },
-      { '<leader><Tab>1', '<Cmd>BufferGoto 1<CR>', desc = 'Tab [1] ' },
+      { '<leader><Tab>1', '<Cmd>BufferGoto 1<CR>', desc = 'Tab [1]' },
       { '<leader><Tab>2', '<Cmd>BufferGoto 2<CR>', desc = 'Tab [2]' },
       { '<leader><Tab>3', '<Cmd>BufferGoto 3<CR>', desc = 'Tab [3]' },
       { '<leader><Tab>4', '<Cmd>BufferGoto 4<CR>', desc = 'Tab [4]' },

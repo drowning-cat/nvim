@@ -40,22 +40,24 @@ return {
         silent = true,
       }
 
+      -- Replaced by 'windwp/nvim-autopairs'
+      --
       -- Insert or delete brackets, parens, quotes in pair
       -- Default pairs: () [] {} "" '' ``
-      require('mini.pairs').setup {
-        mappings = {
-          ['('] = { neigh_pattern = '[^\\][%s)%]},.]' },
-          ['['] = { neigh_pattern = '[^\\][%s)%]},.]' },
-          ['{'] = { neigh_pattern = '[^\\][%s)%]},.]' },
-          [')'] = { neigh_pattern = '[^(%w\\]' },
-          [']'] = { neigh_pattern = '[^[%w\\]' },
-          ['}'] = { neigh_pattern = '[^{%w\\]' },
-          --
-          ['"'] = { neigh_pattern = '[^%w"\\][%s)%]},.]' },
-          ["'"] = { neigh_pattern = "[^%w'\\][%s)%]},.]" },
-          ['`'] = { neigh_pattern = '[^%w`\\][%s)%]},.]' },
-        },
-      }
+      -- require('mini.pairs').setup {
+      --   mappings = {
+      --     ['('] = { neigh_pattern = '[^\\][%s)%]},.]' },
+      --     ['['] = { neigh_pattern = '[^\\][%s)%]},.]' },
+      --     ['{'] = { neigh_pattern = '[^\\][%s)%]},.]' },
+      --     [')'] = { neigh_pattern = '[^(%w\\]' },
+      --     [']'] = { neigh_pattern = '[^[%w\\]' },
+      --     ['}'] = { neigh_pattern = '[^{%w\\]' },
+      --     --
+      --     ['"'] = { neigh_pattern = '[^%w"\\][%s)%]},.]' },
+      --     ["'"] = { neigh_pattern = "[^%w'\\][%s)%]},.]" },
+      --     ['`'] = { neigh_pattern = '[^%w`\\][%s)%]},.]' },
+      --   },
+      -- }
 
       -- Extend f, F, t, T to work on multiple lines
       require('mini.jump').setup {

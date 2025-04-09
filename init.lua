@@ -163,6 +163,9 @@ vim.keymap.set({ 'n', 'v' }, '<leader>D', '"+D')
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p')
 vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P')
 
+-- stylua: ignore
+vim.keymap.set('n', '<leader>=', function() vim.fn.setreg('+', vim.fn.getreg '"') end)
+
 vim.paste = (function(overridden)
   return function(lines, phase)
     local mode = vim.fn.mode()

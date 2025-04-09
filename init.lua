@@ -163,6 +163,19 @@ vim.keymap.set({ 'n', 'v' }, '<leader>D', '"+D')
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p')
 vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P')
 
+-- Copy contents of the unnamed register (") to system clipboard (+)
+vim.keymap.set('n', '<leader>=', function()
+  local copy = vim.fn.getreg '"'
+  if copy ~= '' then
+    vim.fn.setreg('+', copy)
+    local limit = 50
+    local preview
+    preview = copy:gsub('\n', ' '):sub(1, limit)
+    preview = #copy > limit and preview .. '...' or copy
+    vim.notify('Copied to clipboard: ' .. preview)
+  end
+end)
+
 vim.paste = (function(overridden)
   return function(lines, phase)
     local mode = vim.fn.mode()

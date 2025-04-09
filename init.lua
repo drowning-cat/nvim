@@ -158,6 +158,15 @@ vim.keymap.set({ 'n', 'v' }, '<leader>D', '"+D', { noremap = true })
 vim.keymap.set({ 'n', 'v' }, '<leader>p', '"+p', { noremap = true })
 vim.keymap.set({ 'n', 'v' }, '<leader>P', '"+P', { noremap = true })
 
+-- Copy contents of the unnamed register (") to system clipboard (+)
+vim.keymap.set('n', 'y=', function()
+  local copy = vim.fn.getreg '"'
+  if copy ~= '' then
+    vim.fn.setreg('+', copy)
+    vim.notify('Copied to clipboard:\n' .. copy)
+  end
+end)
+
 vim.paste = (function(overridden)
   return function(lines, phase)
     local mode = vim.fn.mode()

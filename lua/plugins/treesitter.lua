@@ -1,5 +1,6 @@
 return {
   { 'windwp/nvim-ts-autotag', config = true }, -- Use treesitter to autoclose and autorename tags
+  { 'windwp/nvim-autopairs', event = 'InsertEnter', config = true }, -- Autopair plugin
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',

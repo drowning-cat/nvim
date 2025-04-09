@@ -10,6 +10,20 @@ return {
       require('mini.ai').setup {
         n_lines = 500,
         silent = true,
+        custom_textobjects = {
+          -- snake_case, camelCase, PascalCase, ...
+          -- https://github.com/echasnovski/mini.nvim/discussions/1434
+          e = {
+            {
+              '%u[%l%d]+%f[^%l%d]',
+              '%f[^%s%p][%l%d]+%f[^%l%d]',
+              '^[%l%d]+%f[^%l%d]',
+              '%f[^%s%p][%a%d]+%f[^%a%d]',
+              '^[%a%d]+%f[^%a%d]',
+            },
+            '^().*()$',
+          },
+        },
       }
 
       -- Mini miscellaneous functions

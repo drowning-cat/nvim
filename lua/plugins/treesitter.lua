@@ -1,4 +1,6 @@
 return {
+  { 'windwp/nvim-ts-autotag', config = true }, -- Use treesitter to autoclose and autorename tags
+
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',

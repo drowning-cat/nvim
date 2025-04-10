@@ -14,14 +14,16 @@ vim.keymap.set('n', '<C-Right>', '<C-w>l', { desc = 'Move focus right' })
 vim.keymap.set('n', '<C-q>', win.close, { desc = 'Close the window' })
 
 -- Swap
-vim.keymap.set('n', '<C-S-h>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-j>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-k>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-l>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
-vim.keymap.set('n', '<C-S-Left>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-Down>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-Up>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-Right>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
+-- stylua: ignore start
+vim.keymap.set('n', '<C-S-h>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-j>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-k>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-l>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-Left>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-Down>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-Up>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-Right>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+-- stylua: ignore end
 
 return {
   {
@@ -163,15 +165,16 @@ return {
             vim.u.notify('', { force = false })
           end,
         },
+        -- stylua: ignore
         default = function()
-          reg('WinResize', 'h', vim.fn.resize 'left', { desc = 'Resize left' })
-          reg('WinResize', 'j', vim.fn.resize 'down', { desc = 'Resize down' })
-          reg('WinResize', 'k', vim.fn.resize 'up', { desc = 'Resize up' })
-          reg('WinResize', 'l', vim.fn.resize 'right', { desc = 'Resize right' })
-          reg('WinResize', '<Left>', vim.fn.resize 'left', { desc = 'Resize left' })
-          reg('WinResize', '<Down>', vim.fn.resize 'down', { desc = 'Resize down' })
-          reg('WinResize', '<Up>', vim.fn.resize 'up', { desc = 'Resize up' })
-          reg('WinResize', '<Right>', vim.fn.resize 'right', { desc = 'Resize right' })
+          reg('WinResize', 'h', function() win.resize 'left' end, { desc = 'Resize left' })
+          reg('WinResize', 'j', function() win.resize 'down' end, { desc = 'Resize down' })
+          reg('WinResize', 'k', function() win.resize 'up' end, { desc = 'Resize up' })
+          reg('WinResize', 'l', function() win.resize 'right' end, { desc = 'Resize right' })
+          reg('WinResize', '<Left>', function() win.resize 'left' end, { desc = 'Resize left' })
+          reg('WinResize', '<Down>', function() win.resize 'down' end, { desc = 'Resize down' })
+          reg('WinResize', '<Up>', function() win.resize 'up' end, { desc = 'Resize up' })
+          reg('WinResize', '<Right>', function() win.resize 'right' end, { desc = 'Resize right' })
         end,
       })
     end,

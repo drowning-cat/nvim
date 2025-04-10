@@ -14,14 +14,16 @@ vim.keymap.set('n', '<C-Right>', '<C-w>l', { desc = 'Move focus right' })
 vim.keymap.set('n', '<C-q>', win.close, { desc = 'Close the window' })
 
 -- Swap
-vim.keymap.set('n', '<C-S-h>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-j>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-k>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-l>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
-vim.keymap.set('n', '<C-S-Left>', win.fn.swap_buf 'left', { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-Down>', win.fn.swap_buf 'down', { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-Up>', win.fn.swap_buf 'up', { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-Right>', win.fn.swap_buf 'right', { desc = 'Swap with buffer right' })
+-- stylua: ignore start
+vim.keymap.set('n', '<C-S-h>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-j>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-k>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-l>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-Left>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-Down>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-Up>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-Right>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+-- stylua: ignore end
 
 return {
   {

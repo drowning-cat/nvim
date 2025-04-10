@@ -66,6 +66,22 @@ return {
       },
     }
 
+    -- Open/Close DapUI automatically
+    dap.listeners.before.attach.dapui_config = dapui.open
+    dap.listeners.before.launch.dapui_config = dapui.open
+    dap.listeners.before.event_terminated.dapui_config = dapui.close
+    dap.listeners.before.event_exited.dapui_config = dapui.close
+
+    local is_dapui = function()
+      return vim.bo.ft == 'dap-repl' or vim.bo.ft:match '^dapui_'
+    end
+    vim.api.nvim_create_autocmd('QuitPre', {
+      callback = function()
+        if is_dapui() then
+          dapui.close()
+        end
+      end,
+    })
     vim.api.nvim_create_autocmd('BufWinEnter', {
       callback = function()
         local ft = vim.bo.ft

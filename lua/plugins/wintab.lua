@@ -64,6 +64,7 @@ return {
       },
       { '[b', '<cmd>BufferPrevious<CR>', desc = '[B]uffer next' },
       { ']b', '<cmd>BufferNext<CR>', desc = '[B]uffer prev' },
+      { '<leader>bd', '<cmd>BufferClose<CR>', desc = '[B]uffer [d]elete' },
       { '<leader><Tab>h', '<cmd>BufferPrevious<CR>', desc = '[T]ab select left' },
       { '<leader><Tab>l', '<cmd>BufferNext<CR>', desc = '[T]ab select right' },
       { '<leader><Tab>k', '<cmd>BufferMoveNext<CR>', desc = '[T]ab move next' },

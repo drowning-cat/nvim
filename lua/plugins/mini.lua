@@ -10,6 +10,7 @@ return {
       require('mini.ai').setup {
         n_lines = 500,
         silent = true,
+        -- See case.lua
         custom_textobjects = {
           -- snake_case, camelCase, PascalCase, ...
           -- https://github.com/echasnovski/mini.nvim/discussions/1434

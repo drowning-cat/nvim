@@ -1,6 +1,6 @@
 local M = {}
 
---- @alias Direction 'down'|'left'|'right'|'up'
+---@alias Direction 'down'|'left'|'right'|'up'
 
 ---@param win_1_nr integer
 ---@param win_2_nr integer
@@ -11,15 +11,19 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
   local win_2, buf_2 = vim.fn.win_getid(win_2_nr), vim.fn.winbufnr(win_2_nr)
 
   -- Store `vim.opt.list`
-  local win_1_list = vim.api.nvim_get_option_value('list', { win = win_1 })
-  local win_2_list = vim.api.nvim_get_option_value('list', { win = win_2 })
+  local win_1_list = vim.wo[win_1].list
+  local win_2_list = vim.wo[win_2].list
+
+  if vim.wo[win_1].winfixbuf or vim.wo[win_2].winfixbuf then
+    return
+  end
 
   -- Store `vim.opt.foldenable`
-  local win_1_folds_enabled = vim.api.nvim_get_option_value('foldenable', { win = win_1 })
-  local win_2_folds_enabled = vim.api.nvim_get_option_value('foldenable', { win = win_2 })
+  local win_1_folds_enabled = vim.wo[win_1].foldenable
+  local win_2_folds_enabled = vim.wo[win_2].foldenable
   -- Disable `vim.opt.foldenable`
-  vim.api.nvim_set_option_value('foldenable', false, { win = win_1 })
-  vim.api.nvim_set_option_value('foldenable', false, { win = win_2 })
+  vim.wo[win_1].foldenable = false
+  vim.wo[win_2].foldenable = false
 
   -- Store views
   local view_1 = vim.api.nvim_win_call(win_1, vim.fn.winsaveview)
@@ -30,8 +34,8 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
   vim.api.nvim_win_set_buf(win_2, buf_1)
 
   -- Swap `vim.opt.list`
-  vim.api.nvim_set_option_value('list', win_1_list, { win = win_2 })
-  vim.api.nvim_set_option_value('list', win_2_list, { win = win_1 })
+  vim.wo[win_2].list = win_1_list
+  vim.wo[win_1].list = win_2_list
 
   -- Swap views
   vim.api.nvim_win_call(win_1, function()
@@ -42,16 +46,16 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
   end)
 
   -- Restore `vim.opt.foldenable`
-  vim.api.nvim_set_option_value('foldenable', win_1_folds_enabled, { win = win_1 })
-  vim.api.nvim_set_option_value('foldenable', win_2_folds_enabled, { win = win_2 })
+  vim.wo[win_2].foldenable = win_1_folds_enabled
+  vim.wo[win_1].foldenable = win_2_folds_enabled
 
   if focus == true then
     vim.fn.win_gotoid(win_2)
   end
 end
 
---- @param dir Direction
---- @param focus? boolean
+---@param dir Direction
+---@param focus? boolean
 function M.swap_buf(dir, focus)
   focus = focus or true
 
@@ -95,23 +99,5 @@ function M.close(win)
     vim.cmd 'q'
   end)
 end
-
-local wrap = function(fn, ...)
-  local args = ...
-  return function()
-    return fn(args)
-  end
-end
-
--- stylua: ignore
-M.fn = {
-  ---@param dir Direction
-  ---@param focus? boolean
-  swap_buf = function(dir, focus) return wrap(M.swap_buf, dir, focus) end,
-  ---@param dir Direction
-  resize = function(dir) return wrap(M.resize, dir) end,
-  ---@param win? integer
-  close = function(win) return wrap(M.close, win) end,
-}
 
 return M

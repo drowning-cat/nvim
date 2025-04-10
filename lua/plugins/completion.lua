@@ -1,32 +1,59 @@
 local plugins = {}
 
-local extra = {}
--- stylua: ignore start
-extra.select_next__auto_insert = function(cmp) cmp.select_next { auto_insert = true } end
-extra.select_prev__auto_insert = function(cmp) cmp.select_prev { auto_insert = true } end
-extra.select_and_accept__no_expand = function(cmp) cmp.select_and_accept() end
-extra.hide_and_next = function(cmp) cmp.hide(); return false end
--- stylua: ignore end
-extra.cmd_accept = function(cmp)
-  cmp.select_and_accept {
-    callback = function()
-      vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<CR>', true, false, true), 'n')
-    end,
-  }
-end
-extra.cmdline_cancel = function()
-  vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, false, true), 'n')
-end
-extra.hide__no_stop = function(cmp)
-  cmp.hide()
-  return false
-end
-extra.smart_tab = function(cmp)
-  if cmp.snippet_active() then
-    return cmp.accept()
-  else
-    return cmp.select_and_accept()
+---@class KeymapCommandWrapper
+---@field [1] blink.cmp.KeymapCommand
+---@field [string] unknown
+---@field next? boolean
+
+---@alias SuperKeymapCommand KeymapCommandWrapper|blink.cmp.KeymapCommand
+
+---@class SuperKeymapConfig
+---@field preset? blink.cmp.KeymapPreset
+---@field [string] SuperKeymapCommand[]
+
+---@param key_commands SuperKeymapCommand[]
+---@return blink.cmp.KeymapCommand[]
+local convert = function(key_commands)
+  local key_config = {}
+  for i, cmd in ipairs(key_commands) do
+    if type(cmd) == 'table' then
+      local next = nil
+      local cmd_name, args = cmd[1], {}
+      for key, val in pairs(cmd) do
+        if type(key) == 'number' then
+          -- skip
+        elseif key == 'next' then
+          next = val
+        else
+          args[key] = val
+        end
+      end
+      key_config[i] = function(cmp)
+        local fun, _args = cmp[cmd_name], vim.tbl_isempty(args) and args or nil
+        local ret = fun(_args)
+        -- stylua: ignore
+        if next == nil then return ret end
+        return not next
+      end
+    else
+      key_config[i] = cmd
+    end
   end
+  return key_config
+end
+
+---@param super_keymap_config SuperKeymapConfig
+---@return blink.cmp.KeymapConfig
+local keymap_config = function(super_keymap_config)
+  local keymap_config = {}
+  for key, val in pairs(super_keymap_config) do
+    if key == 'preset' then
+      keymap_config[key] = val
+    else
+      keymap_config[key] = convert(val)
+    end
+  end
+  return keymap_config
 end
 
 ---@module 'luasnip'
@@ -58,27 +85,25 @@ table.insert(plugins, {
   },
   ---@type blink.cmp.Config
   opts = {
-    keymap = {
+    keymap = keymap_config {
       preset = 'none',
       -- Move
       ['<Down>'] = { 'select_next', 'fallback' },
       ['<Up>'] = { 'select_prev', 'fallback' },
       ['<C-j>'] = { 'select_next', 'fallback' },
       ['<C-k>'] = { 'select_prev', 'fallback' },
-      ['<C-n>'] = { extra.select_next__auto_insert }, -- no fallback
-      ['<C-p>'] = { extra.select_prev__auto_insert }, -- no fallback
+      ['<C-n>'] = { { 'select_next', auto_insert = true } }, -- no fallback
+      ['<C-p>'] = { { 'select_prev', auto_insert = true } }, -- no fallback
       -- Accept
-      ['<Tab>'] = { extra.smart_tab, 'snippet_forward', 'fallback' },
-      ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
       ['<C-y>'] = { 'select_and_accept' },
-      ['<C-CR>'] = { extra.select_and_accept__no_expand }, -- no fallback
+      ['<C-CR>'] = { 'select_and_accept' }, -- no fallback
       -- Show
       ['<C-Space>'] = { 'show', 'show_documentation', 'hide_documentation' }, -- no fallback
       -- Cancel
       ['<C-c>'] = { 'cancel', 'fallback' },
       -- Hide
       ['<C-e>'] = { 'hide' }, -- no fallback
-      ['<Esc>'] = { extra.hide_and_next, 'fallback' }, -- and fallback
+      ['<Esc>'] = { { 'hide', next = true }, 'fallback' },
       -- Scroll
       ['<C-d>'] = { 'scroll_documentation_down' },
       ['<C-u>'] = { 'scroll_documentation_up' },
@@ -94,19 +119,19 @@ table.insert(plugins, {
           auto_show = true,
         },
       },
-      keymap = {
+      keymap = keymap_config {
         preset = 'none',
         -- Move
-        ['<Down>'] = { extra.hide__no_stop, 'fallback' },
-        ['<Up>'] = { extra.hide__no_stop, 'fallback' },
+        ['<Down>'] = { { 'hide', next = true }, 'fallback' },
+        ['<Up>'] = { { 'hide', next = true }, 'fallback' },
         ['<C-Down>'] = { 'select_next' },
         ['<C-Up>'] = { 'select_prev' },
         ['<Tab>'] = { 'select_next' },
         ['<S-Tab>'] = { 'select_prev' },
         ['<C-j>'] = { 'select_next' },
         ['<C-k>'] = { 'select_prev' },
-        ['<C-n>'] = { extra.select_next__auto_insert },
-        ['<C-p>'] = { extra.select_prev__auto_insert },
+        ['<C-n>'] = { { 'select_next', auto_insert = true } },
+        ['<C-p>'] = { { 'select_prev', auto_insert = true } },
         -- Accept
         ['<C-y>'] = { 'select_and_accept' },
         -- Show
@@ -114,7 +139,9 @@ table.insert(plugins, {
         -- Hide
         ['<C-c>'] = { nil }, -- No need to bind
         ['<C-e>'] = { 'hide' },
-        ['<Esc>'] = { extra.cmdline_cancel },
+        -- stylua: ignore
+        ['<Esc>'] = { function() vim.fn.feedkeys(vim.api.nvim_replace_termcodes('<C-c>', true, false, true), 'n') end,
+        },
       },
     },
     appearance = {

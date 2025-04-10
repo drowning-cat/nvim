@@ -1,5 +1,5 @@
 return {
-  { 'tpope/vim-fugitive', cmd = { 'Git', 'G' } },
+  { 'tpope/vim-fugitive', event = 'CmdlineEnter', cmd = { 'Git', 'G' } },
 
   { -- A plugin to visualise and resolve conflicts in neovim
     'akinsho/git-conflict.nvim',

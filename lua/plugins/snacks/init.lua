@@ -240,13 +240,6 @@ table.insert(plugins, {
     { '<leader>cR', function() Snacks.rename.rename_file() end, desc = '[R]ename File' },
     { '<leader>bo', function() Snacks.bufdelete.other() end, desc = '[B]uffer delete [o]ther' },
     { '<leader>bd', function() Snacks.bufdelete() end, desc = '[B]uffer [d]elete' },
-    { '<leader>bD', function()
-      if #vim.fn.win_findbuf(vim.fn.bufnr('%')) > 1 then
-        vim.cmd 'quit'
-      else
-        vim.cmd 'bdelete'
-      end
-    end, desc = '[B]uffer and window [D]elete' },
     { '<leader>q', '<leader>bd', remap = true, desc = '[q]uit buffer (see <leader>bd)' },
     { '<leader>Q', '<leader>bD', remap = true, desc = '[Q]uit window (see <leader>bD)' },
     { '<leader>z', function() Snacks.zen() end, desc = 'Toggle [z]en mode' },

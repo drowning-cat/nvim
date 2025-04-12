@@ -40,15 +40,23 @@ return {
       },
     },
     init = function()
-      -- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
-      vim.wo.foldmethod = 'expr'
-      vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      vim.api.nvim_create_autocmd('BufWinEnter', {
+        callback = function()
+          if vim.bo.ft == 'bigfile' then
+            return
+          end
+          -- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
+          vim.wo.foldmethod = 'expr'
+          vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+        end,
+      })
+      -- Disable folding on startup
+      vim.wo.foldlevel = 99
+      vim.wo.foldenable = false
       -- Turn off extra column to display information on folds
       vim.wo.foldcolumn = '0'
       -- The first line of the fold will be syntax highlighted, rather than all be one colour
       vim.wo.foldtext = ''
-      -- Disable folding on startup
-      vim.wo.foldlevel = 99
       -- This limits how deeply code gets folded. Helps to toggle larger chunks of nested code as they are treated as one fold
       -- vim.wo.foldnestmax = 5
     end,

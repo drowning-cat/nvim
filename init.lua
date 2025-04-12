@@ -418,6 +418,7 @@ end, {})
 require('lazy').setup {
   spec = {
     { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
+    { 'nacro90/numb.nvim', config = true }, -- Peek lines (can be canceled)
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
     { import = 'plugins.snacks' },
   },

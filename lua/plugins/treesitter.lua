@@ -39,30 +39,76 @@ return {
         },
       },
     },
+  },
+
+  { -- Better/performant folding
+    'kevinhwang91/nvim-ufo',
+    event = 'VeryLazy',
+    dependencies = 'kevinhwang91/promise-async',
     init = function()
-      vim.api.nvim_create_autocmd('BufWinEnter', {
-        callback = function()
-          if vim.bo.ft == 'bigfile' then
-            return
-          end
-          -- Tree-sitter based folding (see `:help vim.treesitter.foldexpr())`
-          vim.wo.foldmethod = 'expr'
-          vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-        end,
-      })
+      vim.o.foldenable = true
+      -- Disable foldcolumn
+      vim.o.foldcolumn = '0'
       -- Disable folding on startup
-      vim.wo.foldlevel = 99
-      vim.wo.foldenable = false
-      -- Turn off extra column to display information on folds
-      vim.wo.foldcolumn = '0'
-      -- The first line of the fold will be syntax highlighted, rather than all be one colour
-      vim.wo.foldtext = ''
-      -- This limits how deeply code gets folded. Helps to toggle larger chunks of nested code as they are treated as one fold
-      -- vim.wo.foldnestmax = 5
+      vim.o.foldlevel = 99
+      vim.o.foldlevelstart = 99
+      -- The first line of the fold will be syntax highlighted, rather than all be one color
+      vim.o.foldtext = ''
+      -- nvim-ufo only works if foldmethod=manual
+      vim.o.foldmethod = 'manual'
+      vim.o.foldexpr = nil
     end,
-    -- config = function(_, opts)
-    --   require('nvim-treesitter.configs').setup(opts)
-    -- end,
+    config = function(_, opts)
+      vim.schedule(function()
+        require('ufo').setup(opts)
+      end)
+    end,
+    opts = {
+      provider_selector = function()
+        return { 'treesitter', 'indent' }
+      end,
+      open_fold_hl_timeout = 0,
+      fold_virt_text_handler = function(virtText, lnum, endLnum, width, truncate)
+        local newVirtText = {}
+        local suffix = (' 󰁂 %d '):format(endLnum - lnum)
+        local sufWidth = vim.fn.strdisplaywidth(suffix)
+        local targetWidth = width - sufWidth
+        local curWidth = 0
+        for _, chunk in ipairs(virtText) do
+          local chunkText = chunk[1]
+          local chunkWidth = vim.fn.strdisplaywidth(chunkText)
+          if targetWidth > curWidth + chunkWidth then
+            table.insert(newVirtText, chunk)
+          else
+            chunkText = truncate(chunkText, targetWidth - curWidth)
+            local hlGroup = chunk[2]
+            table.insert(newVirtText, { chunkText, hlGroup })
+            chunkWidth = vim.fn.strdisplaywidth(chunkText)
+            if curWidth + chunkWidth < targetWidth then
+              suffix = suffix .. (' '):rep(targetWidth - curWidth - chunkWidth)
+            end
+            break
+          end
+          curWidth = curWidth + chunkWidth
+        end
+        table.insert(newVirtText, { suffix, 'MoreMsg' })
+        return newVirtText
+      end,
+    },
+    -- stylua: ignore
+    keys = {
+      { 'zR', function() require('ufo').openAllFolds() end },
+      { 'zM', function() require('ufo').closeAllFolds() end },
+      { 'zr', function() require('ufo').openFoldsExceptKinds() end },
+      { 'zm', function() require('ufo').closeFoldsWith() end },
+      {
+        'K',
+        function()
+          local win = require('ufo').peekFoldedLinesUnderCursor()
+          if not win then vim.lsp.buf.hover() end
+        end,
+      },
+    },
   },
 
   { -- Treesitter based splitjoin

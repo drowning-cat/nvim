@@ -2,6 +2,16 @@
 
 local plugins = {}
 
+local favorite = require 'plugins.snacks.extra.favorite'
+favorite.setup {
+  letters = '1234567890',
+  map_letters = function(letter)
+    vim.keymap.set('n', '<leader>' .. letter, function()
+      favorite.api.jump { letter = letter }
+    end, { desc = 'Favorite ' .. letter })
+  end,
+}
+
 ---@module 'noice'
 table.insert(plugins, {
   'folke/noice.nvim',
@@ -312,7 +322,6 @@ table.insert(plugins, {
     { '<leader>sr', function() Snacks.picker.resume() end, desc = '[S]earch [R]esume' },
     { '<leader>sR', function() Snacks.picker.recent() end, desc = '[S]earch Recent files' },
 
-    { '<leader><space>', function() Snacks.picker.buffers() end, desc = '[S]earch Buffers' },
     { '<leader>s,', function() Snacks.picker.buffers() end, desc = '[S]earch Buffers' },
     { '<leader>s:', function() Snacks.picker.command_history() end, desc = '[S]earch Command history' },
     { "<leader>s'", function() Snacks.picker.registers() end, desc = '[S]earch Registers' },
@@ -349,6 +358,14 @@ table.insert(plugins, {
     { '<leader>sl<space>', function() Snacks.picker.pick { source = 'lsp_pickers' } end, desc = '[S]earch [L]SP all Pickers' },
     { '<leader>sls', function() Snacks.picker.lsp_symbols() end, desc = '[S]earch [L]SP [s]ymbols' },
     { '<leader>slw', function() Snacks.picker.lsp_workspace_symbols() end, desc = '[S]earch [L]SP [w]orkspace Symbols' },
+
+    { '<leader><space>', function() favorite.pick_favorite() end, desc = 'Open favorites' },
+    { '<leader><CR>', function()
+      local fav = favorite.api.add_buf()
+      if fav then
+        vim.print(string.format('Favorite add "%s"', vim.fs.basename(fav.file)))
+      end
+    end, desc = 'Add to favorite' },
   },
 })
 

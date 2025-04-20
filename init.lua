@@ -7,6 +7,10 @@ vim.g.maplocalleader = ' '
 vim.o.number = true
 vim.o.relativenumber = true
 
+-- Number of spaces tabs count for
+vim.o.tabstop = 2
+vim.o.shiftwidth = 0
+
 -- Confirm on save instead of fail
 vim.o.confirm = true
 

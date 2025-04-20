@@ -4,56 +4,56 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Make line numbers default
-vim.opt.number = true
-vim.opt.relativenumber = true
+vim.o.number = true
+vim.o.relativenumber = true
 
 -- Confirm on save instead of fail
-vim.opt.confirm = true
+vim.o.confirm = true
 
 -- Enable mouse mode, can be useful for resizing splits
-vim.opt.mouse = 'a'
+vim.o.mouse = 'a'
 
 -- Don't show the mode, since it's already in the status line
-vim.opt.showmode = false
+vim.o.showmode = false
 
 -- Backup files
 -- Double slash to build file name from the complete path to the file with all path separators changed to percent '%' signs
-vim.opt.backupdir = vim.fn.stdpath 'state' .. '/backup'
-vim.opt.backup = true
+vim.o.backupdir = vim.fn.stdpath 'state' .. '/backup'
+vim.o.backup = true
 
 -- Indentation for every wrapped line
-vim.opt.breakindent = false
+vim.o.breakindent = false
 
 -- Save undo history
-vim.opt.undofile = true
+vim.o.undofile = true
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
 
 -- Keep signcolumn on by default
-vim.opt.signcolumn = 'yes'
+vim.o.signcolumn = 'yes'
 
 -- Decrease update time
-vim.opt.updatetime = 250
+vim.o.updatetime = 250
 
 -- Decrease mapped sequence wait time
 -- Displays which-key popup sooner
-vim.opt.timeoutlen = 300
+vim.o.timeoutlen = 300
 
 -- Configure how new splits should be opened
-vim.opt.splitright = true
-vim.opt.splitbelow = true
+vim.o.splitright = true
+vim.o.splitbelow = true
 
 -- Preview substitutions live, as you type!
-vim.opt.inccommand = 'split'
+vim.o.inccommand = 'split'
 
 -- Show which line your cursor is on
-vim.opt.cursorline = true
+vim.o.cursorline = true
 
 -- Minimum number of screen lines to keep above and below the cursor,
 -- sometimes referred to as scroll padding
-vim.opt.scrolloff = 10
+vim.o.scrolloff = 10
 
 -- Setup the spell checker.
 -- Useful keymaps:
@@ -61,8 +61,12 @@ vim.opt.scrolloff = 10
 --  * z= - find suggestions for misspelled words
 --  * [s - move to the prev misspelled word
 --  * ]s - move to the next misspelled word
-vim.opt.spelllang = 'en_us,ru'
-vim.opt.spell = true
+-- ```sh
+--  curl https://ftp.nluug.nl/pub/vim/runtime/spell/ru.utf-8.spl -o ~/.local/share/nvim/site/spell/ru.utf-8.spl
+--  curl https://ftp.nluug.nl/pub/vim/runtime/spell/ru.utf-8.sug -o ~/.local/share/nvim/site/spell/ru.utf-8.sug
+-- ```
+vim.o.spelllang = 'en_us,ru'
+vim.o.spell = true
 
 -- Prevent ^F from being printed
 local indentexpr = vim.bo.indentexpr

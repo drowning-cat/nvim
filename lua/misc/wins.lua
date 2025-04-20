@@ -10,7 +10,7 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
   local win_1, buf_1 = vim.fn.win_getid(win_1_nr), vim.fn.winbufnr(win_1_nr)
   local win_2, buf_2 = vim.fn.win_getid(win_2_nr), vim.fn.winbufnr(win_2_nr)
 
-  -- Store `vim.opt.list`
+  -- Store `vim.o.list`
   local win_1_list = vim.wo[win_1].list
   local win_2_list = vim.wo[win_2].list
 
@@ -18,10 +18,10 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
     return
   end
 
-  -- Store `vim.opt.foldenable`
+  -- Store `vim.o.foldenable`
   local win_1_folds_enabled = vim.wo[win_1].foldenable
   local win_2_folds_enabled = vim.wo[win_2].foldenable
-  -- Disable `vim.opt.foldenable`
+  -- Disable `vim.o.foldenable`
   vim.wo[win_1].foldenable = false
   vim.wo[win_2].foldenable = false
 
@@ -33,7 +33,7 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
   vim.api.nvim_win_set_buf(win_1, buf_2)
   vim.api.nvim_win_set_buf(win_2, buf_1)
 
-  -- Swap `vim.opt.list`
+  -- Swap `vim.o.list`
   vim.wo[win_2].list = win_1_list
   vim.wo[win_1].list = win_2_list
 
@@ -45,7 +45,7 @@ local swap_win_buf = function(win_1_nr, win_2_nr, focus)
     vim.fn.winrestview(view_1)
   end)
 
-  -- Restore `vim.opt.foldenable`
+  -- Restore `vim.o.foldenable`
   vim.wo[win_2].foldenable = win_1_folds_enabled
   vim.wo[win_1].foldenable = win_2_folds_enabled
 

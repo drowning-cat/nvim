@@ -354,6 +354,7 @@ table.insert(plugins, {
     { '<leader>sgF', function() Snacks.picker.git_log_file() end, desc = '[S]earch [g]it log [F]iles' },
     { '<leader>sgs', function() Snacks.picker.git_status() end, desc = '[S]earch [g]it [s]tatus' },
     { '<leader>sgS', function() Snacks.picker.git_stash() end, desc = '[S]earch [g]it [S]stash' },
+    { '<leader>sgP', function() require('plugins.snacks.extra.github').pick_pulls() end, desc = '[S]earch [g]it [P]ull Requests' },
 
     { '<leader>sl<space>', function() Snacks.picker.pick { source = 'lsp_pickers' } end, desc = '[S]earch [L]SP all Pickers' },
     { '<leader>sls', function() Snacks.picker.lsp_symbols() end, desc = '[S]earch [L]SP [s]ymbols' },

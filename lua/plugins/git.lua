@@ -1,5 +1,55 @@
+local function get_default_branch_name()
+  local res = vim.system({ 'git', 'rev-parse', '--verify', 'main' }, { capture_output = true }):wait()
+  return res.code == 0 and 'main' or 'master'
+end
+
 return {
   { 'tpope/vim-fugitive', event = 'CmdlineEnter', cmd = { 'Git', 'G' } },
+
+  {
+    'sindrets/diffview.nvim',
+    event = 'CmdlineEnter',
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    init = function()
+      vim.opt.fillchars:append { diff = ' ' }
+    end,
+    keys = {
+      {
+        '<leader>gdm',
+        function()
+          vim.cmd('DiffviewOpen ' .. get_default_branch_name())
+        end,
+        desc = '[G]it [d]iffview [m]ain',
+      },
+      {
+        '<leader>gdM',
+        function()
+          vim.cmd('DiffviewOpen HEAD..origin/' .. get_default_branch_name())
+        end,
+        desc = '[G]it [d]iffview origin/[M]ain',
+      },
+      {
+        '<leader>gdf',
+        mode = { 'n', 'v' },
+        function()
+          local mode = vim.fn.mode()
+          if mode == 'v' or mode == 'V' then
+            vim.cmd [['<,'>DiffviewFileHistory --follow]]
+          else
+            vim.cmd [[DiffviewFileHistory --follow %]]
+          end
+        end,
+        desc = '[G]it [d]iffview [f]ile history',
+      },
+      {
+        '<leader>gdF',
+        '<cmd>DiffviewFileHistory<cr>',
+        desc = '[G]it [d]iffview [F]iles history',
+      },
+    },
+  },
 
   { -- A plugin to visualise and resolve conflicts in neovim
     'akinsho/git-conflict.nvim',
@@ -61,9 +111,6 @@ return {
         map('n', '<leader>gp', gitsigns.preview_hunk, { desc = '[G]it [p]review hunk' })
         map('n', '<leader>gP', gitsigns.preview_hunk_inline, { desc = '[G]it [P]review hunk inline' })
         map('n', '<leader>gb', gitsigns.blame_line, { desc = '[G]it [b]lame line' })
-        map('n', '<leader>gd', gitsigns.diffthis, { desc = '[G]it [d]iff against index' })
-        -- stylua: ignore
-        map('n', '<leader>gD', function() gitsigns.diffthis '@' end, { desc = '[G]it [D]iff against last commit' })
         map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = '[T]oggle git [b]lame line' })
         map({ 'o', 'x' }, 'ih', gitsigns.select_hunk, { desc = '[G]it select hunk' })
       end,

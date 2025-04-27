@@ -413,7 +413,7 @@ require('lazy').setup {
     { import = 'plugins.snacks' },
   },
   install = {
-    colorscheme = { require('misc.save-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('misc.save_colors').get_colorscheme 'habamax' },
   },
 }
 

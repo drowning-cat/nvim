@@ -345,11 +345,11 @@ return {
           confirm = function(picker, item)
             vim.g.snacks_colors_confirm = true
             Snacks.picker.sources.colorschemes.confirm(picker, item)
-            require('misc.save-colors').save_colorscheme(item.text)
+            require('misc.save_colors').save_colorscheme(item.text)
           end,
           on_close = function()
             if vim.g.snacks_colors_confirm ~= true then
-              require('misc.save-colors').load_colorscheme()
+              require('misc.save_colors').load_colorscheme()
             end
             vim.g.snacks_colors_confirm = nil
           end,

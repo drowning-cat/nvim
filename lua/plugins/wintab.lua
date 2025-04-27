@@ -1,4 +1,4 @@
-local win = require 'misc.util-win'
+local wins = require 'misc.wins'
 
 -- Move
 vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Move focus left' })
@@ -11,18 +11,18 @@ vim.keymap.set('n', '<C-Up>', '<C-w>k', { desc = 'Move focus up' })
 vim.keymap.set('n', '<C-Right>', '<C-w>l', { desc = 'Move focus right' })
 
 -- Close
-vim.keymap.set('n', '<C-q>', win.close, { desc = 'Close the window' })
+vim.keymap.set('n', '<C-q>', wins.close, { desc = 'Close the window' })
 
 -- Swap
 -- stylua: ignore start
-vim.keymap.set('n', '<C-S-h>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-j>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-k>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-l>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
-vim.keymap.set('n', '<C-S-Left>', function() win.swap_buf 'left' end, { desc = 'Swap with buffer left' })
-vim.keymap.set('n', '<C-S-Down>', function() win.swap_buf 'down' end, { desc = 'Swap with buffer down' })
-vim.keymap.set('n', '<C-S-Up>', function() win.swap_buf 'up' end, { desc = 'Swap with buffer up' })
-vim.keymap.set('n', '<C-S-Right>', function() win.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-h>', function() wins.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-j>', function() wins.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-k>', function() wins.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-l>', function() wins.swap_buf 'right' end, { desc = 'Swap with buffer right' })
+vim.keymap.set('n', '<C-S-Left>', function() wins.swap_buf 'left' end, { desc = 'Swap with buffer left' })
+vim.keymap.set('n', '<C-S-Down>', function() wins.swap_buf 'down' end, { desc = 'Swap with buffer down' })
+vim.keymap.set('n', '<C-S-Up>', function() wins.swap_buf 'up' end, { desc = 'Swap with buffer up' })
+vim.keymap.set('n', '<C-S-Right>', function() wins.swap_buf 'right' end, { desc = 'Swap with buffer right' })
 -- stylua: ignore end
 
 return {
@@ -167,14 +167,14 @@ return {
         },
         -- stylua: ignore
         default = function()
-          reg('WinResize', 'h', function() win.resize 'left' end, { desc = 'Resize left' })
-          reg('WinResize', 'j', function() win.resize 'down' end, { desc = 'Resize down' })
-          reg('WinResize', 'k', function() win.resize 'up' end, { desc = 'Resize up' })
-          reg('WinResize', 'l', function() win.resize 'right' end, { desc = 'Resize right' })
-          reg('WinResize', '<Left>', function() win.resize 'left' end, { desc = 'Resize left' })
-          reg('WinResize', '<Down>', function() win.resize 'down' end, { desc = 'Resize down' })
-          reg('WinResize', '<Up>', function() win.resize 'up' end, { desc = 'Resize up' })
-          reg('WinResize', '<Right>', function() win.resize 'right' end, { desc = 'Resize right' })
+          reg('WinResize', 'h', function() wins.resize 'left' end, { desc = 'Resize left' })
+          reg('WinResize', 'j', function() wins.resize 'down' end, { desc = 'Resize down' })
+          reg('WinResize', 'k', function() wins.resize 'up' end, { desc = 'Resize up' })
+          reg('WinResize', 'l', function() wins.resize 'right' end, { desc = 'Resize right' })
+          reg('WinResize', '<Left>', function() wins.resize 'left' end, { desc = 'Resize left' })
+          reg('WinResize', '<Down>', function() wins.resize 'down' end, { desc = 'Resize down' })
+          reg('WinResize', '<Up>', function() wins.resize 'up' end, { desc = 'Resize up' })
+          reg('WinResize', '<Right>', function() wins.resize 'right' end, { desc = 'Resize right' })
         end,
       })
     end,

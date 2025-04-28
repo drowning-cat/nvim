@@ -119,8 +119,6 @@ return {
     keys = {
       { '<leader>l', function() quicker_toggle {} end, desc = 'Toggle quickfix [l]ist' },
       { '<leader>L', function() quicker_toggle { loclist = true } end, desc = 'Toggle [L]oclist list' },
-      { '<leader>j', function() pcall(vim.cmd.cnext) end, desc = 'cnext' },
-      { '<leader>k', function() pcall(vim.cmd.cprev) end, desc = 'cprev' },
     },
   },
 }

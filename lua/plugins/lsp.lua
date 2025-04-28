@@ -13,16 +13,12 @@ return {
     },
   },
 
-  {
-    'j-hui/fidget.nvim',
-    event = 'VimEnter',
-    opts = {},
-  },
+  { 'j-hui/fidget.nvim', event = 'VimEnter', opts = {} },
 
   { -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
-      'williamboman/mason.nvim',
+      { 'williamboman/mason.nvim', config = true },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       'saghen/blink.cmp',
@@ -44,49 +40,39 @@ return {
       }
     end,
     config = function()
-      --  This function gets run when an LSP attaches to a particular buffer.
-      --    That is to say, every time a new file is opened that is associated with
-      --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
-      --    function will be executed to configure the current buffer
+      -- This function gets run when an LSP attaches to a particular buffer
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
         callback = function(event)
-          -- We create a function that lets us more easily define mappings specific
-          -- for LSP related items. It sets the mode, buffer and description for us each time.
-          local map = function(keys, func, desc, mode)
+          local buf_map = function(keys, func, desc, mode)
             mode = mode or 'n'
             vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = desc })
           end
 
-          -- Rename the variable under your cursor.
-          --  Most Language Servers support renaming across files, etc.
-          map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-
-          -- Execute a code action, usually your cursor needs to be on top of an error
-          -- or a suggestion from your LSP for this to activate.
-          map('<leader>ra', vim.lsp.buf.code_action, '[R]un [A]ction', { 'n', 'x' })
+          buf_map('<leader>rn', vim.lsp.buf.rename, '[R]un re[n]ame')
+          buf_map('<leader>ra', vim.lsp.buf.code_action, '[R]un [A]ction', { 'n', 'x' })
 
           -- Opens a popup that displays documentation about the word under your cursor
-          -- See `:help K` for why this keymap
-          map('K', vim.lsp.buf.hover, 'Hover documentation')
+          --   See `:help K` for why this keymap
+          buf_map('K', vim.lsp.buf.hover, 'Hover documentation')
+          buf_map('gK', vim.diagnostic.open_float, 'Hover diagnostic')
+
+          local client = vim.lsp.get_client_by_id(event.data.client_id)
 
           -- The following two autocommands are used to highlight references of the
           -- word under your cursor when your cursor rests there for a little while.
-          --    See `:help CursorHold` for information about when this is executed
-          --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
-          local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-            local highlight_augroup = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
+          if client and client:supports_method 'textDocument/documentHighlight' then
+            local hl_aug = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
-              group = highlight_augroup,
+              group = hl_aug,
               callback = vim.lsp.buf.document_highlight,
             })
 
             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
               buffer = event.buf,
-              group = highlight_augroup,
+              group = hl_aug,
               callback = vim.lsp.buf.clear_references,
             })
 
@@ -119,14 +105,9 @@ return {
       --  When you add nvim-cmp, luasnip, blink.cmp, etc. Neovim now has *more* capabilities.
       --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
       local capabilities = vim.lsp.protocol.make_client_capabilities()
-      capabilities = require('blink.cmp').get_lsp_capabilities(capabilities)
 
       --  Add any additional override configuration in the following tables:
-      --  - cmd (table): Override the default command used to start the server
-      --  - filetypes (table): Override the default list of associated filetypes for the server
-      --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-      --  - settings (table): Override the default settings passed when initializing the server.
-      --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      --   For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings
       local servers = {
         clangd = {},
         gopls = {},
@@ -137,7 +118,6 @@ return {
         -- Some languages (like typescript) have entire language plugins that can be useful:
         --    https://github.com/pmizio/typescript-tools.nvim
         --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
         ts_ls = {},
         html = {},
         cssls = {},
@@ -158,16 +138,8 @@ return {
         },
       }
 
-      -- Ensure the servers and tools above are installed
-      --  To check the current status of installed tools and/or manually install
-      --  other tools, you can run
-      --    :Mason
-      --
-      --  You can press `g?` for help in this menu.
       require('mason').setup()
 
-      -- You can add other tools here that you want Mason to install
-      -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, vim.g.mason_install or {})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }

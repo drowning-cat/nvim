@@ -84,6 +84,87 @@ return {
               end,
             })
           end
+
+          -- Undim code block on hover (remove hl-DiagnosticUnnecessary)
+          -- https://github.com/neovim/neovim/discussions/32513
+          if client then
+            local ns_id = vim.api.nvim_create_namespace(string.format('nvim.vim.lsp.%s.%d.diagnostic.underline', client.name, client.id))
+            local undim_diagnostic = function(diagnostic) ---@param diagnostic vim.Diagnostic
+              local extmarks = vim.api.nvim_buf_get_extmarks(
+                event.buf,
+                ns_id,
+                { diagnostic.lnum, diagnostic.col },
+                { diagnostic.end_lnum, diagnostic.end_col },
+                {}
+              )
+              for _, extm in ipairs(extmarks) do
+                vim.api.nvim_buf_del_extmark(event.buf, ns_id, extm[1])
+              end
+            end
+            local clear_hl = function()
+              pcall(vim.api.nvim_buf_clear_namespace, event.buf, ns_id, 0, -1)
+            end
+            local refresh_hl = function()
+              clear_hl()
+              --
+              local lnum, col = vim.fn.line '.' - 1, vim.fn.col '.' - 1
+              local line_diagnostics = {} ---@type vim.Diagnostic[]
+              local search_diagnostics = vim.diagnostic.get(event.buf, { severity = vim.diagnostic.severity.HINT })
+              for _, diagnostic in ipairs(search_diagnostics) do
+                if diagnostic._tags and diagnostic._tags.unnecessary then
+                  vim.api.nvim_buf_set_extmark(event.buf, ns_id, diagnostic.lnum, diagnostic.col, {
+                    hl_group = 'DiagnosticUnnecessary',
+                    end_line = diagnostic.end_lnum,
+                    end_col = diagnostic.end_col,
+                    strict = false,
+                  })
+                  if lnum >= diagnostic.lnum and lnum <= diagnostic.end_lnum then
+                    table.insert(line_diagnostics, diagnostic)
+                  end
+                end
+              end
+              for _, diagnostic in ipairs(line_diagnostics) do
+                if diagnostic.lnum == diagnostic.end_lnum then
+                  if col <= diagnostic.col then
+                    undim_diagnostic(diagnostic)
+                  end
+                else
+                  undim_diagnostic(diagnostic)
+                end
+              end
+            end
+
+            local group = vim.api.nvim_create_augroup('diagnostic_unnecessary_event_group', { clear = false })
+
+            vim.api.nvim_create_autocmd('ModeChanged', {
+              buffer = event.buf,
+              group = group,
+              callback = function()
+                local mode = vim.fn.mode()
+                if mode == 'n' then
+                  refresh_hl()
+                elseif mode == 'c' then
+                else
+                  clear_hl()
+                end
+              end,
+            })
+            vim.api.nvim_create_autocmd('DiagnosticChanged', {
+              buffer = event.buf,
+              group = group,
+              callback = function()
+                if vim.fn.mode() == 'n' then
+                  refresh_hl()
+                end
+              end,
+            })
+            vim.api.nvim_create_autocmd('CursorHold', {
+              buffer = event.buf,
+              group = group,
+              callback = refresh_hl,
+            })
+          end
+          --
         end,
       })
 

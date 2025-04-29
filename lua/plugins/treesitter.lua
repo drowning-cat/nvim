@@ -135,7 +135,7 @@ return {
     },
     -- stylua: ignore
     keys = {
-      { 'gC', function() require('treesitter-context').go_to_context(vim.v.count1) end, desc = '[G]oto treesitter [C]ontext' },
+      { '[g', function() require('treesitter-context').go_to_context(vim.v.count1) end, desc = '[G]oto treesitter context' },
     },
   },
 

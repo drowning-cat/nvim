@@ -1,6 +1,6 @@
 local M = {}
 
----@alias Direction 'down'|'left'|'right'|'up'
+---@alias Direction 'h'|'j'|'k'|'l'
 
 ---@param win_1_nr integer
 ---@param win_2_nr integer
@@ -58,16 +58,7 @@ end
 ---@param focus? boolean
 function M.swap_buf(dir, focus)
   focus = focus or true
-
-  if dir == 'left' then
-    swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'h', focus)
-  elseif dir == 'right' then
-    swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'l', focus)
-  elseif dir == 'up' then
-    swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'k', focus)
-  elseif dir == 'down' then
-    swap_win_buf(vim.fn.winnr(), vim.fn.winnr 'j', focus)
-  end
+  swap_win_buf(vim.fn.winnr(), vim.fn.winnr(dir), focus)
 end
 
 ---@param dir Direction
@@ -77,16 +68,16 @@ function M.resize(dir)
     v = 2,
   }
   -- 1. Horizontal resize
-  if dir == 'left' then
+  if dir == 'h' then
     vim.fn.win_move_separator(vim.fn.winnr 'h', -step.h)
-  elseif dir == 'right' then
+  elseif dir == 'l' then
     vim.fn.win_move_separator(vim.fn.winnr 'h', step.h)
-    -- 2. Vertical resize
-    -- elseif vim.fn.winnr() == vim.fn.winnr 'k' then -- Prevent the statusline from resizing vertically
-    --   return
-  elseif dir == 'up' then
+  -- 2. Vertical resize
+  -- elseif vim.fn.winnr() == vim.fn.winnr 'k' then -- Prevent the statusline from resizing vertically
+  --   return
+  elseif dir == 'k' then
     vim.fn.win_move_statusline(vim.fn.winnr 'k', -step.v)
-  elseif dir == 'down' then
+  elseif dir == 'j' then
     vim.fn.win_move_statusline(vim.fn.winnr 'k', step.v)
   end
 end
@@ -96,7 +87,7 @@ function M.close(win)
   win = win or 0
   vim.api.nvim_win_call(win, function()
     vim.bo.bufhidden = 'delete'
-    vim.cmd 'q'
+    vim.cmd.quit()
   end)
 end
 

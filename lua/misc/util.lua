@@ -60,6 +60,15 @@ function M.notify_send(message)
   vim.fn.system { 'notify-send', tostring(message) }
 end
 
+-- Utility for extending tables
+---@generic T
+---@param from `T`
+---@param fun? fun(copy: T): T?
+function M.extend(from, fun)
+  local copy = vim.deepcopy(from)
+  return fun and (fun(copy) or copy) or copy
+end
+
 -- Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

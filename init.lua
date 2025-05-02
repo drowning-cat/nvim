@@ -336,18 +336,6 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
--- All entries will be installed by `mason-tool-installer`
--- May be extended in other files
-vim.g.mason_install = {} --- @type string[]
----@param list string[]
-vim.g.mason_install_extend = function(list)
-  vim.g.mason_install = vim.list_extend(vim.g.mason_install or {}, list)
-  return vim.g.mason_install
-end
-
--- Assign utility functions to `vim.u`, `vim.util`
-require('custom.util').setup()
-
 -- Configure and install plugins
 --
 --  To check the current status of your plugins, run `:Lazy`
@@ -358,9 +346,10 @@ require('lazy').setup {
   spec = {
     { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
+    { import = 'plugins.snacks' },
   },
   install = {
-    colorscheme = { require('custom.save-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('misc.save-colors').get_colorscheme 'habamax' },
   },
 }
 

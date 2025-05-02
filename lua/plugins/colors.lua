@@ -1,5 +1,5 @@
 return {
-  require('custom.save-colors').lazy_setup {
+  require('misc.save-colors').lazy_setup {
     { 'folke/tokyonight.nvim' },
     { 'RRethy/base16-nvim' },
     { 'rebelot/kanagawa.nvim', opts = {

@@ -88,13 +88,19 @@ function M.lazy_setup(plugins)
   local aug = vim.api.nvim_create_augroup('save_colors', { clear = true })
 
   vim.api.nvim_create_autocmd('User', {
-    pattern = 'LazyDone',
-    once = true,
+    pattern = { 'LazyDone', 'VeryLazy' },
     group = aug,
     callback = function()
       M.load_colorscheme()
+      return vim.g.colors_name == M.get_colorscheme 'default'
     end,
   })
+  -- vim.api.nvim_create_autocmd('ColorScheme', {
+  --   group = aug,
+  --   callback = function(event)
+  --     M.save_colorscheme(event.match)
+  --   end,
+  -- })
   vim.api.nvim_create_autocmd('VimLeavePre', {
     group = aug,
     callback = function()

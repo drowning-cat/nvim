@@ -291,13 +291,30 @@ vim.api.nvim_create_autocmd('CmdwinEnter', {
 local util = require 'misc.util'
 util.setup()
 
-  local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
-  local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
-  if vim.v.shell_error ~= 0 then
-    error('Error cloning lazy.nvim:\n' .. out)
+-- Automatically changes to the approximate root folder
+vim.o.autochdir = false -- Disable conflicting option
+local chroot = function()
+  local root = util.find_root()
+  if root then
+    vim.fn.chdir(root)
+    return root
   end
-end ---@diagnostic disable-next-line: undefined-field
-vim.opt.rtp:prepend(lazypath)
+end
+vim.api.nvim_create_user_command('Root', function()
+  vim.print(chroot())
+end, {})
+local aug_root = vim.api.nvim_create_augroup('change_root', {})
+vim.api.nvim_create_autocmd('VimEnter', {
+  group = aug_root,
+  callback = function()
+    local farg = vim.fn.argv(0) --[[@as string?]]
+    if farg and vim.fn.isdirectory(farg) == 1 then
+      vim.schedule(function()
+        vim.fn.chdir(vim.fn.fnamemodify(farg, ':p'))
+      end)
+    end
+  end,
+})
 
 -- All entries will be installed by `mason-tool-installer`
 -- May be extended in other files

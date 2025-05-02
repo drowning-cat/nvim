@@ -288,9 +288,9 @@ vim.api.nvim_create_autocmd('CmdwinEnter', {
   command = 'startinsert',
 })
 
--- Install `lazy.nvim` plugin manager
-local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
+local util = require 'misc.util'
+util.setup()
+
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
   local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
   if vim.v.shell_error ~= 0 then
@@ -308,8 +308,16 @@ vim.g.mason_install_extend = function(list)
   return vim.g.mason_install
 end
 
--- Assign utility functions to `vim.u`, `vim.util`
-require('custom.util').setup()
+-- Install `lazy.nvim` plugin manager
+local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
+  local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  if vim.v.shell_error ~= 0 then
+    error('Error cloning lazy.nvim:\n' .. out)
+  end
+end ---@diagnostic disable-next-line: undefined-field
+vim.opt.rtp:prepend(lazypath)
 
 -- Configure and install plugins
 --
@@ -321,9 +329,10 @@ require('lazy').setup {
   spec = {
     { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
     { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
+    { import = 'plugins.snacks' },
   },
   install = {
-    colorscheme = { require('custom.save-colors').get_colorscheme 'habamax' },
+    colorscheme = { require('misc.save-colors').get_colorscheme 'habamax' },
   },
 }
 

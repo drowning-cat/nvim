@@ -60,6 +60,16 @@ function M.notify_send(message)
   vim.fn.system { 'notify-send', tostring(message) }
 end
 
+-- Find projects root directory for the current buffer
+---@param buf? number
+function M.find_root(buf)
+  return vim.lsp.buf.list_workspace_folders()[1] or vim.fs.root(buf or 0, {
+    '.git',
+    'Makefile',
+    'package.json',
+  })
+end
+
 -- Assigns utility functions to `vim.u`, `vim.util` namespaces
 function M.setup()
   vim.u = M

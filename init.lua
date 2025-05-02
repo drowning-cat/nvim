@@ -293,6 +293,43 @@ vim.api.nvim_create_autocmd('CmdwinEnter', {
   command = 'startinsert',
 })
 
+local util = require 'misc.util'
+util.setup()
+
+-- Automatically changes to the approximate root folder
+vim.o.autochdir = false -- Disable conflicting option
+local chroot = function()
+  local root = util.find_root()
+  if root then
+    vim.fn.chdir(root)
+    return root
+  end
+end
+vim.api.nvim_create_user_command('Root', function()
+  vim.print(chroot())
+end, {})
+local aug_root = vim.api.nvim_create_augroup('change_root', {})
+vim.api.nvim_create_autocmd('VimEnter', {
+  group = aug_root,
+  callback = function()
+    local farg = vim.fn.argv(0) --[[@as string?]]
+    if farg and vim.fn.isdirectory(farg) == 1 then
+      vim.schedule(function()
+        vim.fn.chdir(vim.fn.fnamemodify(farg, ':p'))
+      end)
+    end
+  end,
+})
+
+-- All entries will be installed by `mason-tool-installer`
+-- May be extended in other files
+vim.g.mason_install = {} --- @type string[]
+---@param list string[]
+vim.g.mason_install_extend = function(list)
+  vim.g.mason_install = vim.list_extend(vim.g.mason_install or {}, list)
+  return vim.g.mason_install
+end
+
 -- Install `lazy.nvim` plugin manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then

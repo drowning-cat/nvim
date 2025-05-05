@@ -121,89 +121,55 @@ return {
   },
 
   {
-    'pogyomo/submode.nvim',
-    keys = { '<C-w>r', '<C-w><C-r>' },
+    'echasnovski/mini.clue',
+    lazy = false,
+    init = function()
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'snacks_*',
+        callback = function(event)
+          MiniClue.enable_buf_triggers(event.buf)
+        end,
+      })
+    end,
     config = function()
-      local submode = require 'submode'
-
-      ---@alias RegKey [string, string|function, vim.keymap.set.Opts]
-      ---@type table<string, RegKey>
-      local reg_state = {}
-
-      ---@type fun(mode: string, lhs: string, rhs: string|function, opts?: vim.keymap.set.Opts)
-      local reg = function(mode, lhs, rhs, opts)
-        reg_state[mode] = reg_state[mode] or {}
-        reg_state[mode][#reg_state[mode] + 1] = { lhs, rhs, opts or {} }
+      local miniclue = require 'mini.clue'
+      local config = miniclue.config
+      local reg = function(mode, prefix, lhs, rhs, opts)
+        local keys = prefix .. lhs
+        local clue = {
+          mode = mode,
+          keys = keys,
+        }
+        if opts.postkeys == false then
+          clue.postkeys = nil
+        else
+          clue.postkeys = opts.postkeys or prefix
+        end
+        table.insert(config.clues, clue)
+        opts.postkeys = nil
+        vim.keymap.set(mode, keys, rhs, opts)
       end
 
-      ---@return integer[]
-      local ft_include = { 'snacks_picker_list', 'snacks_picker_input' }
-      local leave_bufs = function()
-        return vim
-          .iter(submode.state.leave_bufs)
-          :filter(function(buf)
-            return vim.api.nvim_buf_is_valid(buf) and vim.list_contains(ft_include, vim.bo[buf].ft)
-          end)
-          :totable()
+      for _, prefix in ipairs { '<C-w>r', '<C-w><C-r>' } do
+        vim.keymap.set('n', prefix, '<nop>')
+        table.insert(config.triggers, { mode = 'n', keys = prefix })
+        -- stylua: ignore start
+        reg('n', prefix, 'q', '<nop>', { postkeys = false, desc = 'Quit' })
+        reg('n', prefix, 'h', function() wins.resize 'h' end, { desc = 'Resize left' })
+        reg('n', prefix, 'j', function() wins.resize 'j' end, { desc = 'Resize down' })
+        reg('n', prefix, 'k', function() wins.resize 'k' end, { desc = 'Resize up' })
+        reg('n', prefix, 'l', function() wins.resize 'l' end, { desc = 'Resize right' })
+        reg('n', prefix, 'H', '<C-w>h', { remap = true, desc = 'Move left' })
+        reg('n', prefix, 'J', '<C-w>j', { remap = true, desc = 'Move down' })
+        reg('n', prefix, 'K', '<C-w>k', { remap = true, desc = 'Move up' })
+        reg('n', prefix, 'L', '<C-w>l', { remap = true, desc = 'Move right' })
+        -- reg('n', prefix, '<C-h>', function() wins.swap_buf 'h' end, { remap = true, desc = 'Move left' })
+        -- reg('n', prefix, '<C-j>', function() wins.swap_buf 'j' end, { remap = true, desc = 'Move down' })
+        -- reg('n', prefix, '<C-k>', function() wins.swap_buf 'k' end, { remap = true, desc = 'Move up' })
+        -- reg('n', prefix, '<C-l>', function() wins.swap_buf 'l' end, { remap = true, desc = 'Move right' })
       end
 
-      vim.api.nvim_create_autocmd('User', {
-        pattern = 'SubmodeEnterPost',
-        callback = function(event)
-          local mode = event.data.name ---@type string
-          local bufs = leave_bufs()
-          ---@param key RegKey
-          vim.iter(reg_state[mode]):each(function(key)
-            local lhs, rhs, opts = unpack(key)
-            submode.set(mode, lhs, rhs, opts)
-            for _, buf in ipairs(bufs) do
-              submode.set(mode, lhs, rhs, vim.tbl_extend('keep', opts, { buffer = buf }))
-            end
-          end)
-        end,
-      })
-
-      vim.api.nvim_create_autocmd('User', {
-        pattern = 'SubmodeLeavePre',
-        callback = function(event)
-          local mode = event.data.name ---@type string
-          local bufs = leave_bufs()
-          ---@param key RegKey
-          vim.iter(reg_state[mode]):each(function(key)
-            local lhs, _, _ = unpack(key)
-            submode.del(mode, lhs)
-            for _, buf in ipairs(bufs) do
-              submode.del(mode, lhs, { buffer = buf })
-            end
-          end)
-        end,
-      })
-
-      -- Resize
-      submode.create('WinResize', {
-        mode = 'n',
-        enter = { '<C-w>r', '<C-w><C-r>' },
-        leave = { '<Esc>', 'q', '<C-c>' },
-        hook = {
-          on_enter = function()
-            vim.u.notify 'Use { h, j, k, l } or { <Left>, <Down>, <Up>, <Right> } to resize the window'
-          end,
-          on_leave = function()
-            vim.u.notify('', { force = false })
-          end,
-        },
-        -- stylua: ignore
-        default = function()
-          reg('WinResize', 'h', function() wins.resize 'h' end, { desc = 'Resize left' })
-          reg('WinResize', 'j', function() wins.resize 'j' end, { desc = 'Resize down' })
-          reg('WinResize', 'k', function() wins.resize 'k' end, { desc = 'Resize up' })
-          reg('WinResize', 'l', function() wins.resize 'l' end, { desc = 'Resize right' })
-          reg('WinResize', '<Left>', function() wins.resize 'h' end, { desc = 'Resize left' })
-          reg('WinResize', '<Down>', function() wins.resize 'j' end, { desc = 'Resize down' })
-          reg('WinResize', '<Up>', function() wins.resize 'k' end, { desc = 'Resize up' })
-          reg('WinResize', '<Right>', function() wins.resize 'l' end, { desc = 'Resize right' })
-        end,
-      })
+      miniclue.setup(config)
     end,
   },
 }

@@ -19,6 +19,7 @@ return {
 
   { -- Main LSP Configuration
     'neovim/nvim-lspconfig',
+    event = 'VeryLazy',
     dependencies = {
       'artemave/workspace-diagnostics.nvim',
       { 'williamboman/mason.nvim', config = true },

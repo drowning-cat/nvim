@@ -17,30 +17,62 @@ return {
 
   { 'j-hui/fidget.nvim', event = 'VimEnter', opts = {} },
 
+  {
+    'williamboman/mason.nvim',
+    cmd = 'Mason',
+    build = ':MasonUpdate',
+    opts_extend = { 'ensure_installed' },
+    opts = {
+      ensure_installed = {
+        'stylua',
+        'shfmt',
+      },
+    },
+    ---@param opts MasonSettings | {ensure_installed: string[]}
+    config = function(_, opts)
+      require('mason').setup(opts)
+
+      local registery = require 'mason-registry'
+      registery.refresh(function()
+        for _, inst in ipairs(opts.ensure_installed) do
+          local pack = registery.get_package(inst)
+          if not pack:is_installed() then
+            pack:install()
+          end
+        end
+      end)
+      registery:on('package:install:success', function()
+        vim.defer_fn(function()
+          vim.api.nvim_exec_autocmds('FileType', { buffer = vim.api.nvim_get_current_buf() })
+        end, 100)
+      end)
+    end,
+  },
+
   { -- Main LSP Configuration
     'neovim/nvim-lspconfig',
-    event = 'VeryLazy',
     dependencies = {
-      'artemave/workspace-diagnostics.nvim',
-      { 'williamboman/mason.nvim', config = true },
-      'williamboman/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-      'saghen/blink.cmp',
+      { 'artemave/workspace-diagnostics.nvim' },
+      { 'saghen/blink.cmp' },
+      { 'williamboman/mason-lspconfig.nvim', config = true },
+      {
+        'williamboman/mason.nvim',
+        opts = {
+          ensure_installed = {
+            'css-lsp',
+            'emmet-ls',
+            'eslint-lsp',
+            'gopls',
+            'html-lsp',
+            'json-lsp',
+            'lua-language-server',
+            'pyright',
+            'tailwindcss-language-server',
+            'typescript-language-server',
+          },
+        },
+      },
     },
-    init = function()
-      vim.g.mason_install_extend {
-        'cssls',
-        'emmet_ls',
-        'eslint',
-        'gopls',
-        'html',
-        'jsonls',
-        'lua_ls',
-        'pyright',
-        'tailwindcss',
-        'ts_ls',
-      }
-    end,
     config = function()
       -- This function gets run when an LSP attaches to a particular buffer
       vim.api.nvim_create_autocmd('LspAttach', {
@@ -210,12 +242,6 @@ return {
           },
         },
       }
-
-      require('mason').setup()
-
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, vim.g.mason_install or {})
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup { ---@diagnostic disable-line: missing-fields
         handlers = {

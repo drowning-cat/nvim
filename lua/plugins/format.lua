@@ -24,6 +24,22 @@ return {
     'stevearc/conform.nvim',
     event = 'BufWritePre',
     cmd = 'ConformInfo',
+    dependencies = {
+      {
+        'williamboman/mason.nvim',
+        opts = {
+          ensure_installed = {
+            'prettierd',
+            'stylua',
+            'isort',
+            'black',
+            'markdownlint',
+            'beautysh',
+            'deno',
+          },
+        },
+      },
+    },
     keys = {
       -- stylua: ignore
       { '<leader>f', function() require('conform').format() end, desc = '[F]ormat buffer' },
@@ -39,15 +55,6 @@ return {
       },
     },
     init = function()
-      vim.g.mason_install_extend {
-        'prettierd',
-        'stylua',
-        'isort',
-        'black',
-        'markdownlint',
-        'beautysh',
-        'deno',
-      }
       vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
     end,
     opts = {

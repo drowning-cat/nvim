@@ -382,15 +382,6 @@ vim.api.nvim_create_autocmd('VimEnter', {
   end,
 })
 
--- All entries will be installed by `mason-tool-installer`
--- May be extended in other files
-vim.g.mason_install = {} --- @type string[]
----@param list string[]
-vim.g.mason_install_extend = function(list)
-  vim.g.mason_install = vim.list_extend(vim.g.mason_install or {}, list)
-  return vim.g.mason_install
-end
-
 -- Install `lazy.nvim` plugin manager
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then

@@ -2,14 +2,19 @@ return {
   {
     'mfussenegger/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
-    init = function()
-      vim.g.mason_install_extend {
-        'hadolint',
-        'jsonlint',
-        'vale',
-        'tflint',
-      }
-    end,
+    dependencies = {
+      {
+        'williamboman/mason.nvim',
+        opts = {
+          ensure_installed = {
+            'hadolint',
+            'jsonlint',
+            'vale',
+            'tflint',
+          },
+        },
+      },
+    },
     config = function()
       local lint = require 'lint'
 

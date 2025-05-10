@@ -13,8 +13,18 @@ return {
     { 'stevearc/overseer.nvim' },
     -- Virtual text
     { 'theHamsta/nvim-dap-virtual-text' },
-    -- Bridge mason.nvim with nvim-dap
-    { 'williamboman/mason.nvim', dependencies = 'jay-babu/mason-nvim-dap.nvim' },
+    -- Install debuggers
+    {
+      'williamboman/mason.nvim',
+      dependencies = 'jay-babu/mason-nvim-dap.nvim',
+      opts = {
+        ensure_installed = {
+          'local-lua-debugger-vscode',
+          'delve',
+          'js-debug-adapter',
+        },
+      },
+    },
     -- Configuration for debug adapters
     -- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation?ref=tamerlan.dev#lua
     { 'jbyuki/one-small-step-for-vimkind' }, -- neovim lua
@@ -36,13 +46,6 @@ return {
     { '<leader>du', function() require('dapui').toggle() end, desc = 'Debug: Toggle dap [u]i' },
     { '<leader>de', function() require('dapui').eval() end, desc = 'Debug: [e]val', mode = { 'n', 'v' } },
   },
-  init = function()
-    vim.g.mason_install_extend {
-      'local-lua-debugger-vscode',
-      'delve',
-      'js-debug-adapter',
-    }
-  end,
   config = function()
     local dap, dapui = require 'dap', require 'dapui'
 

@@ -5,8 +5,7 @@ return {
     'nvim-lua/plenary.nvim',
     'antoinemadec/FixCursorHold.nvim',
     'nvim-treesitter/nvim-treesitter',
-
-    -- Adapters:
+    -- Adapters
     'marilari88/neotest-vitest',
     'nvim-neotest/neotest-jest',
     'nvim-neotest/neotest-go',

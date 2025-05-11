@@ -7,22 +7,16 @@ return {
       --  * va)  - [V]isually select [A]round [)]paren
       --  * yinq - [Y]ank [I]nside [N]ext [Q]uote
       --  * ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup {
+      local ai = require 'mini.ai'
+      local spec_treesitter = ai.gen_spec.treesitter
+      ai.setup {
         n_lines = 500,
         silent = true,
         -- See case.lua
         custom_textobjects = {
-          -- snake_case, camelCase, PascalCase, ...
-          -- https://github.com/echasnovski/mini.nvim/discussions/1434
-          e = {
-            {
-              '%u[%l%d]+%f[^%l%d]',
-              '%f[^%s%p][%l%d]+%f[^%l%d]',
-              '^[%l%d]+%f[^%l%d]',
-              '%f[^%s%p][%a%d]+%f[^%a%d]',
-              '^[%a%d]+%f[^%a%d]',
-            },
-            '^().*()$',
+          a = spec_treesitter {
+            a = { '@parameter.outer', '@attribute.outer' },
+            i = { '@parameter.inner', '@attribute.inner' },
           },
         },
       }

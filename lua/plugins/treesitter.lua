@@ -169,12 +169,12 @@ return {
             -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
-              ['aF'] = '@function.outer',
-              ['iF'] = '@function.inner',
               ['ib'] = '@block.inner',
               ['ab'] = '@block.outer',
               ['ic'] = '@class.inner',
               ['ac'] = '@class.outer',
+              ['aF'] = '@function.outer',
+              ['iF'] = '@function.inner',
             },
           },
           swap = {
@@ -195,7 +195,6 @@ return {
               [']f'] = { query = '@function.outer', desc = 'Goto next [f]unction' },
               [']c'] = { query = '@class.outer', desc = 'Goto next [c]lass' },
               [']a'] = { query = '@parameter.inner', desc = 'Goto next [a]rgument' },
-              [']l'] = { query = { '@loop.*', '@conditional.inner' }, desc = 'Goto next [l]oop or conditiona[l]' },
               -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path. Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
               [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
             },
@@ -209,7 +208,6 @@ return {
               ['[f'] = { query = '@function.outer', desc = 'Goto prev [f]unction' },
               ['[c'] = { query = '@class.outer', desc = 'Goto prev [c]lass' },
               ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
-              ['[l'] = { query = { '@loop.*', '@conditional.inner' }, desc = 'Goto next [l]oop or conditiona[l]' },
               ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
             },
             goto_previous_end = {

@@ -21,6 +21,14 @@ return {
         },
       }
 
+      -- 'Better escape' to Normal mode without having to reach for <Esc> key
+      local map_combo = require('mini.keymap').map_combo
+      local mode = { 'i', 'c', 'x', 's' }
+      map_combo(mode, 'jk', '<BS><BS><Esc>')
+      map_combo(mode, 'kj', '<BS><BS><Esc>')
+      map_combo('t', 'jk', '<BS><BS><C-\\><C-n>')
+      map_combo('t', 'kj', '<BS><BS><C-\\><C-n>')
+
       -- Mini miscellaneous functions
       local misc = require 'mini.misc'
       misc.setup_restore_cursor()

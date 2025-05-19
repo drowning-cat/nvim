@@ -144,6 +144,9 @@ vim.keymap.set('i', '<C-t>', '<nop>')
 vim.keymap.set({ 'i', 'c' }, '<C-x>', '<C-u>', { noremap = true })
 vim.keymap.set({ 'i', 'c' }, '<C-u>', '<nop>')
 
+-- Don't hurt your pinky
+vim.keymap.set('i', '<C-h>', '<BS>')
+
 -- Clear highlights on search when pressing <ESC>
 -- Overridden by multicursor.nvim
 vim.keymap.set('n', '<ESC>', '<cmd>nohlsearch<CR>')

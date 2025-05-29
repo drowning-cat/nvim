@@ -4,7 +4,7 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
       {
-        'williamboman/mason.nvim',
+        'mason-org/mason.nvim',
         opts = {
           ensure_installed = {
             'hadolint',

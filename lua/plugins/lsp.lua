@@ -18,7 +18,7 @@ return {
   { 'j-hui/fidget.nvim', event = 'VimEnter', opts = {} },
 
   {
-    'williamboman/mason.nvim',
+    'mason-org/mason.nvim',
     cmd = 'Mason',
     build = ':MasonUpdate',
     opts_extend = { 'ensure_installed' },
@@ -54,9 +54,9 @@ return {
     dependencies = {
       { 'artemave/workspace-diagnostics.nvim' },
       { 'saghen/blink.cmp' },
-      { 'williamboman/mason-lspconfig.nvim', config = true },
+      { 'mason-org/mason-lspconfig.nvim', config = true },
       {
-        'williamboman/mason.nvim',
+        'mason-org/mason.nvim',
         opts = {
           ensure_installed = {
             'css-lsp',

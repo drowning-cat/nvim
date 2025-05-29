@@ -15,7 +15,7 @@ return {
     { 'theHamsta/nvim-dap-virtual-text' },
     -- Install debuggers
     {
-      'williamboman/mason.nvim',
+      'mason-org/mason.nvim',
       dependencies = 'jay-babu/mason-nvim-dap.nvim',
       opts = {
         ensure_installed = {

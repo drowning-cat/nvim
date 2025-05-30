@@ -297,7 +297,7 @@ table.insert(plugins, {
     { '<leader>s<space>', function() Snacks.picker() end, desc = '[S]earch all Pickers' },
     { '<leader>ss', function() Snacks.picker.smart() end, desc = '[S]earch [s]mart' },
 
-    { '<leader>sS',  function() Snacks.scratch.select() end, desc = 'Select [S]cratch buffer' },
+    { '<leader>sS', function() require('plugins.snacks.extra.scratch').pick_scratch() end, desc = 'Select [S]cratch buffer' },
 
     { '\\', '<leader>se', remap = true },
     { '<leader>se', function() Snacks.picker.explorer { cwd = vim.u.find_root() } end, desc = '[S]each [e]xplorer (root)' },

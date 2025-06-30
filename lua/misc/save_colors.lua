@@ -1,5 +1,7 @@
 local M = {}
 
+M.registery = {}
+
 function M.sync_colorscheme()
   pcall(vim.cmd.rshada)
 end
@@ -13,7 +15,7 @@ function M.get_colorscheme(fallback)
   if vim.g.COLORS_NAME and vim.g.COLORS_NAME ~= '' then
     return vim.g.COLORS_NAME
   else
-    return fallback or 'default'
+    return fallback
   end
 end
 
@@ -47,16 +49,31 @@ end
 function M.tune_colorscheme_plugins(plugins)
   plugins = vim.iter(plugins):map(tbl_wrap)
 
+  ---@param plug LazyPluginSpec
   local get_name = function(plug)
     local get_name = require('lazy.core.plugin').Spec.get_name
-    local name = plug.name --\
+    local name = plug.name --[[@as string]]
       or plug[1] and get_name(plug[1])
       or plug.url and get_name(plug.url)
       or plug.dir and get_name(plug.dir)
     return string.gsub(name, '[-.]nvim$', '')
   end
 
+  local in_registery = function(plug, colorscheme)
+    local name = plug[1] or plug.url or plug.dir
+    local reg = M.registery[colorscheme]
+    if colorscheme:match 'base16%-' and name == 'RRethy/base16-nvim' then
+      return true
+    end
+    if reg == name then
+      return true
+    end
+  end
+
   local match_colorscheme = function(plug, colorscheme)
+    if in_registery(plug, colorscheme) then
+      return true
+    end
     local pattern = plug.pattern
     if not pattern then
       local name = get_name(plug)
@@ -71,9 +88,26 @@ function M.tune_colorscheme_plugins(plugins)
 
   local colorscheme = M.get_colorscheme()
 
+  -- local make_config = function(plug)
+  --   local config = plug.config
+  --   return function(lazy_plug, opts)
+  --     if type(config) == 'function' then
+  --       config(lazy_plug, opts)
+  --     end
+  --     if config == true then
+  --       require(get_name(plug)).setup(lazy_plug, opts)
+  --     end
+  --     M.load_colorscheme()
+  --   end
+  -- end
+
   plugins = plugins:map(function(plug)
     if match_colorscheme(plug, colorscheme) then
-      return vim.tbl_extend('keep', plug, { lazy = false, priority = 1000 })
+      return vim.tbl_extend('force', plug, {
+        lazy = false,
+        priority = 1000,
+        -- config = make_config(plug),
+      })
     else
       return vim.tbl_extend('keep', plug, { lazy = true })
     end
@@ -86,17 +120,23 @@ end
 ---@return LazyPluginSpec[]
 function M.lazy_setup(plugins)
   local aug = vim.api.nvim_create_augroup('save_colors', { clear = true })
-
+  local on_enter = function()
+    if vim.g.colors_name == M.get_colorscheme() then
+      return true
+    else
+      M.load_colorscheme()
+    end
+  end
   vim.api.nvim_create_autocmd('User', {
-    pattern = { 'LazyDone', 'VeryLazy' },
+    pattern = 'LazyDone',
+    once = true,
     group = aug,
-    callback = function()
-      if vim.g.colors_name == M.get_colorscheme 'default' then
-        return true
-      else
-        M.load_colorscheme()
-      end
-    end,
+    callback = on_enter,
+  })
+  vim.api.nvim_create_autocmd('VimEnter', {
+    once = true,
+    group = aug,
+    callback = on_enter,
   })
   -- vim.api.nvim_create_autocmd('ColorScheme', {
   --   group = aug,

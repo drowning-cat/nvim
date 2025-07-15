@@ -546,6 +546,10 @@ return {
                 end
               end)
             end,
+            explorer_rename = function(picker, item) --[[Override]]
+              require('snacks.explorer.actions').actions.explorer_rename(picker, item)
+              vim.api.nvim_input '<Esc>T/'
+            end,
             explorer_up = function(picker) --[[Override]]
               picker.state = vim.tbl_extend('keep', picker.state or {}, { up_stack = {} })
               table.insert(picker.state.up_stack, picker:cwd())

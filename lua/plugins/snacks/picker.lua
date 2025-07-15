@@ -558,6 +558,10 @@ return {
                 end
               end)
             end,
+            explorer_rename = function(picker, item) --[[Override]]
+              require('snacks.explorer.actions').actions.explorer_rename(picker, item)
+              vim.api.nvim_input '<Esc>T/'
+            end,
             explorer_up = function(picker) --[[Override]]
               picker.up_stack = picker.up_stack or {}
               local cwd = picker:cwd()

@@ -9,7 +9,8 @@ vim.o.relativenumber = true
 
 -- Number of spaces tabs count for
 vim.o.tabstop = 2
-vim.o.shiftwidth = 0
+vim.o.shiftwidth = 2
+vim.o.expandtab = true
 
 -- Confirm on save instead of fail
 vim.o.confirm = true
@@ -100,6 +101,7 @@ vim.keymap.set({ 'n', 'x' }, '<Up>', "v:count == 0 ? 'gk' : 'k'", { desc = 'Up',
 vim.keymap.set('i', ',', ',<C-g>u')
 vim.keymap.set('i', '.', '.<C-g>u')
 vim.keymap.set('i', ';', ';<C-g>u')
+vim.keymap.set('i', ' ', ' <C-g>u')
 
 -- Add empty lines in normal mode
 vim.keymap.set({ 'n', 'v' }, '<leader>O', "<cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>", { desc = 'Add blank line above' })

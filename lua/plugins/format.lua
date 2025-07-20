@@ -49,7 +49,7 @@ return {
           local not_disabled = not (vim.b.disable_autoformat or vim.g.disable_autoformat)
           vim.b.disable_autoformat = not_disabled
           vim.g.disable_autoformat = not_disabled
-          vim.u.notify(string.format('Disable autoformat: %s', not_disabled), { duration = 2000 })
+          vim.notify(string.format('Disable autoformat: %s', not_disabled))
         end,
         desc = '[T]oggle auto[f]ormat for the current buffer',
       },

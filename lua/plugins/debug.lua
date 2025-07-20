@@ -108,7 +108,7 @@ return {
       return vim.fn.resolve(vim.fn.stdpath 'data' .. '/mason/packages/' .. subpath)
     end
 
-    ---> Lua
+    -- Lua
 
     dap.adapters.nlua = function(callback, conf)
       local adapter = {
@@ -143,7 +143,7 @@ return {
       },
     }
 
-    ---> Go
+    -- Go
 
     require('dap-go').setup {
       delve = {
@@ -153,7 +153,7 @@ return {
       },
     }
 
-    ---> JavaScript
+    -- JavaScript
 
     require('dap-vscode-js').setup { ---@diagnostic disable-line: missing-fields
       -- node_path = 'node', -- Path of node executable. Defaults to $NODE_PATH, and then 'node'

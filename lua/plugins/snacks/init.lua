@@ -2,12 +2,12 @@
 
 local plugins = {}
 
-local favorite = require 'plugins.snacks.extra.favorite'
-favorite.setup {
+local favs = require 'plugins.snacks.extra.favorites'
+favs.setup {
   letters = '1234567890',
-  map_letters = function(letter)
+  map_letter = function(letter)
     vim.keymap.set('n', '<leader>' .. letter, function()
-      favorite.api.jump { letter = letter }
+      favs.api.jump { letter = letter }
     end, { desc = 'Favorite ' .. letter })
   end,
 }
@@ -192,7 +192,6 @@ table.insert(plugins, {
     dashboard = nil,
     picker = nil,
     scope = nil,
-    --------------------
     bigfile = {
       notify = false,
     },
@@ -203,6 +202,9 @@ table.insert(plugins, {
       remote_patterns = {
         { '^git@github%.com%.(.+):(.+).git$', 'https://github.com/%2' },
       },
+    },
+    input = {
+      enabled = true,
     },
     image = {
       enabled = true,
@@ -240,6 +242,12 @@ table.insert(plugins, {
       lazygit = {
         relative = 'editor',
         width = 0.95,
+      },
+      input = {
+        relative = 'editor',
+        row = -1,
+        col = 0,
+        border = 'single',
       },
       scratch = {
         relative = 'editor',
@@ -360,9 +368,9 @@ table.insert(plugins, {
     { '<leader>sls', function() Snacks.picker.lsp_symbols() end, desc = '[S]earch [L]SP [s]ymbols' },
     { '<leader>slw', function() Snacks.picker.lsp_workspace_symbols() end, desc = '[S]earch [L]SP [w]orkspace Symbols' },
 
-    { '<leader><space>', function() favorite.pick_favorite() end, desc = 'Open favorites' },
+    { '<leader><space>', function() favs.pick_favorite() end, desc = 'Open favorites' },
     { '<leader><CR>', function()
-      local fav = favorite.api.add_buf()
+      local fav = favs.api.add_buf()
       if fav then
         vim.print(string.format('Favorite add "%s"', vim.fs.basename(fav.file)))
       end

@@ -4,6 +4,7 @@ return {
 
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    version = false,
     build = ':TSUpdate',
     -- Load treesitter early when opening a file from the cmdline
     lazy = vim.fn.argc(-1) == 0,
@@ -12,12 +13,28 @@ return {
     event = 'VeryLazy',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     opts = {
-      -- stylua: ignore
       ensure_installed = {
-        'bash', 'c', 'lua', 'python', 'typescript', 'javascript', 'tsx',
-        'html', 'markdown', 'markdown_inline', 'xml', 'vimdoc', 'jsdoc',
-        'json', 'jsonc', 'toml', 'yaml',
-        'diff', 'query', 'regex', 'printf',
+        'bash',
+        'c',
+        'lua',
+        'python',
+        'typescript',
+        'javascript',
+        'tsx',
+        'html',
+        'markdown',
+        'markdown_inline',
+        'xml',
+        'vimdoc',
+        'jsdoc',
+        'json',
+        'jsonc',
+        'toml',
+        'yaml',
+        'diff',
+        'query',
+        'regex',
+        'printf',
       },
       auto_install = true,
       highlight = {
@@ -169,8 +186,6 @@ return {
             -- Automatically jump forward to textobject, similar to targets.vim
             lookahead = true,
             keymaps = {
-              ['iB'] = '@block.inner',
-              ['aB'] = '@block.outer',
               ['ic'] = '@class.inner',
               ['ac'] = '@class.outer',
               ['aF'] = '@function.outer',
@@ -194,26 +209,20 @@ return {
               ['gj'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next function or class' },
               [']f'] = { query = '@function.outer', desc = 'Goto next [f]unction' },
               [']c'] = { query = '@class.outer', desc = 'Goto next [c]lass' },
-              [']a'] = { query = '@parameter.inner', desc = 'Goto next [a]rgument' },
               -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path. Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
               [']z'] = { query = '@fold', query_group = 'folds', desc = 'Goto next fold' },
             },
             goto_next_end = {
               ['gJ'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto next:end function or class' },
-              [']F'] = { query = '@function.outer', desc = 'Goto next:end [F]unction' },
-              [']C'] = { query = '@class.outer', desc = 'Goto next:end [C]lass' },
             },
             goto_previous_start = {
               ['gk'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev function or class' },
               ['[f'] = { query = '@function.outer', desc = 'Goto prev [f]unction' },
               ['[c'] = { query = '@class.outer', desc = 'Goto prev [c]lass' },
-              ['[a'] = { query = '@parameter.inner', desc = 'Goto prev [a]rgument' },
               ['[z'] = { query = '@fold', query_group = 'folds', desc = 'Goto prev fold' },
             },
             goto_previous_end = {
               ['gK'] = { query = { '@function.outer', '@class.outer' }, desc = 'Goto prev:end function or class' },
-              ['[F'] = { query = '@function.outer', desc = 'Goto prev:end [F]unction' },
-              ['[C'] = { query = '@class.outer', desc = 'Goto prev:end [C]lass' },
             },
           },
           lsp_interop = {
@@ -227,23 +236,6 @@ return {
           },
         },
       }
-
-      -- local ts_repeat_move = require 'nvim-treesitter.textobjects.repeatable_move'
-      --
-      -- -- Repeat movement with ; and ,
-      -- -- ensure ; goes forward and , goes backward regardless of the last direction
-      -- vim.keymap.set({ 'n', 'x', 'o' }, ';', ts_repeat_move.repeat_last_move_next)
-      -- vim.keymap.set({ 'n', 'x', 'o' }, ',', ts_repeat_move.repeat_last_move_previous)
-      --
-      -- -- vim way: ; goes to the direction you were moving
-      -- vim.keymap.set({ 'n', 'x', 'o' }, ';', ts_repeat_move.repeat_last_move)
-      -- vim.keymap.set({ 'n', 'x', 'o' }, ',', ts_repeat_move.repeat_last_move_opposite)
-      --
-      -- -- Optionally, make builtin f, F, t, T also repeatable with ; and ,
-      -- vim.keymap.set({ 'n', 'x', 'o' }, 'f', ts_repeat_move.builtin_f_expr, { expr = true })
-      -- vim.keymap.set({ 'n', 'x', 'o' }, 'F', ts_repeat_move.builtin_F_expr, { expr = true })
-      -- vim.keymap.set({ 'n', 'x', 'o' }, 't', ts_repeat_move.builtin_t_expr, { expr = true })
-      -- vim.keymap.set({ 'n', 'x', 'o' }, 'T', ts_repeat_move.builtin_T_expr, { expr = true })
     end,
   },
 }

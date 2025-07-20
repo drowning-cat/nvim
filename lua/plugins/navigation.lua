@@ -1,4 +1,4 @@
-local wins = require 'misc.wins'
+local wins = require 'misc.win'
 
 -- Vim tabs
 vim.keymap.set('n', 'gC', '<cmd>tabclose<CR>', { desc = 'Vimtab [C]lose' })
@@ -11,6 +11,7 @@ vim.keymap.set('n', '<leader>H', '<cmd>new<CR>', { desc = 'Open [H]orizontal win
 vim.keymap.set('n', '<leader>w', '<C-w>', { noremap = true })
 -- Close
 vim.keymap.set('n', '<leader>wq', wins.close, { desc = 'Close the window' })
+
 -- Swap
 -- stylua: ignore start
 vim.keymap.set('n', '<leader>wH', function() wins.swap_buf 'h' end, { desc = 'Swap with buffer left' })
@@ -18,6 +19,7 @@ vim.keymap.set('n', '<leader>wJ', function() wins.swap_buf 'j' end, { desc = 'Sw
 vim.keymap.set('n', '<leader>wK', function() wins.swap_buf 'k' end, { desc = 'Swap with buffer up' })
 vim.keymap.set('n', '<leader>wL', function() wins.swap_buf 'l' end, { desc = 'Swap with buffer right' })
 -- stylua: ignore end
+
 -- Navigate
 vim.keymap.set('n', '<C-h>', '<C-w>h')
 vim.keymap.set('n', '<C-j>', '<C-w>j')
@@ -27,6 +29,7 @@ vim.keymap.set('n', '<C-Left>', '<C-w>h')
 vim.keymap.set('n', '<C-Down>', '<C-w>j')
 vim.keymap.set('n', '<C-Up>', '<C-w>k')
 vim.keymap.set('n', '<C-Right>', '<C-w>l')
+
 -- Swap
 -- stylua: ignore start
 vim.keymap.set('n', '<C-S-h>', function() wins.swap_buf 'h' end)
@@ -40,6 +43,13 @@ vim.keymap.set('n', '<C-S-Right>', function() wins.swap_buf 'l' end)
 -- stylua: ignore end
 
 return {
+  {
+    'declancm/maximize.nvim',
+    -- stylua: ignore
+    keys = {
+      { '<C-f>', function() require('maximize').toggle() end, desc = 'Toggle [F]ullscreen' },
+    },
+  },
   {
     'romgrk/barbar.nvim',
     lazy = false,
@@ -111,15 +121,6 @@ return {
       { '<leader><Tab>0', '<Cmd>BufferLast<CR>', desc = 'Tab last' },
     },
   },
-
-  {
-    'declancm/maximize.nvim',
-    -- stylua: ignore
-    keys = {
-      { '<C-f>', function() require('maximize').toggle() end, desc = 'Toggle [F]ullscreen' },
-    },
-  },
-
   {
     'echasnovski/mini.clue',
     lazy = false,
@@ -163,10 +164,6 @@ return {
         reg('n', prefix, 'J', '<C-w>j', { remap = true, desc = 'Move down' })
         reg('n', prefix, 'K', '<C-w>k', { remap = true, desc = 'Move up' })
         reg('n', prefix, 'L', '<C-w>l', { remap = true, desc = 'Move right' })
-        -- reg('n', prefix, '<C-h>', function() wins.swap_buf 'h' end, { remap = true, desc = 'Move left' })
-        -- reg('n', prefix, '<C-j>', function() wins.swap_buf 'j' end, { remap = true, desc = 'Move down' })
-        -- reg('n', prefix, '<C-k>', function() wins.swap_buf 'k' end, { remap = true, desc = 'Move up' })
-        -- reg('n', prefix, '<C-l>', function() wins.swap_buf 'l' end, { remap = true, desc = 'Move right' })
       end
 
       miniclue.setup(config)

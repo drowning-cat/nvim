@@ -63,6 +63,7 @@ return {
             'emmet-ls',
             'eslint-lsp',
             'gopls',
+            'harper-ls',
             'html-lsp',
             'json-lsp',
             'lua-language-server',

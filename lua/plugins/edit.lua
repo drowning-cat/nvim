@@ -1,4 +1,4 @@
---- @param dir -1|1 Direction
+---@param dir -1|1 Direction
 local lineAddCursor = function(dir)
   local mc = require 'multicursor-nvim'
   local top, bot
@@ -14,6 +14,16 @@ local lineAddCursor = function(dir)
 end
 
 return {
+  { -- Subword navigation
+    'chrisgrieser/nvim-spider',
+    lazy = true,
+      -- stylua: ignore
+      keys = {
+        { ',e', mode = { 'n', 'o', 'x' }, function() require('spider').motion('e') end },
+        { ',w', mode = { 'n', 'o', 'x' }, function() require('spider').motion('w') end },
+        { ',b', mode = { 'n', 'o', 'x' }, function() require('spider').motion('b') end },
+      },
+  },
   {
     'jake-stewart/multicursor.nvim',
     event = 'VeryLazy',
@@ -28,9 +38,7 @@ return {
     end,
     config = function()
       local mc = require 'multicursor-nvim'
-
       mc.setup()
-
       -- stylua: ignore
       mc.addKeymapLayer(function(layerSet)
         layerSet({ 'n', 'x' }, '<S-x>', function() mc.deleteCursor() end, { desc = 'Delete cursor' })
@@ -48,7 +56,6 @@ return {
           end
         end)
       end)
-
       -- stylua: ignore start
       vim.keymap.set({ 'n', 'v' }, '<S-Down>', function() lineAddCursor(1) end, { desc = 'Add cursor below' })
       vim.keymap.set({ 'n', 'v' }, '<S-Up>', function() lineAddCursor(-1) end, { desc = 'Add cursor above' })

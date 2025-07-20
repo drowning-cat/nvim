@@ -62,17 +62,19 @@ function M.pick_scratch(opts)
     end,
     actions = {
       delete = function(picker)
-        local delete = picker:selected { fallback = true }
-        for _, sel in ipairs(delete) do
-          os.remove(sel.file)
+        local to_delete = picker:selected { fallback = true }
+        for _, del in ipairs(to_delete) do
+          os.remove(del.file)
         end
-        local cursor = picker.list.cursor
-        picker:find()
-        if picker:count() == 0 then
-          picker:close()
-        else
-          picker.list:view(cursor - #delete)
-        end
+        picker.list:del_target()
+        picker:find {
+          on_done = function()
+            picker.list:set_selected()
+            if picker:count() == 0 then
+              picker:close()
+            end
+          end,
+        }
       end,
     },
     win = {

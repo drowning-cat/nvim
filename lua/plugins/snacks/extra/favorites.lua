@@ -9,7 +9,7 @@
 ---@class FavoriteConfig
 ---@field letters? string
 ---@field ctx_markers? string[]
----@field map_letters? fun(letter: string)
+---@field map_letter? fun(letter: string)
 
 local M = {}
 -- stylua: ignore
@@ -19,7 +19,7 @@ setmetatable(M, { __call = function(...) M.pick_favorite(...) end })
 M.config = {
   letters = '1234567890',
   ctx_markers = { '.git', '_darcs', '.hg', '.bzr', '.svn', 'package.json', 'Makefile' },
-  map_letters = function() end,
+  map_letter = function() end,
 }
 
 M._did_setup = false
@@ -33,7 +33,7 @@ M.setup = function(opts)
   M.config = vim.tbl_deep_extend('force', M.config, opts or {})
   vim.cmd.rshada()
   vim.g.FAVORITES = (vim.g.FAVORITES or {}) ---@type table<string, Favorite[]>
-  vim.iter(vim.split(M.config.letters, '')):each(M.config.map_letters)
+  vim.iter(vim.split(M.config.letters, '')):each(M.config.map_letter)
   return M
 end
 
@@ -274,18 +274,20 @@ M.pick_favorite = function(opts)
     actions = {
       fav_next_ctx = cycle_ctx(1),
       fav_prev_ctx = cycle_ctx(-1),
-      fav_del = function(picker, item)
-        local delete = picker:selected { fallback = true }
-        for _, it in ipairs(delete) do
-          M.store.remove_favorite(ctx, { file = it.file })
+      fav_del = function(picker)
+        local to_delete = picker:selected { fallback = true }
+        for _, del in ipairs(to_delete) do
+          M.store.remove_favorite(ctx, { file = del.file })
         end
-        if picker:count() == 0 then
-          picker:close()
-        else
-          picker.list:set_selected()
-          picker.list:set_target(math.min(picker.list.cursor, picker:count() - #delete))
-          picker:find()
-        end
+        picker.list:del_target()
+        picker:find {
+          on_done = function()
+            picker.list:set_selected()
+            if picker:count() == 0 then
+              picker:close()
+            end
+          end,
+        }
       end,
       fav_reletter = function(picker, item)
         Snacks.input.input({ default = item.letter }, function(letter)

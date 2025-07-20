@@ -22,7 +22,7 @@ return {
       'echasnovski/mini.nvim',
     },
     opts = {
-      enabled = false,
+      enabled = true,
       code = {
         sign = false,
         width = 'block',

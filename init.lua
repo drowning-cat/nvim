@@ -9,7 +9,8 @@ vim.o.relativenumber = true
 
 -- Number of spaces tabs count for
 vim.o.tabstop = 2
-vim.o.shiftwidth = 0
+vim.o.shiftwidth = 2
+vim.o.expandtab = true
 
 -- Confirm on save instead of fail
 vim.o.confirm = true
@@ -101,6 +102,7 @@ vim.keymap.set({ 'n', 'x' }, '<Up>', "v:count == 0 ? 'gk' : 'k'", { desc = 'Up',
 vim.keymap.set('i', ',', ',<C-g>u')
 vim.keymap.set('i', '.', '.<C-g>u')
 vim.keymap.set('i', ';', ';<C-g>u')
+vim.keymap.set('i', ' ', ' <C-g>u')
 
 -- Add empty lines in normal mode
 vim.keymap.set({ 'n', 'v' }, '<leader>O', "<cmd>call append(line('.') - 1, repeat([''], v:count1))<CR>", { desc = 'Add blank line above' })
@@ -398,16 +400,11 @@ end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
 -- Configure and install plugins
---
---  To check the current status of your plugins, run `:Lazy`
---
---  For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
---
 require('lazy').setup {
   spec = {
     { 'tpope/vim-sleuth' }, -- Detect tabstop and shiftwidth automatically
-    { 'nacro90/numb.nvim', config = true }, -- Peek lines (can be canceled)
-    { import = 'plugins' }, -- Import files from `lua/plugins/*.lua`
+    { 'nacro90/numb.nvim', config = true }, -- Peek lines
+    { import = 'plugins' },
     { import = 'plugins.snacks' },
   },
   install = {
@@ -415,5 +412,5 @@ require('lazy').setup {
   },
 }
 
--- The line beneath this is called `modeline`. See `:help modeline`
+-- See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et

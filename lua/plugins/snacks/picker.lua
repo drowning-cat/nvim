@@ -3,25 +3,27 @@
 local extend = require('misc.util').extend
 
 vim.schedule(function()
-  ---@class snacks.picker.list
-  ---@field constrain_cursor fun(self: snacks.picker.list, opts?: {pin?: boolean, pin_select?: boolean})
-  local M = require 'snacks.picker.core.list'
-  ---@param opts? {pin?: boolean, pin_select?: boolean}
-  function M:constrain_cursor(opts)
-    opts = opts or {}
-    opts = vim.tbl_extend('keep', opts, { pin = false })
-    opts = vim.tbl_extend('keep', opts, { pin_select = opts.pin })
-    local picker = self.picker
-    local to_delete = picker:selected { fallback = true }
-    local is_select = #picker.list.selected ~= 0
-    local norm = vim.iter(to_delete):fold(0, function(sum, sel)
-      return picker.list.cursor >= sel.idx and sum + 1 or sum
-    end)
-    local target = math.max(1, picker.list.cursor - norm)
-    if (is_select and opts.pin_select) or (not is_select and opts.pin) then
-      target = math.min(target + 1, picker.list:count() - #to_delete)
+  if Snacks then
+    ---@class snacks.picker.list
+    ---@field del_target fun(self: snacks.picker.list, opts?: {pin?: boolean, pin_select?: boolean})
+    local M = require 'snacks.picker.core.list'
+    ---@param opts? {pin?: boolean, pin_select?: boolean}
+    function M:del_target(opts)
+      opts = opts or {}
+      opts = vim.tbl_extend('keep', opts, { pin = false })
+      opts = vim.tbl_extend('keep', opts, { pin_select = opts.pin })
+      local picker = self.picker
+      local to_delete = picker:selected { fallback = true }
+      local is_select = #picker.list.selected ~= 0
+      local norm = vim.iter(to_delete):fold(0, function(sum, sel)
+        return picker.list.cursor >= sel.idx and sum + 1 or sum
+      end)
+      local target = math.max(1, picker.list.cursor - norm)
+      if (is_select and opts.pin_select) or (not is_select and opts.pin) then
+        target = math.min(target + 1, picker.list:count() - #to_delete)
+      end
+      picker.list:set_target(target)
     end
-    picker.list:set_target(target)
   end
 end)
 
@@ -222,6 +224,81 @@ local cycle_action = function(direction)
   end
 end
 
+---@param picker snacks.Picker
+---@param opts { on_delete: function }
+local trash_put = function(picker, opts)
+  opts = vim.tbl_extend('keep', opts, {
+    on_delete = function() end,
+  })
+  local selected = picker:selected { fallback = true }
+  local paths = vim.tbl_map(Snacks.picker.util.path, selected)
+  if #paths == 0 then
+    return
+  end
+  local is_windows = vim.fn.has 'win32' == 1
+  local trash_cmd = function(path)
+    if is_windows then
+      return {
+        'powershell',
+        '-Command',
+        string.format(
+          "(New-Object -ComObject Shell.Application).Namespace((Split-Path '%s')).ParseName((Split-Path '%s' -Leaf)).InvokeVerb('delete')",
+          path,
+          path
+        ),
+      }
+    else
+      return { 'trash', path }
+    end
+  end
+  local what = #paths == 1 and vim.fn.fnamemodify(paths[1], ':p:~:.') or #paths .. ' files'
+  ---@param prompt string
+  ---@param fn fun()
+  local confirm = function(prompt, fn)
+    Snacks.picker.select({ 'Yes', 'No' }, { prompt = prompt }, function(_, idx)
+      if idx == 1 then
+        fn()
+      end
+    end)
+  end
+  confirm('Put to the trash ' .. what .. '?', function()
+    local jobs = #paths
+    local deleted = {}
+    local after_all = function()
+      opts.on_delete(deleted)
+    end
+    local after_each = function()
+      jobs = jobs - 1
+      if jobs == 0 then
+        after_all()
+      end
+    end
+    for i, path in ipairs(paths) do
+      local err_data = {}
+      local job_id = vim.fn.jobstart(trash_cmd(path), {
+        detach = not is_windows,
+        on_stderr = function(_, data)
+          err_data[#err_data + 1] = table.concat(data, '\n')
+        end,
+        on_exit = function(_, code)
+          if code == 0 then
+            table.insert(deleted, selected[i])
+            Snacks.bufdelete { file = path, force = true }
+          else
+            local err_msg = vim.trim(table.concat(err_data, ''))
+            Snacks.notify.error('Failed to delete `' .. path .. '`:\n- ' .. err_msg)
+          end
+          after_each()
+        end,
+      })
+      if job_id == 0 then
+        after_each()
+        Snacks.notify.error('Failed to start the job for: ' .. path)
+      end
+    end
+  end)
+end
+
 return {
   'folke/snacks.nvim',
   ---@type snacks.Config
@@ -237,25 +314,50 @@ return {
         },
       },
       actions = {
-        toggle_live_insert = function(picker)
-          picker:action 'toggle_live'
-          picker:focus 'input'
+        -- NOTE: Fix cancel action.
+        -- See https://github.com/folke/snacks.nvim/discussions/1768#discussioncomment-13243591
+        cancel = function(picker) --[[Override]]
+          picker:norm(function()
+            local main = require('snacks.picker.core.main').new { float = false, file = false, current = true }
+            vim.api.nvim_set_current_win(main:get())
+            picker:close()
+          end)
         end,
         cycle_prev = cycle_action 'prev',
         cycle_next = cycle_action 'next',
-        select_and_prev = function(picker) --[[Override]]
-          if picker.list.reverse then
-            Snacks.picker.actions.select_and_next(picker)
-          else
-            Snacks.picker.actions.select_and_prev(picker)
+        file_rename = function(picker, item)
+          local mode = vim.fn.mode()
+          Snacks.rename.rename_file {
+            from = item.file,
+            on_rename = function()
+              local Tree = require 'snacks.explorer.tree'
+              Tree:refresh(item.file)
+              picker.list:set_target()
+              picker:find {
+                on_done = function()
+                  if not mode:find '^i' then
+                    picker.input:stopinsert()
+                  end
+                end,
+              }
+            end,
+          }
+          if vim.bo.ft == 'snacks_input' then
+            vim.api.nvim_input '<Esc>T/'
           end
         end,
-        select_and_next = function(picker) --[[Override]]
-          if picker.list.reverse then
-            Snacks.picker.actions.select_and_prev(picker)
-          else
-            Snacks.picker.actions.select_and_next(picker)
-          end
+        file_delete = function(picker)
+          trash_put(picker, {
+            on_delete = function(deleted)
+              local Tree = require 'snacks.explorer.tree'
+              for _, it in ipairs(deleted) do
+                Tree:refresh(it.file)
+              end
+              picker.list:set_selected()
+              picker.list:set_target()
+              picker:find()
+            end,
+          })
         end,
         pick_win = function(picker, item) --[[Override]]
           if item.dir then
@@ -295,6 +397,24 @@ return {
               end
             end, 100)
           end
+        end,
+        select_and_prev = function(picker) --[[Override]]
+          if picker.list.reverse then
+            Snacks.picker.actions.select_and_next(picker)
+          else
+            Snacks.picker.actions.select_and_prev(picker)
+          end
+        end,
+        select_and_next = function(picker) --[[Override]]
+          if picker.list.reverse then
+            Snacks.picker.actions.select_and_prev(picker)
+          else
+            Snacks.picker.actions.select_and_next(picker)
+          end
+        end,
+        toggle_live_insert = function(picker)
+          picker:action 'toggle_live'
+          picker:focus 'input'
         end,
       },
       win = {
@@ -418,6 +538,33 @@ return {
           include = { '.env', '.env.*' },
           hidden = true,
           ignored = false,
+          win = {
+            input = {
+              keys = {
+                ['<C-r>'] = { 'file_rename', mode = { 'i', 'n' } },
+                ['<C-d>'] = { 'file_delete', mode = { 'i', 'n' } },
+              },
+            },
+            list = {
+              keys = {
+                ['r'] = 'file_rename',
+                ['d'] = 'file_delete',
+              },
+            },
+          },
+        },
+        git_pickers = { --[[New]]
+          finder = 'meta_pickers',
+          title = 'Select Git Picker',
+          format = 'text',
+          search = 'git_',
+          transform = function(item, ctx)
+            return item.text ~= 'git_all' --
+              and string.match(item.text, ctx.filter.search) ~= nil
+          end,
+          confirm = function(...)
+            Snacks.picker.sources.pickers.confirm(...)
+          end,
         },
         grep = {
           exclude = { '.git', 'node_modules' },
@@ -441,13 +588,17 @@ return {
                   return it.label
                 end)
                 :join ''
-              ---@param self snacks.picker.list
-              ---@param pin? boolean
               vim.api.nvim_win_call(vim.fn.win_getid(vim.fn.winnr '#'), function()
                 if pcall(vim.cmd.delmark, to_delete) then
-                  picker.list:constrain_cursor { pin = true, pin_select = false }
-                  picker:find() -- NOTE: Should also be called inside `nvim_win_cal`
-                  picker.list:set_selected()
+                  picker.list:del_target()
+                  picker:find { -- NOTE: Should also be called inside `nvim_win_cal`
+                    on_done = function()
+                      picker.list:set_selected()
+                      if picker:count() == 0 then
+                        picker:close()
+                      end
+                    end,
+                  }
                 else
                   Snacks.notify.error(string.format('Unable to delete marks: %s', to_delete))
                 end
@@ -558,64 +709,10 @@ return {
           end,
           actions = {
             explorer_del = function(picker) --[[Override]]
-              local actions = require 'snacks.explorer.actions'
-              local Tree = require 'snacks.explorer.tree'
-              local paths = vim.tbl_map(Snacks.picker.util.path, picker:selected { fallback = true })
-              if #paths == 0 then
-                return
-              end
-              local trash_cmd = function(path)
-                return 'trash ' .. path
-              end
-              local what = #paths == 1 and vim.fn.fnamemodify(paths[1], ':p:~:.') or #paths .. ' files'
-              ---@param prompt string
-              ---@param fn fun()
-              local confirm = function(prompt, fn)
-                Snacks.picker.select({ 'Yes', 'No' }, { prompt = prompt }, function(_, idx)
-                  if idx == 1 then
-                    fn()
-                  end
-                end)
-              end
-              confirm('Put to the trash ' .. what .. '?', function()
-                local jobs = #paths
-                local after_job = function()
-                  jobs = jobs - 1
-                  if jobs == 0 then
-                    picker.list:set_selected()
-                    actions.update(picker)
-                  end
-                end
-                for _, path in ipairs(paths) do
-                  local err_data = {}
-                  local job_id = vim.fn.jobstart(trash_cmd(path), {
-                    detach = true,
-                    on_stderr = function(_, data)
-                      err_data[#err_data + 1] = table.concat(data, '\n')
-                    end,
-                    on_exit = function(_, code)
-                      pcall(function()
-                        if code == 0 then
-                          Snacks.bufdelete { file = path, force = true }
-                        else
-                          local err_msg = vim.trim(table.concat(err_data, ''))
-                          Snacks.notify.error('Failed to delete `' .. path .. '`:\n- ' .. err_msg)
-                        end
-                        Tree:refresh(vim.fs.dirname(path))
-                      end)
-                      after_job()
-                    end,
-                  })
-                  if job_id == 0 then
-                    after_job()
-                    Snacks.notify.error('Failed to start the job for: ' .. path)
-                  end
-                end
-              end)
+              picker:action 'file_delete'
             end,
-            explorer_rename = function(picker, item) --[[Override]]
-              require('snacks.explorer.actions').actions.explorer_rename(picker, item)
-              vim.api.nvim_input '<Esc>T/'
+            explorer_rename = function(picker) --[[Override]]
+              picker:action 'file_rename'
             end,
             explorer_up = function(picker) --[[Override]]
               picker.up_stack = picker.up_stack or {}
@@ -715,6 +812,8 @@ return {
               keys = {
                 ['h'] = 'focus_list',
                 ['j'] = 'focus_list',
+                ['<C-r>'] = { 'explorer_rename', mode = { 'i', 'n' } },
+                ['<C-d>'] = { 'explorer_del', mode = { 'i', 'n' } },
                 ['<C-y>'] = { 'copy_path', mode = { 'i', 'n' } },
               },
             },
@@ -726,17 +825,17 @@ return {
                 ['<C-Down>'] = 'explorer_down',
                 ['<CR>'] = 'confirm',
                 ['<C-CR>'] = { '<C-CR>', { 'confirm', 'focus_list' } },
-                ['J'] = 'list_down',
-                ['K'] = 'list_up',
                 ['<C-S-CR>'] = { '<C-S-CR>', { 'confirm', 'close' } },
                 ['<C-S-L>'] = { '<C-S-L>', { 'confirm', 'close' } },
+                ['d'] = 'safe_delete',
+                ['J'] = 'list_down',
+                ['K'] = 'list_up',
                 ['h'] = 'dir_toggle',
                 ['l'] = 'confirm',
                 ['L'] = 'confirm_nofocus',
                 ['o'] = { 'o', { 'confirm_pick' } },
                 ['O'] = { 'O', { 'confirm_pick', 'focus_list' } },
                 ['<C-o>'] = 'explorer_open',
-                ['d'] = 'safe_delete',
                 ['Y'] = 'copy_path',
                 ['<C-y>'] = { 'copy_path', mode = { 'i', 'n' } },
               },

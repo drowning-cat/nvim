@@ -2,6 +2,29 @@
 
 local extend = require('misc.util').extend
 
+vim.schedule(function()
+  ---@class snacks.picker.list
+  ---@field constrain_cursor fun(self: snacks.picker.list, opts?: {pin?: boolean, pin_select?: boolean})
+  local M = require 'snacks.picker.core.list'
+  ---@param opts? {pin?: boolean, pin_select?: boolean}
+  function M:constrain_cursor(opts)
+    opts = opts or {}
+    opts = vim.tbl_extend('keep', opts, { pin = false })
+    opts = vim.tbl_extend('keep', opts, { pin_select = opts.pin })
+    local picker = self.picker
+    local to_delete = picker:selected { fallback = true }
+    local is_select = #picker.list.selected ~= 0
+    local norm = vim.iter(to_delete):fold(0, function(sum, sel)
+      return picker.list.cursor >= sel.idx and sum + 1 or sum
+    end)
+    local target = math.max(1, picker.list.cursor - norm)
+    if (is_select and opts.pin_select) or (not is_select and opts.pin) then
+      target = math.min(target + 1, picker.list:count() - #to_delete)
+    end
+    picker.list:set_target(target)
+  end
+end)
+
 ---@type table<string, snacks.picker.layout.Config>
 local user_layouts = {
   better_telescope = {
@@ -395,6 +418,38 @@ return {
             vim.fn.setreg(vim.v.register, item.hl_group)
             picker:close()
           end,
+        },
+        marks = {
+          actions = {
+            delmark = function(picker)
+              local selected = picker:selected { fallback = true }
+              local to_delete = vim
+                .iter(selected)
+                :map(function(it)
+                  return it.label
+                end)
+                :join ''
+              ---@param self snacks.picker.list
+              ---@param pin? boolean
+              vim.api.nvim_win_call(vim.fn.win_getid(vim.fn.winnr '#'), function()
+                if pcall(vim.cmd.delmark, to_delete) then
+                  picker.list:constrain_cursor { pin = true, pin_select = false }
+                  picker:find() -- NOTE: Should also be called inside `nvim_win_cal`
+                  picker.list:set_selected()
+                else
+                  Snacks.notify.error(string.format('Unable to delete marks: %s', to_delete))
+                end
+              end)
+            end,
+          },
+          win = {
+            input = {
+              keys = {
+                ['<C-d>'] = { 'delmark', mode = { 'i', 'n' } },
+                ['d'] = 'delmark',
+              },
+            },
+          },
         },
         --
         git_pickers = {

@@ -698,6 +698,41 @@ return {
             explorer_del = function(picker) --[[Override]]
               picker:action 'file_delete'
             end,
+            explorer_paste = function(picker, item) --[[Override]]
+              local Tree = require 'snacks.explorer.tree'
+              local files = vim.split(vim.fn.getreg(vim.v.register or '+') or '', '\n', { plain = true })
+              files = vim.tbl_filter(function(file)
+                -- NOTE: Use `vim.uv.fs_stat` instead of `vim.fn.filereadable`
+                return file ~= '' and vim.uv.fs_stat(file) ~= nil
+              end, files)
+              if #files == 0 then
+                return Snacks.notify.warn(('The `%s` register does not contain any files'):format(vim.v.register or '+'))
+              end
+              local dir = picker:dir()
+              -- NOTE: Prefer the parent directory when the item is closed
+              if item.dir and not item.open then
+                dir = vim.fs.dirname(dir)
+              end
+              -- NOTE: Replace `Snacks.picker.util.copy`
+              for _, file in ipairs(files) do
+                -- BUG: Prevent pasting inside itself
+                if file == dir then
+                  Snacks.notify.warn(string.format('Skip recursive copy: %s', file))
+                else
+                  local dst = vim.fs.joinpath(dir, vim.fn.fnamemodify(file, ':t'))
+                  local dst_unique = dst
+                  local count = 0
+                  while vim.uv.fs_stat(dst_unique) do
+                    count = count + 1
+                    dst_unique = string.format('%s (copy %d)', dst, count)
+                  end
+                  Snacks.picker.util.copy_path(file, dst_unique)
+                end
+              end
+              Tree:refresh(dir)
+              Tree:open(dir)
+              picker:update { target = dir }
+            end,
             explorer_rename = function(picker) --[[Override]]
               picker:action 'file_rename'
             end,

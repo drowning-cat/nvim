@@ -236,7 +236,7 @@ local trash_put = function(picker, opts)
     return
   end
   local trash_cmd = function(path)
-    return 'trash ' .. path
+    return string.format("trash '%s'", path)
   end
   local what = #paths == 1 and vim.fn.fnamemodify(paths[1], ':p:~:.') or #paths .. ' files'
   ---@param prompt string

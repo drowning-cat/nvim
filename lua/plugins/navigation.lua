@@ -1,7 +1,21 @@
 local W = vim.u.win
 
 -- Vim tabs
-vim.keymap.set('n', 'gC', '<cmd>tabclose<CR>', { desc = 'Vimtab [C]lose' })
+vim.keymap.set('n', 'gC', function()
+  local used_wins = {}
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    if tab ~= vim.api.nvim_get_current_tabpage() then
+      for _, tab_win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+        table.insert(used_wins, tab_win)
+      end
+    end
+  end
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if not vim.tbl_contains(used_wins, win) then
+      vim.cmd.bdelete(vim.api.nvim_win_get_buf(win))
+    end
+  end
+end, { desc = 'Vimtab [C]lose' })
 vim.keymap.set('n', 'gN', '<cmd>tabnew<CR>', { desc = 'Vimtab [N]ew' })
 
 -- Create

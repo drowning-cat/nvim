@@ -299,12 +299,17 @@ return {
       }
 
       -- Work with trailing whitespace
-      local trailspace = require 'mini.trailspace'
-      vim.schedule(function()
-        trailspace.setup()
-        vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
-        vim.keymap.set('n', '<leader>dw', trailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
-      end)
+      vim.api.nvim_create_autocmd('VimEnter', {
+        once = true,
+        callback = function()
+          local trailspace = require 'mini.trailspace'
+          vim.schedule(function()
+            trailspace.setup()
+            vim.api.nvim_set_hl(0, 'MiniTrailspace', { bg = '#832929' })
+            vim.keymap.set('n', '<leader>dw', trailspace.trim, { desc = '[D]elete trailing [W]hitespace' })
+          end)
+        end,
+      })
     end,
   },
 }

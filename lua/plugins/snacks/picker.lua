@@ -553,6 +553,97 @@ return {
             },
           },
         },
+        files_with_symbols = {
+          multi = { 'files', 'lsp_symbols' },
+          filter = {
+            ---@param picker snacks.Picker
+            ---@param filter snacks.picker.Filter
+            transform = function(picker, filter)
+              local symbol_pattern = filter.pattern:match '^.-@(.*)$'
+              local line_pattern = filter.pattern:match '^.-:(%d*)$'
+              local search_pattern = filter.pattern:match '^.-#(.*)$'
+              local pattern = symbol_pattern or line_pattern or search_pattern
+              if pattern then
+                local item = picker:current()
+                if item and item.file then
+                  filter.meta.buf = vim.fn.bufadd(item.file)
+                end
+              end
+              if not filter.meta.buf then
+                filter.source_id = 1
+                return
+              end
+              if symbol_pattern then
+                filter.pattern = symbol_pattern
+                filter.current_buf = filter.meta.buf
+                filter.source_id = 2
+                return
+              end
+              if line_pattern then
+                filter.pattern = filter.pattern:gsub(':%d*$', '')
+                filter.current_buf = filter.meta.buf
+                filter.source_id = 1
+                local item = picker:current()
+                if item then
+                  item.pos = { tonumber(line_pattern) or 1, 0 }
+                  preview.preview:loc()
+                end
+                return
+              end
+              if search_pattern then
+                filter.pattern = filter.pattern:gsub('#.*$', '')
+                filter.current_buf = filter.meta.buf
+                filter.source_id = 1
+                if search_pattern == '' then
+                  return
+                end
+                local item = picker:current()
+                vim.api.nvim_buf_call(picker.preview.win.buf, function()
+                  vim.api.nvim_win_set_cursor(0, { 1, 0 })
+                  local search = vim.fn.searchpos(search_pattern, 'cw')
+                  if search[1] > 0 then
+                    vim.cmd('/' .. search_pattern)
+                    vim.api.nvim_win_set_cursor(0, { search[1], search[2] })
+                    item.pos = { search[1], search[2] }
+                  end
+                end)
+                return
+              end
+            end,
+          },
+          win = {
+            input = {
+              keys = {
+                ['<C-n>'] = { 'next_result', mode = { 'i', 'n' } },
+                ['<Esc>'] = { 'close', mode = { 'i', 'n' } },
+              },
+            },
+          },
+          actions = {
+            close = function(picker, _)
+              vim.cmd 'noh'
+              picker:close()
+            end,
+            next_result = function(picker, _)
+              local filter = picker:filter()
+              local pattern = filter.pattern
+              local search_pattern = pattern:match '^.-#(.*)$'
+              if search_pattern and search_pattern ~= '' then
+                local item = picker:current()
+                vim.api.nvim_buf_call(p.preview.win.buf, function()
+                  vim.api.nvim_win_set_cursor(0, item and item.pos)
+                  local search = vim.fn.searchpos(search_pattern, 'cw')
+                  if search[1] > 0 then
+                    vim.cmd('/' .. search_pattern)
+                    vim.api.nvim_win_set_cursor(0, { search[1], search[2] })
+                    item.pos = { search[1], search[2] }
+                  end
+                end)
+                return
+              end
+            end,
+          },
+        },
         git_pickers = { --[[New]]
           finder = 'meta_pickers',
           title = 'Select Git Picker',

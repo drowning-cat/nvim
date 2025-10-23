@@ -309,15 +309,15 @@ table.insert(plugins, {
     { '<leader>s~E', function() Snacks.picker.explorer { cwd = '~', layout = 'floating_sidebar', auto_close = true } end, desc = '[S]earch [E]xplorer float (home)' },
 
     ---@diagnostic disable-next-line: assign-type-mismatch
-    { '<leader>sf', function() Snacks.picker.files { cwd = vim.u.find_root(), layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (root)' },
+    { '<leader>sf', function() Snacks.picker.files_with_symbols { cwd = vim.u.find_root(), layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (root)' },
     ---@diagnostic disable-next-line: assign-type-mismatch
-    { '<leader>s.f', function() Snacks.picker.files { cwd = nil, layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (cwd)' },
+    { '<leader>s.f', function() Snacks.picker.files_with_symbols { cwd = nil, layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (cwd)' },
     ---@diagnostic disable-next-line: assign-type-mismatch
-    { '<leader>s~f', function() Snacks.picker.files { cwd = '~', layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (home)' },
+    { '<leader>s~f', function() Snacks.picker.files_with_symbols { cwd = '~', layout = { preset = 'vertical_mini', preview = false } } end, desc = '[S]earch [f]iles (home)' },
 
-    { '<leader>sF', function() Snacks.picker.files { cwd = vim.u.find_root() } end, desc = '[S]earch [F]iles (root)' },
-    { '<leader>s.F', function() Snacks.picker.files { cwd = nil } end, desc = '[S]earch [F]iles (cwd)' },
-    { '<leader>s~F', function() Snacks.picker.files { cwd = '~' } end, desc = '[S]earch [F]iles (cwd)' },
+    { '<leader>sF', function() Snacks.picker.files_with_symbols { cwd = vim.u.find_root() } end, desc = '[S]earch [F]iles (root)' },
+    { '<leader>s.F', function() Snacks.picker.files_with_symbols { cwd = nil } end, desc = '[S]earch [F]iles (cwd)' },
+    { '<leader>s~F', function() Snacks.picker.files_with_symbols { cwd = '~' } end, desc = '[S]earch [F]iles (cwd)' },
 
     { '<leader>s;', function() Snacks.picker.grep { cwd = vim.u.find_root() } end, desc = '[S]earch Grep' },
     ---@diagnostic disable-next-line: assign-type-mismatch

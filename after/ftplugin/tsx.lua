@@ -1,5 +1,6 @@
-local user_input = require("mini.surround").user_input
 local surround_ts = require("mini.surround").gen_spec.input.treesitter
+local user_input = require("mini.surround").user_input
+
 vim.b.minisurround_config = {
   custom_surroundings = {
     t = { input = surround_ts({ outer = "@tag.outer", inner = "@tag.inner" }) },

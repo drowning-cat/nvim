@@ -1,16 +1,16 @@
 {
+  "diagnostics": {
+    "disable": ["unnecessary-if"],
+    "globals": ["vim"]
+  },
   "runtime": {
     "version": "LuaJIT"
   },
-  "diagnostics": {
-    "globals": ["vim"]
+  "telemetry": {
+    "enable": false
   },
   "workspace": {
     "checkThirdParty": false,
     "library": ["$VIMRUNTIME", "${3rd}/luv/library"]
-  },
-  "telemetry": {
-    "enable": false
   }
 }
-

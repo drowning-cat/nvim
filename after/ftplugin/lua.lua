@@ -5,3 +5,11 @@ if vim then
     },
   }
 end
+
+vim.b.miniai_config = {
+  custom_textobjects = {
+    F = {
+      "()function.-%)%s*().-()%s*end()",
+    },
+  },
+}

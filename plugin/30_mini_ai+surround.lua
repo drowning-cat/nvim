@@ -7,7 +7,32 @@ local ts_repeat = require("util.ts_repeat")
 
 -- Ai
 
-pack.later(function()
+---@param config {a:string,i:string,fallback:unknown}
+local ts_with = function(config)
+  local function find_fallback(ref_reg, ai_type, opts)
+    local reg = ai_share.find_textobject(config.fallback, ai_type, nil, opts)
+    if not reg then
+      return
+    end
+    if ref_reg then
+      if ai_share.cmp_pos(">=", reg.from, ref_reg.from) then
+        return
+      end
+      if not ai_share.reg_in_capture(reg, "@comment.outer") then
+        local next_opts = vim.tbl_extend("force", opts, { n_times = opts.n_times + 1 })
+        return find_fallback(ref_reg, ai_type, next_opts)
+      end
+    end
+    return reg
+  end
+  return function(ai_type, _, opts)
+    local ts_reg = ai_share.find_capture(config[ai_type], opts)
+    local fallback_reg = find_fallback(ts_reg, ai_type, opts)
+    return ai_share.nearest_reg(ts_reg, fallback_reg)
+  end
+end
+
+pack.plug(function()
   local MiniAi = require("mini.ai")
 
   MiniAi.setup({
@@ -31,7 +56,11 @@ pack.later(function()
         a = { "@block.outer", "@loop.outer", "@conditional.outer" },
         i = { "@block.inner", "@loop.inner", "@conditional.inner" },
       }),
-      a = MiniAi.gen_spec.argument({ separator = ",%s*" }),
+      a = ts_with({
+        a = "@parameter.outer",
+        i = "@parameter.inner",
+        fallback = MiniAi.gen_spec.argument({ separator = ",%s*" }),
+      }),
       d = { "%d+" },
       e = function(ai_type, id, opts)
         local SEP = "_%-"
@@ -71,26 +100,11 @@ pack.later(function()
           end
         end
       end,
-      f = function(ai_type, _, opts)
-        local ts_prefix = ai_type == "a" and "outer" or "inner"
-        local ts_reg = ai_share.find_capture("@call." .. ts_prefix)
-        local function find_pattern(n_times)
-          local find_opts = vim.tbl_extend("force", opts, { n_times = n_times })
-          local spec = MiniAi.gen_spec.function_call()
-          local reg = ai_share.find_textobject(spec, ai_type, nil, find_opts)
-          if not reg then
-            return
-          end
-          if ts_reg and ai_share.cmp_pos(">=", reg.from, ts_reg.from) then
-            return
-          end
-          if ts_reg and not ai_share.reg_in_capture(reg, "comment.outer") then
-            return find_pattern(n_times + 1)
-          end
-          return reg
-        end
-        return ai_share.nearest_reg(ts_reg, find_pattern(opts.n_times))
-      end,
+      f = ts_with({
+        a = "@call.outer",
+        i = "@call.inner",
+        fallback = MiniAi.gen_spec.function_call(),
+      }),
       g = function()
         local from = { line = 1, col = 1 }
         local to = {
@@ -190,7 +204,7 @@ end)
 
 -- Surround
 
-pack.later(function()
+pack.plug(function()
   local MiniSurround = require("mini.surround")
 
   local surround_sel = function()

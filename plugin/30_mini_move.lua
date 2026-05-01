@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniMove = require("mini.move")
 
   MiniMove.setup({

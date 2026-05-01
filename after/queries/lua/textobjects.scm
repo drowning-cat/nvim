@@ -14,6 +14,11 @@
 ((for_statement
   clause: (_) @block.inner) @block.outer)
 
+(variable_list
+  name: (_) @parameter.inner)
+(expression_list
+  value: (_) @parameter.inner)
+
 ((binary_expression
   left: (binary_expression)) @ternary.outer)
 (binary_expression

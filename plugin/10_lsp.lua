@@ -1,5 +1,5 @@
-vim.g.lsp_enable = vim.F.if_nil(vim.g.lsp_enable, {})
-vim.g.doc_highlight = vim.F.if_nil(vim.g.doc_highlight, false)
+vim.g.lsp_enable = vim.nonnil(vim.g.lsp_enable, {})
+vim.g.undim_unnecessary = vim.nonnil(vim.g.undim_unnecessary, false)
 
 local pack = require("util.pack")
 
@@ -7,14 +7,22 @@ pack.add({
   { src = "https://github.com/neovim/nvim-lspconfig" },
 })
 
-pack.now(function()
+pack.plug(function()
   vim.lsp.enable(vim.g.lsp_enable or {})
   vim.diagnostic.config({ virtual_text = true })
 
   vim.keymap.set("n", "gK", function()
-    local state = not vim.diagnostic.config().virtual_text
-    vim.diagnostic.config({ virtual_text = state, underline = state })
+    local next = not vim.diagnostic.config().virtual_text
+    vim.diagnostic.config({ virtual_text = next, underline = next })
   end, { desc = "Toggle diagnostic" })
+
+  vim.keymap.set("n", "<Leader>tc", function()
+    vim.lsp.inline_completion.enable(not vim.lsp.inline_completion.is_enabled())
+  end, { desc = "Toggle inline completion" })
+
+  vim.keymap.set("i", "<S-Tab>", function()
+    vim.lsp.inline_completion.get()
+  end, { desc = "Accept inline" })
 
   vim.keymap.set("n", "<Leader>ti", function()
     vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
@@ -22,20 +30,20 @@ pack.now(function()
 
   vim.keymap.set("n", "<Leader>th", function()
     vim.lsp.buf.clear_references()
-    vim.g.doc_highlight = not vim.g.doc_highlight
+    vim.g.undim_unnecessary = not vim.g.undim_unnecessary
   end, { desc = "Toggle document highlight" })
 
-  local setup_doc_highlight = function(buf, client)
+  local setup_undim_unnecessary = function(buf, client)
     if not client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
       return
     end
     local cleanup = false
-    local au = vim.api.nvim_create_augroup("doc_highlight", { clear = false })
+    local au = vim.api.nvim_create_augroup("undim_unnecessary", { clear = false })
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
       group = au,
       buffer = buf,
       callback = function()
-        if vim.g.doc_highlight then
+        if vim.g.undim_unnecessary then
           vim.lsp.buf.document_highlight()
           cleanup = true
         end
@@ -59,14 +67,14 @@ pack.now(function()
     callback = function(e)
       local buf = e.buf
       local client = assert(vim.lsp.get_client_by_id(e.data.client_id))
-      setup_doc_highlight(buf, client)
+      setup_undim_unnecessary(buf, client)
     end,
   })
 end)
 
 -- Undim current diagnostic
 
-pack.later(function()
+pack.plug(function()
   local undim_au = vim.api.nvim_create_augroup("undim_diagnostic", { clear = false })
   local function toggle_undim(buf, client_id)
     buf = buf or 0
@@ -166,7 +174,7 @@ end)
 
 -- Lsp progress
 
-pack.later(function()
+pack.plug(function()
   local au = vim.api.nvim_create_augroup("lsp_progress", { clear = true })
   local ns = vim.api.nvim_create_namespace("lsp_progress")
   local timer = assert(vim.uv.new_timer())

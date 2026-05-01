@@ -2,10 +2,10 @@ local pack = require("util.pack")
 
 _G.MiniClue = _G.MiniClue
 
-pack.later(function()
+pack.plug(function()
   local MiniFiles = require("mini.files")
 
-  local files_au = vim.api.nvim_create_augroup("minifiles", { clear = true })
+  local au = vim.api.nvim_create_augroup("minifiles", { clear = true })
 
   MiniFiles.setup({
     windows = {
@@ -80,7 +80,7 @@ pack.later(function()
         table.insert(selected, fs_entry)
       end
     end
-    return selected
+    return selected, MiniFiles.get_fs_entry()
   end
 
   -- Keymaps
@@ -128,10 +128,18 @@ pack.later(function()
     })
   end
 
-  local set_cwd = function()
+  local get_fs_path = function()
     local path = (MiniFiles.get_fs_entry() or {}).path
-    if path == nil then
-      return vim.notify("Cursor is not on valid entry")
+    if path then
+      return path
+    end
+    vim.notify("Not a valid entry", vim.log.levels.WARN)
+  end
+
+  local set_cwd = function()
+    local path = get_fs_path()
+    if not path then
+      return
     end
     local dirname = vim.fs.dirname(path)
     vim.fn.chdir(dirname)
@@ -139,7 +147,11 @@ pack.later(function()
   end
 
   local ui_open = function()
-    vim.ui.open(MiniFiles.get_fs_entry().path)
+    local path = get_fs_path()
+    if not path then
+      return
+    end
+    vim.ui.open(path)
   end
 
   local yank_path = function()
@@ -235,7 +247,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesExplorerClose",
     desc = "Save `mini.files` alternate entry on close",
-    group = files_au,
+    group = au,
     callback = function()
       alt_entry = new_alt()
     end,
@@ -263,10 +275,45 @@ pack.later(function()
     MiniPick.registry.files(nil, { source = { cwd = parent } })
   end
 
+  local git_run = function(cwd, args)
+    vim.system({ "git", unpack(args) }, { cwd = cwd }, function()
+      vim.schedule(function()
+        if MiniFilesStatus then
+          MiniFilesStatus.synchronize()
+        end
+        if vim.api.nvim_get_mode().mode:match("[Vv\22]") then
+          vim.api.nvim_input("<Esc>")
+        end
+      end)
+    end)
+  end
+
+  local get_branch = function(buf)
+    local buf_name = vim.api.nvim_buf_get_name(buf)
+    return string.match(buf_name, "^minifiles://%d+/(.*)")
+  end
+  local get_path = function(fs_entry)
+    return fs_entry.path
+  end
+
+  local git_stage_entry = function()
+    local selected = get_selected()
+    local sel_paths = vim.tbl_map(get_path, selected)
+    local cwd = get_branch(0)
+    git_run(cwd, { "add", unpack(sel_paths) })
+  end
+
+  local git_unstage_entry = function()
+    local selected = get_selected()
+    local sel_paths = vim.tbl_map(get_path, selected)
+    local cwd = get_branch(0)
+    git_run(cwd, { "restore", "--staged", unpack(sel_paths) })
+  end
+
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesExplorerOpen",
     desc = "Define `mini.files` bookmarks (supports file bookmarks)",
-    group = files_au,
+    group = au,
     callback = function()
       local target_win = MiniFiles.get_explorer_state().target_window
       local target_buf = vim.api.nvim_win_get_buf(target_win)
@@ -281,7 +328,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesBufferCreate",
     desc = "Ensure `mini.clue` triggers work with `mini.files`",
-    group = files_au,
+    group = au,
     callback = function(e)
       if MiniClue then
         MiniClue.ensure_buf_triggers(e.data.buf_id)
@@ -292,7 +339,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesBufferCreate",
     desc = "Define `mini.files` buffer keymaps",
-    group = files_au,
+    group = au,
     callback = function(e)
       local buf_map = function(mode, lhs, rhs, opts)
         vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = e.data.buf_id }))
@@ -313,6 +360,8 @@ pack.later(function()
       buf_map("n", "<C-^>", function() edit_alt() end, { desc = "Edit alternate" })
       buf_map("n", "<Leader>sg", function() search_grep() end, { desc = "Search grep" })
       buf_map("n", "<Leader>sf", function() search_files() end, { desc = "Search files" })
+      buf_map({ "n", "v" }, "gh", function() git_stage_entry() end, { desc = "Git stage" })
+      buf_map({ "n", "v" }, "gH", function() git_unstage_entry() end, { desc = "Git unstage" })
     end,
   })
 
@@ -339,23 +388,31 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesWindowUpdate",
     desc = "Set `mini.files` options",
-    group = files_au,
+    group = au,
     callback = function(e)
       local win = e.data.win_id
       local buf = e.data.buf_id
       local is_preview = win == get_preview_win()
       local _, stat = buf_get_path(buf)
-      local is_dir = stat and stat.type == "directory"
-      vim.wo[win].number = not (is_preview and is_dir)
-      vim.wo[win].relativenumber = not is_preview
-      vim.wo[win].cursorline = not is_preview
-      if is_preview and stat then
-        local config = vim.api.nvim_win_get_config(win)
-        local left = vim.tbl_get(config, "title", 1, 1) or ""
-        local right = string.format(" %s | %s ", format_size(stat), format_time(stat))
-        local pad_sym = vim.tbl_get(config, "border", 2) or " "
-        local pad = string.rep(pad_sym, math.max(1, config.width - #left - #right))
-        vim.api.nvim_win_set_config(win, { title = { { left }, { pad }, { right } } })
+      local is_file = stat and stat.type == "file"
+      if is_preview then
+        if is_file then
+          vim.wo[win].number = true
+          vim.wo[win].conceallevel = 0
+        end
+        -- NOTE: Display status in the top-right corner of the preview window
+        if stat then
+          local config = vim.api.nvim_win_get_config(win)
+          local left = vim.tbl_get(config, "title", 1, 1) or ""
+          local right = string.format(" %s | %s ", format_size(stat), format_time(stat))
+          local pad_sym = vim.tbl_get(config, "border", 2) or " "
+          local pad = string.rep(pad_sym, math.max(1, config.width - #left - #right))
+          vim.api.nvim_win_set_config(win, { title = { { left }, { pad }, { right } } })
+        end
+      else
+        vim.wo[win].number = true
+        vim.wo[win].relativenumber = true
+        vim.wo[win].cursorline = true
       end
     end,
   })
@@ -372,7 +429,10 @@ pack.later(function()
   local resize_autocmd = function(event, opts)
     vim.api.nvim_create_autocmd(
       event,
-      vim.tbl_extend("keep", opts, { desc = "Resize `mini.files` preview to be always visible", group = files_au })
+      vim.tbl_extend("keep", opts, {
+        desc = "Resize `mini.files` preview to be always visible",
+        group = au,
+      })
     )
   end
 
@@ -440,6 +500,7 @@ pack.later(function()
       end
       local read_ok, read_lines = pcall(vim.fn.readfile, path, "")
       if read_ok then
+        -- NOTE: Remove '\n', which may appear in binary files
         local lines = vim.split(table.concat(read_lines, "\n"), "\n")
         vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
       end

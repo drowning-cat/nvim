@@ -1,5 +1,5 @@
-vim.g.project_dirs = vim.F.if_nil(vim.g.project_dirs, {})
-vim.g.project_maxdepth = vim.F.if_nil(vim.g.project_maxdepth, 3)
+vim.g.project_dirs = vim.nonnil(vim.g.project_dirs, {})
+vim.g.project_maxdepth = vim.nonnil(vim.g.project_maxdepth, 3)
 
 local pick_share = require("share.plugin.mini_pick")
 
@@ -10,7 +10,7 @@ local find_projects = util_root.find_projects
 
 -- Pick
 
-pack.now(function()
+pack.plug(function()
   local MiniPick = require("mini.pick")
   local MiniExtra = require("mini.extra")
 
@@ -26,6 +26,7 @@ pack.now(function()
   end
 
   MiniPick.registry.git_hunks = function(local_opts, opts)
+    local_opts = local_opts or {}
     local choose_marked = function(items)
       if vim.tbl_isempty(items) then
         items = { MiniPick.get_picker_matches().current }
@@ -459,7 +460,7 @@ end)
 
 -- Visits
 
-pack.now(function()
+pack.plug(function()
   local MiniVisits = require("mini.visits")
   local MiniExtra = require("mini.extra")
 

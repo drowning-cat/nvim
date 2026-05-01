@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniPairs = require("mini.pairs")
 
   MiniPairs.setup({

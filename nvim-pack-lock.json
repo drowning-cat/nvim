@@ -1,23 +1,23 @@
 {
   "plugins": {
     "blink.cmp": {
-      "rev": "1617522ae80ca2436813da8afe2fc4b1280e975d",
+      "rev": "d26c6b0a4ea9188b9d10fdd5b180deba7675e3cd",
       "src": "https://github.com/Saghen/blink.cmp"
     },
     "blink.lib": {
-      "rev": "dda2666685a5ac3598166577d2e34f1fff6b1637",
+      "rev": "2789206e10a0e4880f808c2aaf52bc57d876b481",
       "src": "https://github.com/Saghen/blink.lib"
     },
     "mason.nvim": {
-      "rev": "cb8445f8ce85d957416c106b780efd51c6298f89",
+      "rev": "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d",
       "src": "https://github.com/mason-org/mason.nvim"
     },
     "mini.hues": {
-      "rev": "943c966c5c165f4401164d72a6a221197fe124a4",
+      "rev": "caef024b4b59ecd0446f9151a056068872882a19",
       "src": "https://github.com/nvim-mini/mini.hues"
     },
     "mini.nvim": {
-      "rev": "be81509b7160aa02264a59789164a2e1c4a6750a",
+      "rev": "946ae64e0ee807ae3c41f382f0114b4ed4915b2c",
       "src": "https://github.com/nvim-mini/mini.nvim",
       "version": "'main'"
     },
@@ -26,11 +26,11 @@
       "src": "https://github.com/jake-stewart/multicursor.nvim"
     },
     "nvim-dap": {
-      "rev": "45a69eba683a2c448dd9ecfc4de89511f0646b5f",
+      "rev": "9e848e09a697ee95302a3ef2dd43fd6eb709e570",
       "src": "https://github.com/mfussenegger/nvim-dap"
     },
     "nvim-dap-view": {
-      "rev": "516c1187cbae16bc08593bbcb0c9b03d53048fdc",
+      "rev": "440ec66c2b26470ec97cd4d6667cdd4b51cbc7cb",
       "src": "https://github.com/igorlfs/nvim-dap-view"
     },
     "nvim-dap-virtual-text": {
@@ -38,23 +38,31 @@
       "src": "https://github.com/theHamsta/nvim-dap-virtual-text"
     },
     "nvim-lspconfig": {
-      "rev": "f7e89f3d19fb436e1fbeff3bf4291eef35da94e3",
+      "rev": "b7b920947f21339ee41fbb38c79d6445e12900aa",
       "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-treesitter": {
-      "rev": "4916d6592ede8c07973490d9322f187e07dfefac",
+      "rev": "0f32dff7f19476629c77467f887b95e5e2d33509",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "nvim-treesitter-context": {
-      "rev": "b0c45cefe2c8f7b55fc46f34e563bc428ef99636",
+      "rev": "b311b30818951d01f7b4bf650521b868b3fece16",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-context"
     },
     "nvim-treesitter-textobjects": {
       "rev": "851e865342e5a4cb1ae23d31caf6e991e1c99f1e",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
     },
+    "opencode.nvim": {
+      "rev": "7749a034db61258ece828df70a89ff31bb27ff47",
+      "src": "https://github.com/nickjvandyke/opencode.nvim"
+    },
+    "quicker.nvim": {
+      "rev": "4a6883cb13fe097a20a046eb55f6dffd239276e3",
+      "src": "https://github.com/stevearc/quicker.nvim"
+    },
     "render-markdown.nvim": {
-      "rev": "3f3eea97b80839f629c951ca660ffd125bfa5b34",
+      "rev": "f422cb5c6855f150e2ddcfaf44e7157b98b34f6a",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "sibling-swap.nvim": {
@@ -66,12 +74,16 @@
       "src": "https://github.com/folke/tokyonight.nvim"
     },
     "treesj": {
-      "rev": "5fa4e7ba3517f8fe743bb4488f9e9c7ce83330fc",
+      "rev": "79aedb401bbdc7e4202f7881eab5f6feb2105b0a",
       "src": "https://github.com/Wansmer/treesj"
     },
     "treewalker.nvim": {
-      "rev": "ba74c5ec8bd128297170476d56389125ecb23799",
+      "rev": "cfe3c69396233ddbbd6b581b00868985f78ffd9e",
       "src": "https://github.com/aaronik/treewalker.nvim"
+    },
+    "vim-sleuth": {
+      "rev": "be69bff86754b1aa5adcbb527d7fcd1635a84080",
+      "src": "https://github.com/tpope/vim-sleuth"
     }
   }
 }

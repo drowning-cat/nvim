@@ -215,28 +215,17 @@ end
 
 M.gen_show = {}
 
-local safe_show = function(show_fn)
-  return function(buf, data, query, opts)
-    xpcall(function()
-      show_fn(buf, data, query, opts)
-    end, function(err)
-      vim.api.nvim_win_close(0, true)
-      vim.api.nvim_echo({ { debug.traceback(err), "ErrorMsg" } }, true, {})
-    end)
-  end
-end
-
 ---@param item_cb fun(item,i,buf,data,query): Slot[]
 ---@param opts? FormatOpts
 local make_show = function(item_cb, opts)
-  return safe_show(function(buf, data, query)
+  return function(buf, data, query)
     local ret = {}
     for i, item in ipairs(data) do
       local row = item_cb(item, i, buf, data, query) or {}
       table.insert(ret, row)
     end
     format(buf, ret, opts)
-  end)
+  end
 end
 
 function M.gen_show.buf_lines(local_opts)

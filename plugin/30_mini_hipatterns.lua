@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniHipatterns = require("mini.hipatterns")
 
   local hi_todo = function(words, hl_name)
@@ -8,8 +8,8 @@ pack.later(function()
       .iter(words)
       :map(function(word)
         return {
-          "() ?" .. word .. "%(.-%)[: ]()",
-          "() ?" .. word .. "[: ]()",
+          "%W() ?" .. word .. "%(.-%)[: ]()",
+          "%W() ?" .. word .. "[: ]()",
         }
       end)
       :flatten()
@@ -98,7 +98,7 @@ pack.later(function()
   MiniHipatterns.setup({
     highlighters = {
       fix = hi_todo({ "FIX", "FIXME", "BUG" }, "MiniHipatternsFixme"),
-      note = hi_todo({ "NOTE" }, "MiniHipatternsNote"),
+      note = hi_todo({ "NOTE", "DEBUG" }, "MiniHipatternsNote"),
       todo = hi_todo({ "TODO", "FEAT" }, "MiniHipatternsTodo"),
       hack = hi_todo({ "WARN", "WARNING", "HACK" }, "MiniHipatternsHack"),
       perf = hi_todo({ "PERF" }, "HipatternsPerf"),

@@ -1,8 +1,8 @@
-vim.g.cycle_config = vim.F.if_nil(vim.g.cycle_config, {})
+vim.g.cycle_config = vim.nonnil(vim.g.cycle_config, {})
 
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniAi = _G.MiniAi ---@diagnostic disable-line
   if not MiniAi then
     vim.notify("[mini.cycle] Depends on `mini.ai`", vim.log.levels.WARN)

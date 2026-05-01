@@ -4,7 +4,7 @@ pack.add({
   { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
 })
 
-pack.now(function()
+pack.plug(function()
   require("render-markdown").setup({
     checkbox = { enabled = false },
     code = { sign = false, width = "full" },

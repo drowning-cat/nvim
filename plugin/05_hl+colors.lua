@@ -7,12 +7,12 @@ pack.add({
 
 -- Highlights
 
-pack.now(function()
+pack.plug(function()
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = vim.api.nvim_create_augroup("custom_highlights", { clear = true }),
     desc = "Define permanent highlights",
     callback = function()
-      -- Lsp
+      -- Lsp notifications
       vim.api.nvim_set_hl(0, "LspProgress", { default = true, link = "Comment" })
       -- mini.hipatterns
       local perf_bg = vim.api.nvim_get_hl(0, { name = "Indentifier", link = false }).fg
@@ -35,24 +35,26 @@ end)
 
 -- Persistent colors
 
-pack.now(function()
+pack.plug(function()
+  local colors_file = vim.fn.stdpath("state") .. "/colorscheme"
+
   vim.api.nvim_create_autocmd("ColorScheme", {
     group = vim.api.nvim_create_augroup("save_colors", { clear = true }),
-    desc = "Save the colorscheme in shada-persistent variables",
+    desc = "Save the current colorscheme to a file",
     callback = function()
-      vim.g.COLORS_NAME = vim.g.colors_name
-      vim.g.COLORS_BG = vim.o.background
+      vim.fn.writefile({ vim.g.colors_name, vim.o.background }, colors_file)
     end,
   })
 
-  local set_colorscheme = function(bg, name)
-    vim.o.background = bg
-    vim.cmd.colorscheme({ name, mods = { silent = true } })
-    return name == vim.g.colors_name
+  local set_colorscheme = function(name, bg)
+    return pcall(function()
+      vim.o.background = bg
+      vim.cmd.colorscheme(name)
+    end)
   end
 
-  pcall(vim.cmd.rshada)
-  if not set_colorscheme(vim.g.COLORS_BG, vim.g.COLORS_NAME) then
-    set_colorscheme("dark", "tokyonight")
+  local _, lines = pcall(vim.fn.readfile, colors_file)
+  if not set_colorscheme(lines[1], lines[2]) then
+    set_colorscheme("tokyonight", "dark")
   end
 end)

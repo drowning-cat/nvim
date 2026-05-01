@@ -6,7 +6,7 @@ pack.add({
   { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
 })
 
-pack.later(function()
+pack.plug(function()
   local dap = require("dap")
   local dap_view = require("dap-view")
 

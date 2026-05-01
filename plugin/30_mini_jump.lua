@@ -1,7 +1,7 @@
 local pack = require("util.pack")
 local ts_repeat = require("util.ts_repeat")
 
-pack.later(function()
+pack.plug(function()
   local MiniJump = require("mini.jump")
 
   MiniJump.setup({
@@ -14,7 +14,7 @@ pack.later(function()
   MiniJump.jump = function(target, backward, till, n_times)
     minijump_jump(target, backward, till, n_times)
     ts_repeat.save_last({
-      forward = not vim.F.if_nil(backward, MiniJump.state.backward),
+      forward = not vim.nonnil(backward, MiniJump.state.backward),
       func = function(isf)
         minijump_jump(target, not isf, till, n_times)
       end,

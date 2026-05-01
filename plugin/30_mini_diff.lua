@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniDiff = require("mini.diff")
 
   MiniDiff.setup({

@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.now(function()
+pack.plug(function()
   local MiniIcons = require("mini.icons")
 
   MiniIcons.setup()

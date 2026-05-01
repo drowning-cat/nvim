@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   vim.api.nvim_create_autocmd("TermOpen", {
     group = vim.api.nvim_create_augroup("term_open", { clear = true }),
     desc = "Set options for the terminal window",

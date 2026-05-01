@@ -1,9 +1,6 @@
-local session_directory = vim.F.if_nil(vim.g.session_directory, vim.fn.getcwd())
+local session_directory = vim.nonnil(vim.g.session_directory, vim.fn.getcwd())
 
-vim.g.session_center = vim.F.if_nil(vim.g.session_center, false)
-vim.g.session_auto_load = vim.F.if_nil(vim.g.session_auto_load, true)
-vim.g.session_auto_save = vim.F.if_nil(vim.g.session_auto_save, true)
-vim.g.session_close_ft = vim.F.if_nil(vim.g.session_close_ft, {})
+vim.g.session_close_ft = vim.nonnil(vim.g.session_close_ft, {})
 
 _G.save_session = function(name)
   local path = vim.fs.joinpath(session_directory, name)
@@ -18,9 +15,8 @@ _G.load_session = function(name)
   vim.cmd("%bdelete!") -- %bwipeout!
   vim.cmd.source(vim.fn.fnameescape(path))
   vim.g.LAST_SESSION = name
-  if vim.g.session_center then
-    vim.cmd('normal! zz"')
-  end
+  -- Center cursor
+  vim.cmd('normal! zz"')
 end
 
 local util_root = require("util.root")
@@ -44,26 +40,17 @@ vim.api.nvim_create_user_command("Last", function()
   load_session()
 end, {})
 
-vim.api.nvim_create_user_command("NoLoad", function()
-  vim.g.session_auto_load = false
-end, {})
-
-local load_au = vim.api.nvim_create_augroup("session_load", { clear = true })
-local save_au = vim.api.nvim_create_augroup("session_save", { clear = true })
-
--- Load on enter
+-- Load
 
 if vim.fn.argc() == 0 then
-  vim.api.nvim_create_autocmd("VimEnter", {
-    nested = true,
-    group = load_au,
-    desc = "Load session on `vim` with no args",
-    callback = function()
-      if vim.g.session_auto_load and vim.bo.buftype == "" then
-        vim.cmd("silent! Load")
-      end
-      -- NOTE: Ask to open Git conflict files
-      local when_conflict = function(files)
+  if vim.bo.buftype == "" then
+    vim.cmd("silent! Load")
+  end
+  -- NOTE: Ask to open Git conflict files
+  vim.system({ "git", "diff", "--relative", "--name-only", "--diff-filter=U" }, {}, function(out)
+    if out.code == 0 then
+      vim.schedule(function()
+        local files = vim.split(out.stdout or "", "\n", { trimempty = true })
         if vim.tbl_isempty(files) then
           return
         end
@@ -76,19 +63,14 @@ if vim.fn.argc() == 0 then
           vim.cmd.tabedit(vim.fn.fnameescape(file))
         end
         vim.cmd.tabclose(1)
-      end
-      vim.system({ "git", "diff", "--relative", "--name-only", "--diff-filter=U" }, {}, function(out)
-        if out.code == 0 then
-          vim.schedule(function()
-            when_conflict(vim.split(out.stdout or "", "\n", { trimempty = true }))
-          end)
-        end
       end)
-    end,
-  })
+    end
+  end)
 end
 
--- Save on leave
+-- Save
+
+local save_au = vim.api.nvim_create_augroup("session_save", { clear = true })
 
 local should_close = function(win)
   win = win or 0
@@ -100,9 +82,6 @@ vim.api.nvim_create_autocmd("VimLeave", {
   group = save_au,
   desc = "Save session on VimLeave",
   callback = function()
-    if not vim.g.session_auto_save then
-      return
-    end
     local win_list = {}
     for _, win in ipairs(vim.api.nvim_list_wins()) do
       local non_float = vim.api.nvim_win_get_config(win).relative == ""

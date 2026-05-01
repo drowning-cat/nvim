@@ -45,7 +45,7 @@ vim.o.smartcase = true
 vim.opt.iskeyword:append("-")
 
 vim.o.list = true
-vim.o.listchars = "tab:▷ ,trail:·,nbsp:○"
+vim.o.listchars = "tab:▷ ,trail:·,nbsp:␣"
 
 vim.o.spell = true
 vim.o.spelllang = "en_us,ru"
@@ -57,7 +57,6 @@ vim.o.backupdir = vim.fn.stdpath("state") .. "/backup"
 -- Plugin options
 
 vim.g.session_directory = vim.fn.stdpath("state") .. "/sessions"
-vim.g.session_center = false
 vim.g.session_close_ft = {
   "gitcommit",
   "gitrebase",
@@ -176,14 +175,14 @@ vim.cmd.packadd("nvim.undotree")
 
 -- Mason
 
-local mason_install = vim.F.if_nil(vim.g.mason_install, {})
+local mason_install = vim.nonnil(vim.g.mason_install, {})
 local pack = require("util.pack")
 
 pack.add({
   { src = "https://github.com/mason-org/mason.nvim" },
 })
 
-pack.now(function()
+pack.plug(function()
   require("mason").setup()
 
   local mason_available = require("mason-registry").get_installed_package_names()

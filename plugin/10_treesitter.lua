@@ -1,4 +1,4 @@
-local ts_install = vim.F.if_nil(vim.g.ts_install, {})
+local ts_install = vim.nonnil(vim.g.ts_install, {})
 
 local pack = require("util.pack")
 
@@ -21,7 +21,7 @@ pack.add({
   { src = "https://github.com/aaronik/treewalker.nvim" },
 })
 
-pack.now(function()
+pack.plug(function()
   vim.treesitter.language.register("tsx", "typescriptreact")
 
   local ts_filetypes = vim
@@ -73,21 +73,21 @@ pack.now(function()
   end
 end)
 
-pack.later(function()
+pack.plug(function()
   local ts_context = require("treesitter-context")
   ts_context.setup({ max_lines = 3 })
   -- stylua: ignore start
   vim.keymap.set("n", "[c", function() ts_context.go_to_context(vim.v.count1) end, { desc = "Jump context" })
 end)
 
-pack.later(function()
+pack.plug(function()
   local treesj = require("treesj")
   treesj.setup({ use_default_keymaps = false })
   -- stylua: ignore start
   vim.keymap.set("n", "<Leader>S", function() treesj.toggle() end, { desc = "Tsj toggle" })
 end)
 
-pack.later(function()
+pack.plug(function()
   local sw = require("sibling-swap")
   sw.setup({ use_default_keymaps = false })
 

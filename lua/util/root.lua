@@ -1,7 +1,7 @@
 local M = {}
 
-vim.g.root_markers = vim.F.if_nil(vim.g.root_markers, {})
-vim.g.project_ignore = vim.F.if_nil(vim.g.project_ignore, {})
+vim.g.root_markers = vim.nonnil(vim.g.root_markers, {})
+vim.g.project_ignore = vim.nonnil(vim.g.project_ignore, {})
 
 function M.setup()
   vim.g.cwd_glob = vim.fn.getcwd()

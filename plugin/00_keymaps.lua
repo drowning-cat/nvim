@@ -3,7 +3,12 @@ vim.keymap.set({ "n", "i" }, "<C-S-j>", "<Down>", { desc = "Cursor down" })
 vim.keymap.set({ "n", "i" }, "<C-S-k>", "<Up>", { desc = "Cursor up" })
 vim.keymap.set({ "n", "i" }, "<C-S-l>", "<Right>", { desc = "Cursor right" })
 
-vim.keymap.set("i", "<S-Enter>", "<Enter><Up><End>", { desc = "Anchored enter" })
+vim.keymap.set("n", "<Leader>R", "<Cmd>write<Enter>ZR", { desc = "Restart" })
+
+vim.keymap.set("n", "<Leader>w", "<Cmd>w<Enter>", { desc = "Write" })
+vim.keymap.set("n", "<Leader>W", "<Cmd>wall<Enter>", { desc = "Write" })
+
+vim.keymap.set("i", "<C-Enter>", "<Enter><Up><End>", { desc = "Anchored enter" })
 
 vim.keymap.set("n", "[p", '<Cmd>exe "put! " . v:register<Enter>', { desc = "Paste above" })
 vim.keymap.set("n", "]p", '<Cmd>exe "put "  . v:register<Enter>', { desc = "Paste below" })
@@ -28,25 +33,11 @@ local swap_buf = function(dir)
   vim.api.nvim_set_current_win(next_win)
 end
 -- stylua: ignore start
-vim.keymap.set("n", "<C-w>mh", function() swap_buf("h") end, { desc = "Swap left" })
-vim.keymap.set("n", "<C-w>mj", function() swap_buf("j") end, { desc = "Swap down" })
-vim.keymap.set("n", "<C-w>mk", function() swap_buf("k") end, { desc = "Swap up" })
-vim.keymap.set("n", "<C-w>ml", function() swap_buf("l") end, { desc = "Swap right" })
+vim.keymap.set("n", "<C-w><M-h>", function() swap_buf("h") end, { desc = "Swap left" })
+vim.keymap.set("n", "<C-w><M-j>", function() swap_buf("j") end, { desc = "Swap down" })
+vim.keymap.set("n", "<C-w><M-k>", function() swap_buf("k") end, { desc = "Swap up" })
+vim.keymap.set("n", "<C-w><M-l>", function() swap_buf("l") end, { desc = "Swap right" })
 -- stylua: ignore end
-
--- Restart
-
-local fallback_session = vim.fn.stdpath("state") .. "/Restart.vim"
-local session_restart = function()
-  local session = vim.v.this_session ~= "" and vim.v.this_session or fallback_session
-  local esc_session = vim.fn.fnameescape(session)
-  if vim.bo.buftype == "" then
-    vim.cmd("silent! write")
-  end
-  vim.cmd(string.format("mksession! %s | confirm restart source %s", esc_session, esc_session))
-end
--- stylua: ignore
-vim.keymap.set("n", "<Leader>R", function() session_restart() end, { desc = "Restart" })
 
 -- Copy to clipboard
 

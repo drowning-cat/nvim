@@ -1,5 +1,5 @@
-vim.g.lsp_enable = vim.F.if_nil(vim.g.lsp_enable, {})
-vim.g.doc_highlight = vim.F.if_nil(vim.g.doc_highlight, false)
+vim.g.lsp_enable = vim.nonnil(vim.g.lsp_enable, {})
+vim.g.doc_highlight = vim.nonnil(vim.g.doc_highlight, false)
 
 local pack = require("util.pack")
 
@@ -7,7 +7,7 @@ pack.add({
   { src = "https://github.com/neovim/nvim-lspconfig" },
 })
 
-pack.now(function()
+pack.plug(function()
   vim.lsp.enable(vim.g.lsp_enable or {})
   vim.diagnostic.config({ virtual_text = true })
 
@@ -66,7 +66,7 @@ end)
 
 -- Undim current diagnostic
 
-pack.later(function()
+pack.plug(function()
   local undim_au = vim.api.nvim_create_augroup("undim_diagnostic", { clear = false })
   local function toggle_undim(buf, client_id)
     buf = buf or 0
@@ -166,7 +166,7 @@ end)
 
 -- Lsp progress
 
-pack.later(function()
+pack.plug(function()
   local au = vim.api.nvim_create_augroup("lsp_progress", { clear = true })
   local ns = vim.api.nvim_create_namespace("lsp_progress")
   local timer = assert(vim.uv.new_timer())

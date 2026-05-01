@@ -2,12 +2,11 @@ local M = {}
 
 setmetatable(M, { __index = vim.pack })
 
-function M.now(callback)
-  callback()
-end
-
-function M.later(callback)
-  vim.schedule(callback)
+function M.plug(callback)
+  local ok, err = xpcall(callback, debug.traceback)
+  if not ok then
+    vim.notify(err, vim.log.levels.ERROR, { title = "Plug error" })
+  end
 end
 
 local is_build_event = function(e)

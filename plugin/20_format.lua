@@ -1,9 +1,9 @@
-vim.g.formatconf = vim.F.if_nil(vim.g.formatconf, {})
-vim.g.format_on_save = vim.F.if_nil(vim.g.format_on_save, false)
+vim.g.formatconf = vim.nonnil(vim.g.formatconf, {})
+vim.g.format_on_save = vim.nonnil(vim.g.format_on_save, false)
 
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   ---@class FormatBufOpts
   ---@field cmd string[]
   ---@field stdin? [integer,integer]
@@ -107,7 +107,7 @@ pack.later(function()
 
   local silent_call = function(is_silent, cb)
     local notify = vim.notify
-    if vim.F.if_nil(is_silent, true) then
+    if vim.nonnil(is_silent, true) then
       ---@diagnostic disable-next-line: duplicate-set-field
       vim.notify = function() end
     end
@@ -214,7 +214,7 @@ pack.later(function()
     group = vim.api.nvim_create_augroup("format_on_save", { clear = true }),
     callback = function()
       local if_unset = false
-      local is_enabled = vim.F.if_nil(vim.b.format_on_save, vim.g.format_on_save, if_unset)
+      local is_enabled = vim.nonnil(vim.b.format_on_save, vim.g.format_on_save, if_unset)
       if is_enabled then
         format({ async = true, silent = true })
       end

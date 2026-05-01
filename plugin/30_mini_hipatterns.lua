@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniHipatterns = require("mini.hipatterns")
 
   local hi_todo = function(words, hl_name)

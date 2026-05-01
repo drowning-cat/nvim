@@ -1,6 +1,6 @@
 local pack = require("util.pack")
 
-pack.later(function()
+pack.plug(function()
   local MiniIndentscope = require("mini.indentscope")
 
   vim.g.miniindentscope_disable = true

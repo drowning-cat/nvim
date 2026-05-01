@@ -2,10 +2,10 @@ local pack = require("util.pack")
 
 _G.MiniClue = _G.MiniClue
 
-pack.later(function()
+pack.plug(function()
   local MiniFiles = require("mini.files")
 
-  local files_au = vim.api.nvim_create_augroup("minifiles", { clear = true })
+  local au = vim.api.nvim_create_augroup("minifiles", { clear = true })
 
   MiniFiles.setup({
     windows = {
@@ -128,10 +128,18 @@ pack.later(function()
     })
   end
 
-  local set_cwd = function()
+  local get_fs_path = function()
     local path = (MiniFiles.get_fs_entry() or {}).path
-    if path == nil then
-      return vim.notify("Cursor is not on valid entry")
+    if path then
+      return path
+    end
+    vim.notify("Not a valid entry", vim.log.levels.WARN)
+  end
+
+  local set_cwd = function()
+    local path = get_fs_path()
+    if not path then
+      return
     end
     local dirname = vim.fs.dirname(path)
     vim.fn.chdir(dirname)
@@ -139,7 +147,11 @@ pack.later(function()
   end
 
   local ui_open = function()
-    vim.ui.open(MiniFiles.get_fs_entry().path)
+    local path = get_fs_path()
+    if not path then
+      return
+    end
+    vim.ui.open(path)
   end
 
   local yank_path = function()
@@ -235,7 +247,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesExplorerClose",
     desc = "Save `mini.files` alternate entry on close",
-    group = files_au,
+    group = au,
     callback = function()
       alt_entry = new_alt()
     end,
@@ -266,7 +278,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesExplorerOpen",
     desc = "Define `mini.files` bookmarks (supports file bookmarks)",
-    group = files_au,
+    group = au,
     callback = function()
       local target_win = MiniFiles.get_explorer_state().target_window
       local target_buf = vim.api.nvim_win_get_buf(target_win)
@@ -281,7 +293,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesBufferCreate",
     desc = "Ensure `mini.clue` triggers work with `mini.files`",
-    group = files_au,
+    group = au,
     callback = function(e)
       if MiniClue then
         MiniClue.ensure_buf_triggers(e.data.buf_id)
@@ -292,7 +304,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesBufferCreate",
     desc = "Define `mini.files` buffer keymaps",
-    group = files_au,
+    group = au,
     callback = function(e)
       local buf_map = function(mode, lhs, rhs, opts)
         vim.keymap.set(mode, lhs, rhs, vim.tbl_extend("keep", opts or {}, { buffer = e.data.buf_id }))
@@ -339,7 +351,7 @@ pack.later(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniFilesWindowUpdate",
     desc = "Set `mini.files` options",
-    group = files_au,
+    group = au,
     callback = function(e)
       local win = e.data.win_id
       local buf = e.data.buf_id
@@ -372,7 +384,10 @@ pack.later(function()
   local resize_autocmd = function(event, opts)
     vim.api.nvim_create_autocmd(
       event,
-      vim.tbl_extend("keep", opts, { desc = "Resize `mini.files` preview to be always visible", group = files_au })
+      vim.tbl_extend("keep", opts, {
+        desc = "Resize `mini.files` preview to be always visible",
+        group = au,
+      })
     )
   end
 

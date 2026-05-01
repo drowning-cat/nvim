@@ -2,12 +2,18 @@ local pack = require("util.pack")
 
 pack.add({
   { src = "https://github.com/Saghen/blink.lib" }, -- 1
-  { src = "https://github.com/Saghen/blink.cmp" }, -- 2
+  {
+    src = "https://github.com/Saghen/blink.cmp",
+    data = {
+      build = function()
+        vim.cmd("BlinkCmp build")
+      end,
+    },
+  },
 })
 
-require("blink.cmp").build():wait(60000)
-
-pack.later(function()
+pack.plug(function()
+  require("blink.cmp").build()
   require("blink.cmp").setup({
     keymap = {
       ["<C-n>"] = { "show_and_insert", "select_next" },
@@ -22,10 +28,4 @@ pack.later(function()
       },
     },
   })
-
-  vim.keymap.set("i", "<C-x><C-o>", function()
-    require("blink.cmp").show()
-    require("blink.cmp").show_documentation()
-    require("blink.cmp").hide_documentation()
-  end, { desc = "Show completion" })
 end)

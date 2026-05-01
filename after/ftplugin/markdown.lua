@@ -1,3 +1,7 @@
+local pack = require("util.pack")
+
+-- mini.nvim
+
 local ai_share = require("share.plugin.mini_ai")
 
 vim.b.miniai_config = {
@@ -14,3 +18,26 @@ vim.b.miniai_config = {
     end,
   },
 }
+
+-- render-markdown.nvim
+
+pack.add({
+  { src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
+})
+
+pack.plug(function()
+  require("render-markdown").setup({
+    checkbox = { enabled = false },
+    code = { sign = false, width = "full" },
+    heading = { icons = {} },
+  })
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    group = vim.api.nvim_create_augroup("render_md_keymaps", { clear = true }),
+    desc = "Define `render-markdown` keymaps",
+    callback = function()
+      vim.keymap.set("n", "\\", "<Cmd>RenderMarkdown buf_toggle<Enter>", { desc = "Toggle md preview" })
+    end,
+  })
+end)

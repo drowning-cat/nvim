@@ -76,7 +76,7 @@ local get_indent = function(ln)
 end
 
 local feedkeys = function(keys, mode, escape_ks)
-  mode, escape_ks = mode or "n", vim.F.if_nil(escape_ks, false)
+  mode, escape_ks = mode or "n", vim.nonnil(escape_ks, false)
   vim.api.nvim_feedkeys(vim.keycode(keys), mode, escape_ks)
 end
 
@@ -191,9 +191,14 @@ end
 
 function M.reg_in_capture(reg, caps)
   reg = reg or get_cursor_reg()
-  caps = vim.islist(caps) and caps or { caps }
+  local cap_names = {}
+  for _, cap in ipairs(vim.islist(caps) and caps or { caps }) do
+    local name = cap:match("^@(.*)")
+    assert(name and name ~= "", "capture must start with '@' and have a name")
+    cap_names[name] = true
+  end
   return vim.iter(M.get_captures_at_reg(reg) or {}):any(function(cap)
-    return vim.list_contains(caps, cap.name)
+    return cap_names[cap.name]
   end)
 end
 

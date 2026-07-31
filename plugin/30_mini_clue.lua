@@ -47,10 +47,10 @@ pack.plug(function()
   -- NOTE: See `mini.ai`
   local gen_clues_ai_move = function()
     return {
-      { mode = "n", keys = "]]", desc = "Go next START" },
-      { mode = "n", keys = "[[", desc = "Go previous START" },
-      { mode = "n", keys = "][", desc = "Go next END" },
-      { mode = "n", keys = "[]", desc = "Go previous END" },
+      { mode = "n", keys = "]]", desc = "Goto next START" },
+      { mode = "n", keys = "[[", desc = "Goto previous START" },
+      { mode = "n", keys = "][", desc = "Goto next END" },
+      { mode = "n", keys = "[]", desc = "Goto previous END" },
     }
   end
 

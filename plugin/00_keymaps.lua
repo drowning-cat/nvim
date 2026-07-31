@@ -3,7 +3,14 @@ vim.keymap.set({ "n", "i" }, "<C-S-j>", "<Down>", { desc = "Cursor down" })
 vim.keymap.set({ "n", "i" }, "<C-S-k>", "<Up>", { desc = "Cursor up" })
 vim.keymap.set({ "n", "i" }, "<C-S-l>", "<Right>", { desc = "Cursor right" })
 
-vim.keymap.set("n", "<Leader>R", "<Cmd>write<Enter>ZR", { desc = "Restart" })
+vim.keymap.set("n", "<Leader>r", "ZR", { desc = "Restart" })
+vim.keymap.set("n", "<Leader>R", function()
+  if vim.bo.buftype == "" and vim.bo.modifiable and not vim.bo.readonly then
+    vim.cmd("confirm write | restart")
+  else
+    vim.cmd("restart")
+  end
+end, { desc = "Restart" })
 
 vim.keymap.set("n", "<Leader>w", "<Cmd>w<Enter>", { desc = "Write" })
 vim.keymap.set("n", "<Leader>W", "<Cmd>wall<Enter>", { desc = "Write" })
@@ -21,6 +28,12 @@ vim.keymap.set("n", "gA", "<Cmd>tab split<Enter>", { desc = "Add tab" })
 vim.keymap.set("n", "gC", "<Cmd>tabclose<Enter>", { desc = "Close tab" })
 
 vim.keymap.set("n", "<C-w>Q", "<Cmd>qall<Enter>", { desc = "Quit" })
+
+vim.keymap.set("n", "[u", "g-", { desc = "Undo" })
+vim.keymap.set("n", "]u", "g+", { desc = "Redo" })
+local huge = 2 ^ 31 - 1
+vim.keymap.set("n", "[U", huge .. "g-", { desc = "Undo first" })
+vim.keymap.set("n", "]U", huge .. "g+", { desc = "Redo last" })
 
 -- Swap buffers
 

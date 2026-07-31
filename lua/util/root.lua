@@ -20,6 +20,7 @@ function M.setup()
   })
 end
 
+---@param source? string|integer Path or buffer passed to `vim.fs.root()` (by default **CWD**)
 function M.find_root(source)
   source = source or vim.g.cwd_glob or vim.fn.getcwd()
   local root = vim.fs.root(source, vim.g.root_markers or {})

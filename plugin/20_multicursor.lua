@@ -20,36 +20,40 @@ pack.plug(function()
       mc.deleteCursor()
     end
   end
-  -- stylua: ignore start
-  mc.addKeymapLayer(function(set)
-    set({ "n", "v" }, "<S-Right>", function() mc.nextCursor() end, { desc = "Go next cursor" })
-    set({ "n", "v" }, "<S-Left>", function() mc.prevCursor() end, { desc = "Go prev cursor" })
-    set("n", "<C-i>", function() mc.clearCursors() end)
-    set("n", "<C-o>", function() mc.clearCursors() end)
-    set("n", "<C-c>", function() mc.clearCursors() end)
-    set("n", "<Esc>", function()
-      if not mc.cursorsEnabled() then
-        mc.enableCursors()
-      else
-        mc.clearCursors()
-      end
-    end)
-  end)
-  vim.keymap.set({ "n", "v" }, "<C-Space>", function()
+  local enableOrClear = function()
+    if mc.cursorsEnabled() then
+      mc.clearCursors()
+    else
+      mc.enableCursors()
+    end
+  end
+  local toggleCursor = function()
     if mc.hasCursors() and mc.cursorsEnabled() then
       mc.deleteCursor()
     else
       mc.toggleCursor()
     end
-  end, { desc = "Toggle cursor" })
-  vim.keymap.set({ "n", "v" }, "<C-S-j>", function() lineAddCursor(1) end, { desc = "Cursor below" })
-  vim.keymap.set({ "n", "v" }, "<C-S-k>", function() lineAddCursor(-1) end, { desc = "Cursor above" })
-  vim.keymap.set({ "n", "v" }, "<S-Down>", function() lineAddCursor(1) end, { desc = "Cursor below" })
-  vim.keymap.set({ "n", "v" }, "<S-Up>", function() lineAddCursor(-1) end, { desc = "Cursor above" })
-  vim.keymap.set({ "n", "v" }, "<C-n>", function() mc.matchAddCursor(1) end, { desc = "Cursor next" })
-  vim.keymap.set({ "n", "v" }, "<C-S-n>", function() mc.matchSkipCursor(1) end, { desc = "Cursor next" })
-  vim.keymap.set({ "n", "v" }, "<C-p>", function() mc.matchAddCursor(-1) end, { desc = "Cursor prev" })
-  vim.keymap.set({ "n", "v" }, "<C-S-p>", function() mc.matchSkipCursor(-1) end, { desc = "Cursor prev" })
+  end
+  -- stylua: ignore start
+  mc.addKeymapLayer(function(set)
+    set("n", "<Esc>", function() enableOrClear() end)
+    set({ "n", "x" }, "]x", function() mc.nextCursor() end, { desc = "Go next cursor" })
+    set({ "n", "x" }, "[x", function() mc.prevCursor() end, { desc = "Go prev cursor" })
+    set({ "n", "x" }, "<S-Right>", function() mc.nextCursor() end, { desc = "Go next cursor" })
+    set({ "n", "x" }, "<S-Left>", function() mc.prevCursor() end, { desc = "Go prev cursor" })
+    set("n", "<C-i>", function() mc.clearCursors() end)
+    set("n", "<C-o>", function() mc.clearCursors() end)
+    set("n", "<C-c>", function() mc.clearCursors() end)
+  end)
+  vim.keymap.set({ "n", "x" }, "<C-Space>", function() toggleCursor() end, { desc = "Toggle cursor" })
+  vim.keymap.set({ "n", "x" }, "<C-S-j>", function() lineAddCursor(1) end, { desc = "Cursor below" })
+  vim.keymap.set({ "n", "x" }, "<C-S-k>", function() lineAddCursor(-1) end, { desc = "Cursor above" })
+  vim.keymap.set({ "n", "x" }, "<S-Down>", function() lineAddCursor(1) end, { desc = "Cursor below" })
+  vim.keymap.set({ "n", "x" }, "<S-Up>", function() lineAddCursor(-1) end, { desc = "Cursor above" })
+  vim.keymap.set({ "n", "x" }, "<C-n>", function() mc.matchAddCursor(1) end, { desc = "Cursor next" })
+  vim.keymap.set({ "n", "x" }, "<C-S-n>", function() mc.matchSkipCursor(1) end, { desc = "Cursor next" })
+  vim.keymap.set({ "n", "x" }, "<C-p>", function() mc.matchAddCursor(-1) end, { desc = "Cursor prev" })
+  vim.keymap.set({ "n", "x" }, "<C-S-p>", function() mc.matchSkipCursor(-1) end, { desc = "Cursor prev" })
   vim.keymap.set("n", "<C-LeftMouse>", function() mc.handleMouse() end, { desc = "Click cursor" })
   vim.keymap.set("n", "<C-LeftDrag>", function() mc.handleMouseDrag() end, { desc = "Drag cursor" })
   vim.keymap.set("n", "<C-LeftRelease>", function() mc.handleMouseRelease() end, { desc = "Drag cursor (end)" })

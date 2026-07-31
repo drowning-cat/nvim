@@ -1,6 +1,6 @@
-vim.g.cycle_config = vim.nonnil(vim.g.cycle_config, {})
-
 local pack = require("util.pack")
+
+vim.g.cycle_config = vim.nonnil(vim.g.cycle_config, {})
 
 pack.plug(function()
   local MiniAi = _G.MiniAi ---@diagnostic disable-line

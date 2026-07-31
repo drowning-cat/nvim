@@ -1,7 +1,7 @@
+local pack = require("util.pack")
+
 vim.g.formatconf = vim.nonnil(vim.g.formatconf, {})
 vim.g.format_on_save = vim.nonnil(vim.g.format_on_save, false)
-
-local pack = require("util.pack")
 
 pack.plug(function()
   ---@class FormatBufOpts
@@ -13,13 +13,13 @@ pack.plug(function()
   ---@field diff_algorithm? "myers"|"minimal"|"patience"|"histogram"
   ---@field timeout? integer
   ---@field silent? boolean
-  ---@field after_exit? fun(out: vim.SystemCompleted)
+  ---@field on_done? fun(out: vim.SystemCompleted)
 
   ---@param buf? integer
   ---@param opts? FormatBufOpts
   local format_buf = function(buf, opts)
     buf = buf or 0
-    opts = vim.tbl_extend("keep", opts or {}, {
+    opts = vim.tbl_extend("keep", opts or {}, { ---@type FormatBufOpts
       cmd = nil,
       stdin = {}, -- [line1, line2)
       range = {}, -- [line1, line2)
@@ -30,7 +30,7 @@ pack.plug(function()
       diff_algorithm = "histogram",
       timeout = 2500,
       silent = false,
-      after_exit = function() end,
+      on_done = function() end,
     })
     local cmd = opts.cmd
     if not vim.islist(cmd) then
@@ -94,7 +94,7 @@ pack.plug(function()
           vim.notify(string.format("-%s- %s", cmd[1], out.stderr), vim.log.levels.ERROR)
         end
       end
-      opts.after_exit(out)
+      opts.on_done(out)
     end)
     local sysopts = { ---@type vim.SystemOpts
       stdin = lines,
@@ -161,10 +161,10 @@ pack.plug(function()
       })
       if local_opts.async then
         local co = coroutine.running()
-        local after_exit = opts.after_exit
-        opts.after_exit = function(out)
-          if type(after_exit) == "function" then
-            after_exit(out)
+        local on_done = opts.on_done
+        opts.on_done = function(out)
+          if type(on_done) == "function" then
+            on_done(out)
           end
           coroutine.resume(co, out)
         end
@@ -193,10 +193,7 @@ pack.plug(function()
   end
 
   vim.o.formatexpr = "v:lua.Formatexpr()"
-  vim.keymap.set("n", "gqag", function()
-    format()
-  end)
-  vim.keymap.set("n", "gqga", function()
+  vim.keymap.set("n", "gqal", function()
     format()
   end)
 

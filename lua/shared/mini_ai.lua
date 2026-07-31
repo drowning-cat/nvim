@@ -193,7 +193,7 @@ function M.reg_in_capture(reg, caps)
   reg = reg or get_cursor_reg()
   local cap_names = {}
   for _, cap in ipairs(vim.islist(caps) and caps or { caps }) do
-    local name = cap:match("^@(.*)")
+    local name = string.match(cap, "^@(.*)")
     assert(name and name ~= "", "capture must start with '@' and have a name")
     cap_names[name] = true
   end

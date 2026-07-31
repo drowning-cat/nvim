@@ -4,7 +4,7 @@ local setcmdpos = function(pos, next_pos)
   vim.api.nvim_input(keys)
 end
 
--- NOTE(cmdline): Jump `word` like in Insert mode
+-- NOTE: Jump `word` like in Insert mode
 
 local regex_word_left = vim.regex([=[\([^[:keyword:][:space:]]\+\|\k\+\)\s*$]=])
 local regex_word_right = vim.regex([=[^\([^[:keyword:][:space:]]\+\|\k\+\)\s*]=])
@@ -21,7 +21,7 @@ vim.keymap.set("c", "<C-Right>", function()
   setcmdpos(pos, to and to + pos or #cmdline + 1)
 end, {})
 
--- FIX(cmdline): Skip consecutive spaces between `WORD`
+-- FIX: Skip consecutive spaces between `WORD`
 
 vim.keymap.set("c", "<S-Left>", function()
   local cmdline, pos = vim.fn.getcmdline(), vim.fn.getcmdpos()
@@ -35,7 +35,7 @@ vim.keymap.set("c", "<S-Right>", function()
   setcmdpos(pos, word_end or #cmdline + 1)
 end, {})
 
--- NOTE(insert): Jump `WORD`
+-- NOTE: Jump `WORD`
 
 vim.keymap.set("i", "<S-Left>", "<Cmd>norm! B<CR>", {})
 vim.keymap.set("i", "<S-Right>", "<Cmd>norm! W<CR>", {})

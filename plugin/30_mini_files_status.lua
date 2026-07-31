@@ -4,8 +4,6 @@ local au = vim.api.nvim_create_augroup("minifiles_status", { clear = true })
 local ns_git = vim.api.nvim_create_namespace("minifiles_git")
 local ns_sym = vim.api.nvim_create_namespace("minifiles_sym")
 
--- Share
-
 local get_fs_items = function(buf)
   local buf_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
   local fs_items = {}
@@ -30,7 +28,7 @@ local set_extmark = function(buf, ns, start_row, start_col, opts)
   vim.api.nvim_buf_set_extmark(buf, ns, start_row, start_col, opts)
 end
 
--- Symlinks
+-- ◈ Symlinks
 
 local render_sym = function(buf)
   vim.api.nvim_buf_clear_namespace(buf, ns_sym, 0, -1)
@@ -41,8 +39,7 @@ local render_sym = function(buf)
     if fs_link then
       local fs_stat = vim.uv.fs_stat(fs_entry.path)
       set_extmark(buf, ns_sym, lnum - 1, -1, {
-        -- NOTE: Extend the extmark to EOL so it survives line edits
-        end_row = lnum,
+        end_row = lnum, -- NOTE: Set to the next line to preserve it during inline edits
         end_col = 0,
         virt_text_pos = "overlay",
         virt_text = {
@@ -63,15 +60,53 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
--- Git status
+-- ◈ Git status
 
-local get_branch = function(buf)
+local get_branch_dir = function(buf)
   local buf_name = vim.api.nvim_buf_get_name(buf)
   local branch_dir = string.match(buf_name, "^minifiles://%d+/(.*)")
   if not branch_dir then
     return
   end
   return vim.fs.normalize(branch_dir)
+end
+
+local find_branch_root = function(branch_buf)
+  local branch_dir = get_branch_dir(branch_buf)
+  if not branch_dir then
+    return
+  end
+  local git_root = vim.fs.root(branch_dir, ".git")
+  if not git_root then
+    return
+  end
+  return vim.fs.normalize(git_root)
+end
+
+local get_status = function(path, status_map)
+  local status = status_map[path] or status_map[path .. "/"]
+  if status then
+    return status
+  end
+  -- NOTE: Check if inside an untracked folder
+  for dir in vim.fs.parents(path) do
+    status = status_map[dir .. "/"]
+    if status then
+      return status, dir
+    end
+  end
+  return nil
+end
+
+local get_descendant_statuses = function(path, status_map)
+  local child_statuses = {}
+  for map_path, map_status in pairs(status_map) do
+    local rel = vim.fs.relpath(path, map_path)
+    if rel and rel ~= "." then
+      child_statuses[map_path] = map_status
+    end
+  end
+  return child_statuses
 end
 
 local get_deleted_items = function(buf, fs_items, status_map)
@@ -81,7 +116,7 @@ local get_deleted_items = function(buf, fs_items, status_map)
   local is_deleted = function(status)
     return string.match(status, "D")
   end
-  local branch_dir = assert(get_branch(buf))
+  local branch_dir = assert(get_branch_dir(buf))
   local is_child = function(path)
     return vim.fs.dirname(path) == branch_dir
   end
@@ -110,30 +145,56 @@ local get_deleted_items = function(buf, fs_items, status_map)
   return deleted_items
 end
 
----@param status string
-local get_status_hl = function(status)
-  local staged, unstaged = string.sub(status, 1, 1), string.sub(status, 2, 2)
-  -- Untracked or Ignored
-  if status == "??" or status == "!!" then
+-- ◈◇ Renderer
+
+local get_status_hl = function(xy)
+  local x, y = string.sub(xy, 1, 1), string.sub(xy, 2, 2)
+  if xy == "??" or xy == "!!" then -- Untracked, ignored
     return "NonText"
-  -- Unstaged Unmerged/Deleted
-  elseif string.match(status, "U") or string.match(status, "[^D]D") then
+  elseif string.match(xy, "U") or xy == "AA" or xy == "DD" then -- Unmerged (conflict)
     return "DiagnosticError"
-  -- Unstaged Modified/Typechanged/Renamed/Copied
-  elseif string.match(unstaged, "[MTRC]") then
+  elseif y == "D" then -- Unstaged: deleted
+    return "DiagnosticError"
+  elseif string.match(y, "[MTRC]") then -- Unstaged: modified/type-changed/renamed/copied
     return "DiagnosticWarn"
-  -- Staged Added/Modified/Typechanged/Deleted
-  elseif string.match(staged, "[AMTD]") then
-    return "DiagnosticOk"
-  -- Staged Renamed/Copied
-  elseif string.match(staged, "[RC]") then
+  elseif string.match(x, "[RC]") then -- Staged: renamed/copied
     return "DiagnosticHint"
+  elseif string.match(x, "[AMTD]") then -- Staged: added/modified/type-changed/deleted
+    return "DiagnosticOk"
   end
   return "Normal"
 end
 
+local get_entry_style = function(fs_entry, status_map)
+  local path, fs_type = fs_entry.path, fs_entry.fs_type
+  local own_status, _ = get_status(path, status_map)
+  if own_status then
+    return nil, get_status_hl(own_status)
+  end
+  if fs_type == "directory" then
+    local child_statuses = get_descendant_statuses(path, status_map)
+    if vim.tbl_isempty(child_statuses) then
+      return nil, nil
+    end
+    local statuses = vim.tbl_values(child_statuses)
+    -- NOTE: Group by color
+    local first_hl = get_status_hl(statuses[1])
+    local all_same = vim.iter(statuses):all(function(s)
+      return get_status_hl(s) == first_hl
+    end)
+    local merge_hl = all_same and first_hl or get_status_hl(" M")
+    local count = #statuses
+    return (count > 99 and "99+" or count), merge_hl
+  end
+  return nil, nil
+end
+
+---@param buf integer
 ---@param status_map table<string, string>
 local render_git = function(buf, status_map)
+  if not vim.api.nvim_buf_is_valid(buf) then
+    return
+  end
   vim.api.nvim_buf_clear_namespace(buf, ns_git, 0, -1)
   local fs_items = get_fs_items(buf)
   -- NOTE: 1. Display deleted entries as virtual lines
@@ -159,43 +220,9 @@ local render_git = function(buf, status_map)
     vim.api.nvim_win_set_height(win, line_count + #git_deleted)
   end
   -- NOTE: 2. Display git status for visible entries
-  local get_entry_style = function(fs_entry)
-    local fs_type, path = fs_entry.fs_type, fs_entry.path
-    local status = status_map[path] or status_map[path .. "/"]
-    if status then
-      return nil, get_status_hl(status)
-    end
-    -- NOTE: Check if inside an untracked folder
-    for dir in vim.fs.parents(path) do
-      status = status_map[dir .. "/"]
-      if status then
-        return nil, get_status_hl(status)
-      end
-    end
-    if fs_type == "directory" then
-      local child_statuses = {}
-      for map_path, map_status in pairs(status_map) do
-        local rel = vim.fs.relpath(path, map_path)
-        if rel and rel ~= "." then
-          table.insert(child_statuses, map_status)
-        end
-      end
-      local count = #child_statuses
-      if count > 0 then
-        local first_hl = get_status_hl(child_statuses[1])
-        local all_same = vim.iter(child_statuses):all(function(s)
-          return get_status_hl(s) == first_hl
-        end)
-        local merge_hl = all_same and first_hl or get_status_hl(" M")
-        local icon = count > 99 and "99+" or count
-        return icon, merge_hl
-      end
-    end
-    return nil, nil
-  end
   for _, item in ipairs(fs_items) do
+    local icon, hl_group = get_entry_style(item.fs_entry, status_map)
     local lnum, line = item.lnum, item.line
-    local icon, hl_group = get_entry_style(item.fs_entry)
     if icon then
       local icon_text = string.gsub(icon, " ", "·")
       set_extmark(buf, ns_git, lnum - 1, 0, {
@@ -205,7 +232,7 @@ local render_git = function(buf, status_map)
     end
     if hl_group then
       -- NOTE: Start highlighting after the icon.
-      --       Include `/` to preserve the highlight if the name changes at the start
+      --       Include `/` to keep the extmark when the first character is deleted
       local name_pos = string.match(line, "/.-/.-()/") -- /01/󰈔 /<name>
       if name_pos then
         set_extmark(buf, ns_git, lnum - 1, name_pos - 1, {
@@ -217,6 +244,8 @@ local render_git = function(buf, status_map)
     end
   end
 end
+
+-- ◈◇ GitStatus
 
 local GitStatus = {}
 
@@ -294,10 +323,10 @@ GitStatus.query = function(git_root, on_done)
   return sys
 end
 
--- NOTE: No status query!
+-- NOTE: Call `GitStatus.query` separately to refresh the data
 GitStatus.get_cached = function(git_root)
   git_root = vim.fs.normalize(git_root)
-  local state = GitStatus.store[git_root]
+  local state = vim.deepcopy(GitStatus.store[git_root])
   if not state then
     return nil, false
   end
@@ -326,30 +355,52 @@ GitStatus.prune = function(keep_count)
   end
 end
 
-local find_branch_root = function(branch_buf)
-  local branch_dir = get_branch(branch_buf)
-  if not branch_dir then
-    return
-  end
-  local git_root = vim.fs.root(branch_dir, ".git")
-  if not git_root then
-    return
-  end
-  return vim.fs.normalize(git_root)
-end
+-- ◈◇ MiniFilesStatus
 
 _G.MiniFilesStatus = {} -- NOTE: Public API
 
-MiniFilesStatus.synchronize = function()
+MiniFilesStatus.get_status = function(path)
+  path = vim.fs.normalize(path)
+  local status, source, children
+  local outer_root = vim.iter(vim.fs.parents(path)):find(function(dir)
+    return GitStatus.store[dir] ~= nil
+  end)
+  local outer_state = outer_root and GitStatus.get_cached(outer_root)
+  if outer_state then
+    status, source = get_status(path, outer_state.map)
+  end
+  local inner_state = GitStatus.store[path] and GitStatus.get_cached(path) or outer_state
+  children = inner_state and get_descendant_statuses(path, inner_state.map) or {}
+  if not status and vim.tbl_isempty(children) then
+    return nil
+  end
+  return {
+    status = status,
+    source = source,
+    children = children,
+  }
+end
+
+local get_rooted_branches = function(filter_root)
+  local rooted_branches = {}
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    local git_root = find_branch_root(buf)
-    if git_root then
-      GitStatus.query(git_root, function(state)
-        render_git(buf, state.map)
-      end)
+    local buf_root = find_branch_root(buf)
+    if buf_root and (filter_root == nil or filter_root == buf_root) then
+      rooted_branches[buf] = buf_root
     end
   end
+  return rooted_branches
 end
+
+MiniFilesStatus.synchronize = function(git_root) ---@param git_root? string
+  for buf, buf_root in pairs(get_rooted_branches(git_root)) do
+    GitStatus.query(buf_root, function(state)
+      render_git(buf, state.map)
+    end)
+  end
+end
+
+-- ◈◇ Setup
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesWindowUpdate",
@@ -366,30 +417,54 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
+local update_status = function(buf, force)
+  local git_root = find_branch_root(buf)
+  if not git_root then
+    return
+  end
+  local is_new = vim.b[buf].git_root == nil
+  vim.b[buf].git_root = git_root
+  -- NOTE: Stale-while-revalidate: render now, refresh later
+  local cached, is_fresh = GitStatus.get_cached(git_root)
+  if cached then
+    render_git(buf, cached.map)
+  end
+  -- NOTE: Avoid a redundant query after `go_in`
+  if not force and is_new and is_fresh then
+    return
+  end
+  GitStatus.query(git_root, function(state)
+    render_git(buf, state.map)
+  end)
+end
+
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesBufferUpdate",
   group = au,
   desc = "Update/render `mini.files` git status",
   callback = function(e)
-    local buf = e.data.buf_id
-    local git_root = find_branch_root(buf)
-    if not git_root then
-      return
+    update_status(e.data.buf_id)
+  end,
+})
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "MiniGitUpdated",
+  group = au,
+  desc = "Synchronize `mini.files` git status after `mini.git` updates",
+  callback = function(e)
+    local MiniGit = require("mini.git")
+    local git_root = (MiniGit.get_buf_data(e.buf) or {}).root
+    if git_root then
+      MiniFilesStatus.synchronize(git_root)
     end
-    local buf_init = vim.b[buf].git_root == nil
-    vim.b[buf].git_root = git_root
-    -- NOTE: Stale-while-revalidate
-    local cached, is_fresh = GitStatus.get_cached(git_root)
-    if cached then
-      render_git(buf, cached.map)
-    end
-    -- NOTE: Always refresh except on buffer creation with a fresh cache (typically `go_in`)
-    if is_fresh and buf_init then
-      return
-    end
-    GitStatus.query(git_root, function(state)
-      render_git(buf, state.map)
-    end)
+  end,
+})
+
+vim.api.nvim_create_autocmd("FocusGained", {
+  group = au,
+  desc = "Synchronize `mini.files` git status after gaining focus",
+  callback = function()
+    MiniFilesStatus.synchronize()
   end,
 })
 

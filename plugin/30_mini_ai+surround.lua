@@ -2,7 +2,7 @@ local pack = require("util.pack")
 
 _G.MiniIndentscope = _G.MiniIndentscope
 
-local ai_share = require("share.plugin.mini_ai")
+local mini_ai = require("shared.mini_ai")
 local ts_repeat = require("util.ts_repeat")
 
 -- Ai
@@ -10,15 +10,15 @@ local ts_repeat = require("util.ts_repeat")
 ---@param config {a:string,i:string,fallback:unknown}
 local ts_with = function(config)
   local function find_fallback(ref_reg, ai_type, opts)
-    local reg = ai_share.find_textobject(config.fallback, ai_type, nil, opts)
+    local reg = mini_ai.find_textobject(config.fallback, ai_type, nil, opts)
     if not reg then
       return
     end
     if ref_reg then
-      if ai_share.cmp_pos(">=", reg.from, ref_reg.from) then
+      if mini_ai.cmp_pos(">=", reg.from, ref_reg.from) then
         return
       end
-      if not ai_share.reg_in_capture(reg, "@comment.outer") then
+      if not mini_ai.reg_in_capture(reg, "@comment.outer") then
         local next_opts = vim.tbl_extend("force", opts, { n_times = opts.n_times + 1 })
         return find_fallback(ref_reg, ai_type, next_opts)
       end
@@ -26,9 +26,9 @@ local ts_with = function(config)
     return reg
   end
   return function(ai_type, _, opts)
-    local ts_reg = ai_share.find_capture(config[ai_type], opts)
+    local ts_reg = mini_ai.find_capture(config[ai_type], opts)
     local fallback_reg = find_fallback(ts_reg, ai_type, opts)
-    return ai_share.nearest_reg(ts_reg, fallback_reg)
+    return mini_ai.nearest_reg(ts_reg, fallback_reg)
   end
 end
 
@@ -94,7 +94,7 @@ pack.plug(function()
           local reg = MiniAi.find_textobject("a", id, opts)
           if reg then
             local line = vim.fn.getline(reg.from.line)
-            local _, s = line:find("^[" .. SEP .. "]*.", reg.from.col)
+            local _, s = string.find(line, "^[" .. SEP .. "]*.", reg.from.col)
             local e = line:sub(1, reg.to.col):find(".[" .. SEP .. "]*$")
             return vim.tbl_deep_extend("force", reg, { from = { col = s }, to = { col = e } })
           end
@@ -190,14 +190,25 @@ pack.plug(function()
     jump(is_forward)
     ts_repeat.save_last({ forward = is_forward, func = jump })
   end
-
   -- stylua: ignore start
   vim.keymap.set({ "n", "x", "o" }, "g]", function() go_edge("right") end, { desc = "Go edge right" })
   vim.keymap.set({ "n", "x", "o" }, "g[", function() go_edge("left") end, { desc = "Go edge left" })
   -- stylua: ignore end
 
   vim.keymap.set("i", "<M-w>", "<Esc>ciw", { remap = true, desc = "Delete word" })
-  vim.keymap.set("i", "<M-e>", "<Esc>cie", { remap = true, desc = "Delete subword" })
+  vim.keymap.set("i", "<M-e>", function()
+    local reg = MiniAi.find_textobject("i", "e", {
+      search_method = "cover_or_prev",
+      n_lines = 0,
+      n_times = 1,
+    })
+    if reg then
+      local start_row, start_col = reg.from.line - 1, reg.from.col - 1
+      local end_row, end_col = reg.to.line - 1, reg.to.col
+      vim.api.nvim_buf_set_text(0, start_row, start_col, end_row, end_col, {})
+      vim.api.nvim_win_set_cursor(0, { start_row + 1, start_col })
+    end
+  end, { desc = "Delete subword" })
   vim.keymap.set("n", "<M-e>", "<Esc>]]e", { remap = true, desc = "Next subword" })
   vim.keymap.set("n", "<M-E>", "<Esc>[[e", { remap = true, desc = "Previous subword" })
 end)

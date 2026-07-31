@@ -1,18 +1,19 @@
 local session_directory = vim.nonnil(vim.g.session_directory, vim.fn.getcwd())
 
 vim.g.session_close_ft = vim.nonnil(vim.g.session_close_ft, {})
+vim.g.session_close_name = vim.nonnil(vim.g.session_close_name, {})
 
-_G.save_session = function(name)
+local save_session = function(name)
   local path = vim.fs.joinpath(session_directory, name)
   vim.fn.mkdir(session_directory, "p")
   vim.cmd.mksession({ vim.fn.fnameescape(path), bang = true })
 end
 
-_G.load_session = function(name)
+local load_session = function(name)
   name = name or vim.g.LAST_SESSION
   assert(name, "Unable to get session name")
   local path = vim.fs.joinpath(session_directory, name)
-  vim.cmd("%bdelete!") -- %bwipeout!
+  vim.cmd("%bwipeout!")
   vim.cmd.source(vim.fn.fnameescape(path))
   vim.g.LAST_SESSION = name
   -- Center cursor
@@ -40,11 +41,17 @@ vim.api.nvim_create_user_command("Last", function()
   load_session()
 end, {})
 
--- Load
+-- Setup
+
+local au_load = vim.api.nvim_create_augroup("session_load", { clear = true })
+local au_save = vim.api.nvim_create_augroup("session_save", { clear = true })
 
 if vim.fn.argc() == 0 then
-  -- NOTE: Autoload
-  if vim.bo.buftype == "" then
+  local is_manpage = vim.iter(vim.v.argv):find(function(arg)
+    return arg == "+Man!"
+  end)
+  -- NOTE: Autoload session
+  if not vim.v.startreason == "restart" and not is_manpage and vim.bo.buftype == "" then
     vim.cmd("silent! Load")
   end
   -- NOTE: Ask to open Git conflict files
@@ -69,35 +76,39 @@ if vim.fn.argc() == 0 then
   end)
 end
 
--- Save
-
-local save_au = vim.api.nvim_create_augroup("session_save", { clear = true })
-
 local should_close = function(win)
-  win = win or 0
   local buf = vim.api.nvim_win_get_buf(win)
-  return vim.list_contains(vim.g.session_close_ft, vim.bo[buf].filetype)
+  local ft = vim.bo[buf].ft
+  if vim.list_contains(vim.g.session_close_ft or {}, ft) then
+    return true
+  end
+  local buf_name = vim.api.nvim_buf_get_name(buf)
+  for _, pat in ipairs(vim.g.session_close_name or {}) do
+    if string.match(buf_name, pat) then
+      return true
+    end
+  end
+  return false
 end
 
-vim.api.nvim_create_autocmd("VimLeave", {
-  group = save_au,
-  desc = "Save session on VimLeave",
-  callback = function()
-    local win_list = {}
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+  group = au_load,
+  desc = "Filter windows after session load",
+  callback = vim.schedule_wrap(function()
     for _, win in ipairs(vim.api.nvim_list_wins()) do
-      local non_float = vim.api.nvim_win_get_config(win).relative == ""
-      if
-        non_float --
-        and not (should_close(win) and pcall(vim.api.nvim_win_close, win, true))
-      then
-        table.insert(win_list, win)
+      if vim.api.nvim_win_is_valid(win) then
+        if should_close(win) then
+          pcall(vim.api.nvim_win_close, win, true)
+        end
       end
     end
-    if #win_list == 1 then
-      if should_close() or vim.bo.buftype ~= "" or vim.api.nvim_buf_get_name(0) == "" then
-        return
-      end
-    end
+  end),
+})
+
+vim.api.nvim_create_autocmd("VimLeave", {
+  group = au_save,
+  desc = "Save session on exit",
+  callback = function()
     vim.cmd("silent! Save")
   end,
 })

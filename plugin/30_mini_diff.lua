@@ -16,7 +16,6 @@ pack.plug(function()
       return MiniDiff.operator(mode) .. MiniDiff.config.mappings.textobject
     end
   end
-
   vim.keymap.set("n", "gh", hunk_action("apply"), { expr = true, remap = true, desc = "Apply hunk" })
   vim.keymap.set("n", "gH", hunk_action("reset"), { expr = true, remap = true, desc = "Reset hunk" })
   -- stylua: ignore

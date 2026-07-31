@@ -57,6 +57,9 @@ vim.o.backupdir = vim.fn.stdpath("state") .. "/backup"
 -- Plugin options
 
 vim.g.session_directory = vim.fn.stdpath("state") .. "/sessions"
+vim.g.session_close_name = {
+  "^nvim%-pack://",
+}
 vim.g.session_close_ft = {
   "gitcommit",
   "gitrebase",
@@ -64,6 +67,7 @@ vim.g.session_close_ft = {
 
 vim.g.root_markers = {
   ".git",
+  "lua",
   "Makefile",
   "package.json",
   "hyprland.conf",
@@ -96,6 +100,7 @@ vim.g.cycle_config = {
   { words = { "NOTE", "WARN", "ERROR" } },
 }
 
+vim.g.ts_auto_install = true
 vim.g.ts_install = {
   "bash",
   "c",
@@ -108,6 +113,7 @@ vim.g.ts_install = {
   "lua",
   "luadoc",
   "python",
+  "query",
   "toml",
   "tsx",
   "typescript",
@@ -124,14 +130,16 @@ vim.g.mason_install = {
   "prettier",
   "shfmt",
   "stylua",
+  "ts_query_ls",
 }
 
 vim.g.lsp_enable = {
   "gopls",
   "lua_ls",
+  "ts_query_ls",
 }
 
-vim.g.format_on_save = false
+vim.g.lsp_lightbulb = false
 
 local buf_name = function(buf)
   return vim.api.nvim_buf_get_name(buf or 0)
@@ -149,6 +157,8 @@ local formatters = {
     return { cmd = { "shfmt", "--indent=2", "-" } }
   end,
 }
+
+vim.g.format_on_save = false
 
 vim.g.formatconf = {
   ["javascript"] = formatters["prettier"],

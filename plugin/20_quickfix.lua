@@ -4,15 +4,13 @@ vim.pack.add({
 
 local quicker = require("quicker")
 
-local toggle_rhs = function(opts)
-  opts = vim.tbl_extend("keep", opts or {}, { min_height = 10 })
-  return function()
-    quicker.toggle(opts)
-  end
+local toggle_qf = function(opts)
+  quicker.toggle(vim.tbl_extend("keep", opts or {}, { min_height = 10 }))
 end
-
-vim.keymap.set("n", "<leader>l", toggle_rhs(), { desc = "Toggle quickfix" })
-vim.keymap.set("n", "<leader>L", toggle_rhs({ loclist = true }), { desc = "Toggle loclist" })
+-- stylua: ignore start
+vim.keymap.set("n", "=q", function() toggle_qf() end, { desc = "Toggle quickfix" })
+vim.keymap.set("n", "=Q", function() toggle_qf({ loclist = true }) end, { desc = "Toggle loclist" })
+-- stylua: ignore end
 
 require("quicker").setup({
   keys = {

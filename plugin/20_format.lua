@@ -193,10 +193,7 @@ pack.plug(function()
   end
 
   vim.o.formatexpr = "v:lua.Formatexpr()"
-  vim.keymap.set("n", "gqag", function()
-    format()
-  end)
-  vim.keymap.set("n", "gqga", function()
+  vim.keymap.set("n", "gqal", function()
     format()
   end)
 

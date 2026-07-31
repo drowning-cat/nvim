@@ -1,12 +1,10 @@
 vim.g.project_dirs = vim.nonnil(vim.g.project_dirs, {})
 vim.g.project_maxdepth = vim.nonnil(vim.g.project_maxdepth, 3)
 
-local pick_share = require("share.plugin.mini_pick")
+local mini_pick = require("shared.mini_pick")
 
 local pack = require("util.pack")
 local util_root = require("util.root")
-
-local find_projects = util_root.find_projects
 
 -- Pick
 
@@ -16,7 +14,7 @@ pack.plug(function()
 
   -- Overrides (colors)
 
-  for name, gen_show in pairs(pick_share.gen_show) do
+  for name, gen_show in pairs(mini_pick.gen_show) do
     local pick = MiniPick.builtin[name] or MiniExtra.pickers[name]
     MiniPick.registry[name] = function(local_opts, opts)
       local show = gen_show(local_opts)
@@ -42,7 +40,7 @@ pack.plug(function()
       end
       vim.system(cmd, { stdin = patches })
     end
-    local show = pick_share.gen_show.git_hunks()
+    local show = mini_pick.gen_show.git_hunks()
     opts = vim.tbl_deep_extend("keep", opts or {}, {
       source = {
         show = show,
@@ -117,7 +115,7 @@ pack.plug(function()
         MiniPick.set_picker_query(pattern_query)
       end
     end
-    local show = pick_share.gen_show.grep_live()
+    local show = mini_pick.gen_show.grep_live()
     return MiniPick.start(vim.tbl_deep_extend("force", opts, {
       source = {
         name = "Grep live (rg)",
@@ -284,6 +282,23 @@ pack.plug(function()
 
   -- New pickers
 
+  MiniPick.registry.goto_definition = function()
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MiniPickStart",
+      once = true,
+      callback = function()
+        local items = MiniPick.get_picker_items()
+        if items == nil or #items ~= 1 then
+          return
+        end
+        local choose = MiniPick.get_picker_opts().source.choose or MiniPick.default_choose
+        MiniPick.stop()
+        choose(items[1])
+      end,
+    })
+    MiniExtra.pickers.lsp({ scope = "definition" })
+  end
+
   MiniPick.registry.grep_todo = function(local_opts, opts)
     local grep_words = { "FIX", "FIXME", "BUG", "NOTE", "TODO", "FEAT", "WARN", "WARNING", "HACK", "PERF" }
     local pattern = "(" .. table.concat(grep_words, "|") .. ")[ :]"
@@ -296,7 +311,7 @@ pack.plug(function()
     local show = function(buf, items, query)
       MiniPick.default_show(buf, items, query, { show_icons = true })
     end
-    local found_projects = find_projects(local_opts.dirs, vim.g.project_maxdepth)
+    local found_projects = util_root.find_projects(local_opts.dirs, vim.g.project_maxdepth)
     local items = vim.tbl_map(function(project)
       local path, root = project.path, project.root
       return {
@@ -427,12 +442,22 @@ pack.plug(function()
   })
 
   -- stylua: ignore start
-  local buf_name = function(buf) return vim.api.nvim_buf_get_name(buf or 0) end
+  local root = function() return util_root.find_root() end
+  local cwd = function() return vim.fn.getcwd() end
+  local buf_name = function() return vim.api.nvim_buf_get_name(0) end
+  local buf_root = function()
+    local source = buf_name()
+    return util_root.find_root(source) or vim.fs.dirname(source)
+  end
   -- mini.pick
   vim.keymap.set("n", "<Leader>sb", function() MiniPick.registry.buffers() end, { desc = "Search buffers" })
-  vim.keymap.set("n", "<Leader>sf", function() MiniPick.registry.files() end, { desc = "Search files" })
-  vim.keymap.set("n", "<Leader>sF", function() MiniPick.registry.directories() end, { desc = "Search directories" })
-  vim.keymap.set("n", "<Leader>sg", function() MiniPick.registry.grep_live() end, { desc = "Search grep" })
+  vim.keymap.set("n", "<Leader>se", function() MiniPick.registry.directories() end, { desc = "Search explorer" })
+  vim.keymap.set("n", "<Leader>sf", function() MiniPick.registry.files(nil, { source = { cwd = root() } }) end, { desc = "Search files (root)" })
+  vim.keymap.set("n", "<Leader>sF", function() MiniPick.registry.files(nil, { source = { cwd = cwd() } }) end, { desc = "Search files (cwd)" })
+  vim.keymap.set("n", "<Leader>s<C-f>", function() MiniPick.registry.files(nil, { source = { cwd = buf_root() } }) end, { desc = "Search files (buf root)" })
+  vim.keymap.set("n", "<Leader>sg", function() MiniPick.registry.grep_live(nil, { source = { cwd = root() } }) end, { desc = "Search grep (buf root)" })
+  vim.keymap.set("n", "<Leader>sG", function() MiniPick.registry.grep_live(nil, { source = { cwd = cwd() } }) end, { desc = "Search grep (cwd)" })
+  vim.keymap.set("n", "<Leader>s<C-g>", function() MiniPick.registry.grep_live(nil, { source = { cwd = buf_root() } }) end, { desc = "Search grep (buf root)" })
   vim.keymap.set("n", "<Leader>sh", function() MiniPick.registry.help() end, { desc = "Search help" })
   vim.keymap.set("n", "<Leader>sr", function() MiniPick.registry.resume() end, { desc = "Search resume" })
   -- mini.extra
@@ -479,11 +504,10 @@ pack.plug(function()
   end
 
   -- stylua: ignore start
-  vim.keymap.set("n", "<Leader>vn", function() MiniVisits.add_label() end, { desc = "Add label (new)" })
-  vim.keymap.set("n", "<Leader>vn", function() MiniVisits.add_label() end, { desc = "Add label (new)" })
-  vim.keymap.set("n", "<Leader>Vn", function() MiniVisits.remove_label() end, { desc = "Remove label (new)" })
-  vim.keymap.set("n", "<Leader>vr", function() MiniVisits.add_label(root_label()) end, { desc = "Add label (root)" })
-  vim.keymap.set("n", "<Leader>Vr", function() MiniVisits.remove_label(root_label()) end, { desc = "Remove label (root)" })
+  vim.keymap.set("n", "<Leader>va", function() MiniVisits.add_label(root_label()) end, { desc = "Add label (root)" })
+  vim.keymap.set("n", "<Leader>vr", function() MiniVisits.remove_label(root_label()) end, { desc = "Remove label (root)" })
+  vim.keymap.set("n", "<Leader>vA", function() MiniVisits.add_label() end, { desc = "Add label (new)" })
+  vim.keymap.set("n", "<Leader>vR", function() MiniVisits.remove_label() end, { desc = "Remove label (new)" })
   vim.keymap.set("n", "<Leader>s?v", function() MiniPick.registry.visit_labels({ cwd = "all" }) end, { desc = "Search labels" })
   vim.keymap.set("n", "<Leader>sv", function() visit_paths(nil, root_label()) end, { desc = "Search visits (root)" })
   vim.keymap.set("n", "<Leader>sV", function() visit_paths() end, { desc = "Search visits (all)" })

@@ -12,11 +12,11 @@ pack.plug(function()
     group = vim.api.nvim_create_augroup("custom_highlights", { clear = true }),
     desc = "Define permanent highlights",
     callback = function()
-      -- Lsp notifications
+      -- LSP notifications
       vim.api.nvim_set_hl(0, "LspProgress", { default = true, link = "Comment" })
       -- mini.hipatterns
-      local perf_bg = vim.api.nvim_get_hl(0, { name = "Indentifier", link = false }).fg
-      vim.api.nvim_set_hl(0, "HipatternsPerf", { bold = true, fg = "black", bg = perf_bg })
+      local ident_hl = vim.api.nvim_get_hl(0, { name = "Identifier", link = false })
+      vim.api.nvim_set_hl(0, "HipatternsPerf", { bold = true, fg = "black", bg = ident_hl.fg })
       -- mini.jump
       local jump_hl = { bold = true, fg = "violet" }
       vim.api.nvim_set_hl(0, "MiniJump", jump_hl)

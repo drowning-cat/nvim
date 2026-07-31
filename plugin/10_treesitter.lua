@@ -1,4 +1,7 @@
-local ts_install = vim.nonnil(vim.g.ts_install, {})
+local to_install = vim.nonnil(vim.g.ts_install, {})
+
+vim.g.ts_auto_install = vim.nonnil(vim.g.ts_auto_install, false)
+vim.g.ts_auto_install_ignore = vim.nonnil(vim.g.ts_auto_install_ignore, {})
 
 local pack = require("util.pack")
 
@@ -24,28 +27,46 @@ pack.add({
 pack.plug(function()
   vim.treesitter.language.register("tsx", "typescriptreact")
 
-  local ts_filetypes = vim
-    .iter(ts_install)
-    :map(function(lang)
-      return vim.treesitter.language.get_filetypes(lang)
-    end)
-    :flatten()
-    :totable()
+  local ts = require("nvim-treesitter")
+  ts.install(to_install)
 
-  require("nvim-treesitter").install(ts_install)
-
+  local attach = function(buf, lang)
+    vim.treesitter.start(buf, lang)
+    vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+    for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+      vim.wo[win][0].foldmethod = "expr"
+      vim.wo[win][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    end
+  end
+  local ts_supported = ts.get_available()
   vim.api.nvim_create_autocmd("FileType", {
-    pattern = ts_filetypes,
+    pattern = "*",
     group = vim.api.nvim_create_augroup("ts_setup", { clear = true }),
-    desc = "Setup treesitter for a buffer",
+    desc = "Attach treesitter to a buffer, install its parser if missing",
     callback = function(e)
-      vim.treesitter.start(e.buf)
-      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-      vim.wo[0][0].foldmethod = "expr"
-      vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+      local ft, buf = e.match, e.buf
+      local lang = vim.treesitter.language.get_lang(ft)
+      if not lang then
+        return
+      end
+      if vim.tbl_contains(ts.get_installed("parsers"), lang) then
+        attach(buf, lang)
+      elseif
+        vim.g.ts_auto_install
+        and not vim.tbl_contains(vim.g.ts_auto_install_ignore, lang)
+        and vim.tbl_contains(ts_supported, lang)
+      then
+        ts.install(lang):await(function(_, ok)
+          if ok and vim.api.nvim_buf_is_valid(buf) then
+            attach(buf, lang)
+          end
+        end)
+      end
     end,
   })
+end)
 
+pack.plug(function()
   local ts_repeat_move = require("nvim-treesitter-textobjects.repeatable_move")
   vim.keymap.set({ "n", "x", "o" }, ";", ts_repeat_move.repeat_last_move)
   vim.keymap.set({ "n", "x", "o" }, ",", ts_repeat_move.repeat_last_move_opposite)
@@ -102,7 +123,6 @@ pack.plug(function()
       tw["swap_" .. dir]()
     end
   end
-
   -- stylua: ignore start
   vim.keymap.set({ "n", "v" }, "<Leader>a", function() swap("right") end, { desc = "Swap right" })
   vim.keymap.set({ "n", "v" }, "<Leader>A", function() swap("left") end, { desc = "Swap left" })

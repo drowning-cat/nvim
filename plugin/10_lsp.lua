@@ -36,9 +36,9 @@ pack.plug(function()
     vim.lsp.document_color.color_presentation()
   end, { desc = "Select color presentation" })
 
-  local au_doc = vim.api.nvim_create_augroup("lsp/document_highlight", { clear = true })
+  local au_dochl = vim.api.nvim_create_augroup("config/lsp.dochl", { clear = true })
   vim.api.nvim_create_autocmd({ "CursorHold", "InsertLeave" }, {
-    group = au_doc,
+    group = au_dochl,
     desc = "Highlight references under the cursor",
     callback = function()
       local clients = vim.lsp.get_clients({ bufnr = 0, method = "textDocument/documentHighlight" })
@@ -49,14 +49,14 @@ pack.plug(function()
     end,
   })
   vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
-    group = au_doc,
+    group = au_dochl,
     desc = "Clear highlighted references",
     callback = function()
       vim.lsp.buf.clear_references()
     end,
   })
 
-  local au_inlay = vim.api.nvim_create_augroup("lsp/inlay_hint", { clear = true })
+  local au_inlay = vim.api.nvim_create_augroup("config/lsp.inlay_hint", { clear = true })
   vim.api.nvim_create_autocmd("InsertEnter", {
     group = au_inlay,
     desc = "Hide inlay hints when entering Insert mode",
@@ -80,7 +80,7 @@ pack.plug(function()
   })
 
   vim.api.nvim_create_autocmd("LspAttach", {
-    group = vim.api.nvim_create_augroup("lsp_setup", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/lsp.setup", { clear = true }),
     desc = "Configure a LSP server on attach",
     callback = function(e)
       local buf = e.buf
@@ -111,11 +111,28 @@ pack.plug(function()
   })
 end)
 
--- LSP progress
+-- -- LSP progress (ui2)
+-- pack.plug(function()
+--   vim.api.nvim_create_autocmd("LspProgress", {
+--     callback = function(e)
+--       local value = e.data.params.value
+--       vim.api.nvim_echo({ { value.message or "done" } }, false, {
+--         id = "lsp." .. e.data.params.token,
+--         kind = "progress",
+--         source = "vim.lsp",
+--         title = value.title,
+--         status = value.kind ~= "end" and "running" or "success",
+--         percent = value.percentage,
+--       })
+--     end,
+--   })
+-- end)
+
+-- LSP progress (window)
 -- See https://github.com/neovim/neovim/discussions/35349
 pack.plug(function()
-  local au = vim.api.nvim_create_augroup("lsp_progress", { clear = true })
-  local ns = vim.api.nvim_create_namespace("lsp_progress")
+  local au_progress = vim.api.nvim_create_augroup("config/lsp.progress", { clear = true })
+  local ns_progress = vim.api.nvim_create_namespace("config/lsp.progress")
   local timer = assert(vim.uv.new_timer())
   local buf = -1
   local win = -1
@@ -187,7 +204,7 @@ pack.plug(function()
     vim.list_extend(padded, vp)
     buf_lines = padded
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, buf_lines)
-    vim.hl.range(buf, ns, hl, { 0, 0 }, { #buf_lines, -1 })
+    vim.hl.range(buf, ns_progress, hl, { 0, 0 }, { #buf_lines, -1 })
     if keep_ms and keep_ms > 0 then
       timer:stop()
       timer:start(keep_ms, 200, function()
@@ -200,10 +217,13 @@ pack.plug(function()
     end
   end
   vim.api.nvim_create_autocmd("LspProgress", {
-    group = au,
+    group = au_progress,
     desc = "Show LSP progress status",
     callback = function(e)
-      local msg = string.gsub(vim.lsp.status(), "^%s*%d+%%: ", "")
+      local msg = string.gsub(vim.lsp.status(), "^.-: ", "")
+      if msg == "" then
+        return
+      end
       local msg_lines = vim.split(msg, ", ")
       local kind = e.data.params.value.kind
       local hl_group = kind == "end" and "Special" or "LspProgress"
@@ -239,7 +259,7 @@ pack.plug(function()
     hide = underline_hide,
   }
   vim.api.nvim_create_autocmd({ "CursorHold", "ModeChanged" }, {
-    group = vim.api.nvim_create_augroup("undim_underline", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/lsp.undim_underline", { clear = true }),
     desc = "Redraw `underline` diagnostics for cursor-aware filtering",
     callback = function(e)
       -- HACK: Avoid expensive `vim.diagnostic.show()` by calling the handlers directly
@@ -262,11 +282,11 @@ end)
 -- Lightbulb
 -- See https://github.com/neovim/neovim/discussions/41197
 pack.plug(function()
-  local au = vim.api.nvim_create_augroup("lightbulb", { clear = true })
-  local ns = vim.api.nvim_create_namespace("lightbulb")
+  local au_lightbulb = vim.api.nvim_create_augroup("config/lsp.lightbulb", { clear = true })
+  local ns_lightbulb = vim.api.nvim_create_namespace("config/lsp.lightbulb")
   ---@param range vim.Range
-  ---@param on_done fun(has_actions: boolean, results: table)
-  local buf_request_code_actions = function(range, on_done)
+  ---@param on_exit fun(has_actions: boolean, results: table)
+  local buf_request_code_actions = function(range, on_exit)
     local buf = range.buf
     local overlaps_range = function(diagn) ---@param diagn vim.Diagnostic
       local diagn_range = vim.range(buf, diagn.lnum, diagn.col, diagn.end_lnum, diagn.end_col)
@@ -287,7 +307,7 @@ pack.plug(function()
       local has_actions = vim.iter(vim.tbl_values(results)):any(function(res)
         return not vim.tbl_isempty(res.result or {})
       end)
-      on_done(has_actions, results)
+      on_exit(has_actions, results)
     end)
   end
   ---@return vim.Range
@@ -323,10 +343,10 @@ pack.plug(function()
     local buf = range.buf
     cancel_pending(buf)
     vim.b[buf]._lightbulb_cancel = buf_request_code_actions(range, function(has_actions)
-      vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+      vim.api.nvim_buf_clear_namespace(buf, ns_lightbulb, 0, -1)
       if has_actions then
         pcall(function()
-          vim.api.nvim_buf_set_extmark(buf, ns, range.start_row, 0, {
+          vim.api.nvim_buf_set_extmark(buf, ns_lightbulb, range.start_row, 0, {
             virt_text = { { " 💡 Press `gra` to select a code action", "NonText" } },
             virt_text_pos = "eol",
           })
@@ -337,7 +357,7 @@ pack.plug(function()
   local buf_hide = function(buf)
     buf = buf or 0
     cancel_pending(buf)
-    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+    vim.api.nvim_buf_clear_namespace(buf, ns_lightbulb, 0, -1)
   end
   -- Public
   _G.Lightbulb = {}
@@ -349,7 +369,7 @@ pack.plug(function()
     opts = opts or {}
     for _, ev in ipairs(vim.islist(event) and event or { event }) do
       local name, pattern = unpack(vim.split(ev, ":", { trimempty = true }))
-      local au_opts = vim.tbl_extend("keep", opts, { group = au, pattern = pattern })
+      local au_opts = vim.tbl_extend("keep", opts, { group = au_lightbulb, pattern = pattern })
       vim.api.nvim_create_autocmd(name, au_opts)
     end
   end
@@ -357,7 +377,7 @@ pack.plug(function()
   Lightbulb.enable = function(enable)
     enable = vim.nonnil(enable, true)
     _enabled = enable
-    vim.api.nvim_clear_autocmds({ group = au })
+    vim.api.nvim_clear_autocmds({ group = au_lightbulb })
     -- Disable
     if not enable then
       hold_timer:stop()
@@ -370,7 +390,7 @@ pack.plug(function()
     buf_hide()
     buf_show_at_cursor()
     autocmd("CursorMoved", {
-      group = au,
+      group = au_lightbulb,
       desc = "Trigger `CursorHoldV`, emulates `CursorHold` in Visual mode",
       callback = function()
         hold_timer:stop()
@@ -384,7 +404,7 @@ pack.plug(function()
       end,
     })
     autocmd({ "CursorHold", "User:CursorHoldV", "InsertLeave" }, {
-      group = au,
+      group = au_lightbulb,
       desc = "Show the lightbulb when code actions are available",
       callback = function()
         if not vim.b.lsp_lightbulb_disable then
@@ -395,7 +415,7 @@ pack.plug(function()
       end,
     })
     autocmd({ "InsertEnter", "BufLeave" }, {
-      group = au,
+      group = au_lightbulb,
       desc = "Hide the code action lightbulb",
       callback = function()
         buf_hide()

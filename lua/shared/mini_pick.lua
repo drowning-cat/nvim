@@ -4,8 +4,8 @@ _G.MiniPick = _G.MiniPick
 
 local util_hi = require("util.highlight")
 
-local pick_au = vim.api.nvim_create_augroup("minipick_show", { clear = true })
-local pick_ns = vim.api.nvim_create_namespace("minipick_show")
+local au_show = vim.api.nvim_create_augroup("config/minipick.show", { clear = true })
+local ns_show = vim.api.nvim_create_namespace("config/minipick.show")
 
 vim.api.nvim_set_hl(0, "MiniPickMatchRanges", {
   bold = true,
@@ -14,7 +14,7 @@ vim.api.nvim_set_hl(0, "MiniPickMatchRanges", {
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniPickStart",
-  group = pick_au,
+  group = au_show,
   desc = "Set `mini.pick` display options",
   callback = function()
     local state = MiniPick.get_picker_state()
@@ -36,7 +36,7 @@ end
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniPickStop",
-  group = pick_au,
+  group = au_show,
   desc = "Clear `mini.pick` cache",
   callback = function()
     pick_cache = {}
@@ -151,11 +151,11 @@ local format = function(buf, data, opts)
   end
   -- Render
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, buf_lines)
-  vim.api.nvim_buf_clear_namespace(buf, pick_ns, 0, -1)
+  vim.api.nvim_buf_clear_namespace(buf, ns_show, 0, -1)
   for _, extm in ipairs(buf_extms) do
     local row, col = extm.row or 0, extm.col or 0
     extm.row, extm.col = nil, nil
-    vim.api.nvim_buf_set_extmark(buf, pick_ns, row, col, extm)
+    vim.api.nvim_buf_set_extmark(buf, ns_show, row, col, extm)
   end
 end
 
@@ -200,7 +200,7 @@ function Slot.buf_lnum(buf, lnum)
 end
 
 function Slot.code(code, path, ft)
-  assert(not string.find(code, "\n"), "Code has new line")
+  assert(not string.match(code, "[\r\n]"), [[`code` expected to not contain `\r` or `\n`]])
   return pick_memo(vim.inspect({ "code", code, ft or path }), function()
     ft = ft or vim.filetype.match({ filename = path, contents = { code } })
     local extms = {}

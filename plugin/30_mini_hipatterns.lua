@@ -3,6 +3,7 @@ local pack = require("util.pack")
 pack.plug(function()
   local MiniHipatterns = require("mini.hipatterns")
 
+  -- See https://github.com/nvim-mini/mini.nvim/discussions/2031
   local hi_todo = function(words, hl_name)
     local pattern = vim
       .iter(words)
@@ -59,19 +60,19 @@ pack.plug(function()
         pattern = "hsl%(%d+[, ] ?%d+%%?[, ] ?%d+%%?%)",
         group = function(_, m, _)
           -- https://www.w3.org/TR/css-color-3/#hsl-color
-          local function hsl_to_rgb(h, s, l)
+          local hsl_to_rgb = function(h, s, l)
             h, s, l = h % 360, s / 100, l / 100
             if h < 0 then
               h = h + 360
             end
-            local function f(n)
+            local f = function(n)
               local k = (n + h / 30) % 12
               local a = s * math.min(l, 1 - l)
               return l - a * math.max(-1, math.min(k - 3, 9 - k, 1))
             end
             return f(0) * 255, f(8) * 255, f(4) * 255
           end
-          local h, s, l = m:match("(%d+)[, ] ?(%d+)%%?[, ] ?(%d+)%%?")
+          local h, s, l = string.match(m, "(%d+)[, ] ?(%d+)%%?[, ] ?(%d+)%%?")
           local r, g, b = hsl_to_rgb(h, s, l)
           local hex = string.format("#%02x%02x%02x", r, g, b)
           return MiniHipatterns.compute_hex_color_group(hex)

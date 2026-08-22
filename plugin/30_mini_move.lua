@@ -5,10 +5,10 @@ pack.plug(function()
 
   MiniMove.setup({
     mappings = {
-      left = "<C-h>",
-      down = "<C-j>",
       up = "<C-k>",
-      right = "<C-l>",
+      down = "<C-j>",
+      left = "",
+      right = "",
       line_left = "",
       line_down = "",
       line_up = "",

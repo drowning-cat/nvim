@@ -1,3 +1,4 @@
+-- See https://github.com/nvim-mini/mini.nvim/discussions/2304
 local pack = require("util.pack")
 
 vim.g.cycle_config = vim.nonnil(vim.g.cycle_config, {})
@@ -32,7 +33,7 @@ pack.plug(function()
     end
   end
 
-  local function get_config()
+  local get_config = function()
     local config = {}
     vim.list_extend(config, vim.b.cycle_config or {})
     vim.list_extend(config, vim.g.cycle_config or {})
@@ -105,7 +106,6 @@ pack.plug(function()
       end
     end
   end
-
   -- stylua: ignore
   vim.keymap.set("n", "<Leader>c", function() cycle_word() end, { desc = "Cycle" })
 end)

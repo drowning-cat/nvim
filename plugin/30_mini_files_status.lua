@@ -1,8 +1,9 @@
+-- See https://github.com/nvim-mini/mini.nvim/discussions/2391
 local MiniFiles = require("mini.files")
 
-local au = vim.api.nvim_create_augroup("minifiles_status", { clear = true })
-local ns_git = vim.api.nvim_create_namespace("minifiles_git")
-local ns_sym = vim.api.nvim_create_namespace("minifiles_sym")
+local au_status = vim.api.nvim_create_augroup("config/minifiles.status", { clear = true })
+local ns_git = vim.api.nvim_create_namespace("config/minifiles.status_git")
+local ns_sym = vim.api.nvim_create_namespace("config/minifiles.status_sym")
 
 local get_fs_items = function(buf)
   local buf_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
@@ -53,7 +54,7 @@ end
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesBufferUpdate",
-  group = au,
+  group = au_status,
   desc = "Update `mini.files` symlinks",
   callback = function(e)
     render_sym(e.data.buf_id)
@@ -62,28 +63,28 @@ vim.api.nvim_create_autocmd("User", {
 
 -- Git status
 
-local get_branch_dir = function(buf)
+local get_branch = function(buf)
   local buf_name = vim.api.nvim_buf_get_name(buf)
-  local branch_dir = string.match(buf_name, "^minifiles://%d+/(.*)")
-  if not branch_dir then
+  local branch = string.match(buf_name, "^minifiles://%d+/(.*)")
+  if not branch then
     return
   end
-  return vim.fs.normalize(branch_dir)
+  return vim.fs.normalize(branch)
 end
 
 local find_branch_root = function(branch_buf)
-  local branch_dir = get_branch_dir(branch_buf)
-  if not branch_dir then
+  local branch = get_branch(branch_buf)
+  if not branch then
     return
   end
-  local git_root = vim.fs.root(branch_dir, ".git")
+  local git_root = vim.fs.root(branch, ".git")
   if not git_root then
     return
   end
   return vim.fs.normalize(git_root)
 end
 
-local get_status = function(path, status_map)
+local resolve_status = function(path, status_map)
   local status = status_map[path] or status_map[path .. "/"]
   if status then
     return status
@@ -98,15 +99,16 @@ local get_status = function(path, status_map)
   return nil
 end
 
-local get_descendant_statuses = function(path, status_map)
-  local child_statuses = {}
+-- NOTE: Relevant for directories
+local get_nested_statuses = function(path, status_map)
+  local statuses = {}
   for map_path, map_status in pairs(status_map) do
     local rel = vim.fs.relpath(path, map_path)
     if rel and rel ~= "." then
-      child_statuses[map_path] = map_status
+      statuses[map_path] = map_status
     end
   end
-  return child_statuses
+  return statuses
 end
 
 local get_deleted_items = function(buf, fs_items, status_map)
@@ -116,9 +118,9 @@ local get_deleted_items = function(buf, fs_items, status_map)
   local is_deleted = function(status)
     return string.match(status, "D")
   end
-  local branch_dir = assert(get_branch_dir(buf))
+  local branch = assert(get_branch(buf))
   local is_child = function(path)
-    return vim.fs.dirname(path) == branch_dir
+    return vim.fs.dirname(path) == branch
   end
   for map_path, map_status in pairs(status_map) do
     if is_deleted(map_status) and is_child(map_path) then
@@ -167,12 +169,12 @@ end
 
 local get_entry_style = function(fs_entry, status_map)
   local path, fs_type = fs_entry.path, fs_entry.fs_type
-  local own_status, _ = get_status(path, status_map)
+  local own_status, _ = resolve_status(path, status_map)
   if own_status then
     return nil, get_status_hl(own_status)
   end
   if fs_type == "directory" then
-    local child_statuses = get_descendant_statuses(path, status_map)
+    local child_statuses = get_nested_statuses(path, status_map)
     if vim.tbl_isempty(child_statuses) then
       return nil, nil
     end
@@ -187,6 +189,19 @@ local get_entry_style = function(fs_entry, status_map)
     return (count > 99 and "99+" or count), merge_hl
   end
   return nil, nil
+end
+
+local refresh_deleted = function(branch_win, fs_items)
+  fs_items = fs_items or {}
+  local buf = vim.api.nvim_win_get_buf(branch_win)
+  local lnum_count = vim.api.nvim_buf_line_count(buf)
+  vim.api.nvim_win_set_height(branch_win, lnum_count + #fs_items)
+  local topfill = vim.iter(fs_items):fold(0, function(acc, del)
+    return del.lnum == 1 and acc + 1 or acc
+  end)
+  vim.api.nvim_win_call(branch_win, function()
+    vim.fn.winrestview({ topfill = topfill })
+  end)
 end
 
 ---@param buf integer
@@ -216,8 +231,7 @@ local render_git = function(buf, status_map)
   -- HACK: Used to adjust the window height. See `MiniFilesWindowUpdate` below
   vim.b[buf].git_deleted = git_deleted
   for _, win in ipairs(vim.fn.win_findbuf(buf)) do
-    local line_count = vim.api.nvim_buf_line_count(buf)
-    vim.api.nvim_win_set_height(win, line_count + #git_deleted)
+    refresh_deleted(win, git_deleted)
   end
   -- NOTE: 2. Display git status for visible entries
   for _, item in ipairs(fs_items) do
@@ -249,20 +263,34 @@ end
 
 local GitStatus = {}
 
----@class RootState
+---@alias GitStatusState.on_done fun(status_map: table<string, string>, out: vim.SystemCompleted)
+
+---@class GitStatusState
 ---@field map table<string, string>
----@field subs fun(state: self, out: vim.SystemCompleted)[]
 ---@field updated_at integer
 ---@field expires_at integer
 ---@field error? vim.SystemCompleted
+---@field _is_fetching boolean
+---@field _subs GitStatusState.on_done[]
 
----@type table<string, RootState>
+---@type table<string, GitStatusState>
 GitStatus.store = {}
 
 GitStatus.ttl = math.huge -- disabled; seconds
 GitStatus.cleanup_keep = 3
 
-GitStatus._parse_porcelain = function(git_root, stdout)
+-- NOTE: Call `GitStatus.query` separately to refresh the data
+GitStatus.peek = function(git_root)
+  git_root = vim.fs.normalize(git_root)
+  local state = vim.deepcopy(GitStatus.store[git_root])
+  if not state then
+    return
+  end
+  local is_fresh = os.time() < state.expires_at
+  return state, is_fresh
+end
+
+local parse_porcelain = function(git_root, stdout)
   local status_map = {}
   local chunk_list = vim.split(stdout, "%z")
   local i = 1
@@ -271,7 +299,7 @@ GitStatus._parse_porcelain = function(git_root, stdout)
     -- NOTE: Path is relative to the git repository
     local status, rel_path = string.match(chunk, "^(..) (.*)")
     if status and rel_path then
-      -- NOTE: Windows: "a\foo\", "\bar" => "a/foo/bar"
+      -- NOTE: Slashes normalized: "a\foo\", "\bar" => "a/foo/bar"
       local abs_path = vim.fs.joinpath(git_root, rel_path)
       status_map[abs_path] = status
       -- NOTE: Rename/copy entries are followed by an additional original path
@@ -284,30 +312,29 @@ GitStatus._parse_porcelain = function(git_root, stdout)
   return status_map
 end
 
+---@param on_done? GitStatusState.on_done
 GitStatus.query = function(git_root, on_done)
   git_root = vim.fs.normalize(git_root)
   local state = GitStatus.store[git_root]
-  if not state then
-    state = { map = {}, subs = {}, updated_at = -1, expires_at = -1 }
-    GitStatus.store[git_root] = state
-  end
-  local is_fetching = not vim.tbl_isempty(state.subs)
-  if is_fetching then
-    -- NOTE: Coalesce identical requests into a single `vim.system` call
-    table.insert(state.subs, on_done)
+    or { map = {}, updated_at = -1, expires_at = -1, _is_fetching = false, _subs = {} }
+  GitStatus.store[git_root] = state
+  -- NOTE: Queue concurrent requests and fetch only once
+  table.insert(state._subs, on_done)
+  if state._is_fetching then
     return
   end
-  state.subs = { on_done }
+  state._is_fetching = true
   -- WARN: Untracked directories end with `/`; files inside are not reported
-  local sys = vim.system({ "git", "status", "--ignored", "--porcelain", "--null" }, { cwd = git_root }, function(out)
+  local cmd = { "git", "status", "--ignored", "--porcelain", "--null" }
+  local sys = vim.system(cmd, { cwd = git_root }, function(out)
     vim.schedule(function()
-      local subs = state.subs
-      state.subs = {}
+      local subs = state._subs
+      state._is_fetching = false
+      state._subs = {}
       if out.code == 0 and out.stdout then
-        local status_map = GitStatus._parse_porcelain(git_root, out.stdout)
+        state.map = parse_porcelain(git_root, out.stdout)
         -- NOTE: Manually include the `.git` directory in case it's used
-        status_map[vim.fs.joinpath(git_root, ".git/")] = "!!"
-        state.map = status_map
+        state.map[vim.fs.joinpath(git_root, ".git/")] = "!!"
         state.updated_at = os.time()
         state.expires_at = state.updated_at + GitStatus.ttl
         state.error = nil
@@ -316,22 +343,17 @@ GitStatus.query = function(git_root, on_done)
         vim.notify("Git status failed: " .. (out.stderr or ""), vim.log.levels.WARN)
       end
       for _, cb in ipairs(subs) do
-        cb(state, out)
+        if vim.is_callable(cb) then
+          cb(state.map, out)
+        end
       end
+      vim.api.nvim_exec_autocmds("User", {
+        pattern = "MiniFilesStatusFetch",
+        data = { git_root = git_root, status_map = vim.deepcopy(state.map) },
+      })
     end)
   end)
   return sys
-end
-
--- NOTE: Call `GitStatus.query` separately to refresh the data
-GitStatus.get_cached = function(git_root)
-  git_root = vim.fs.normalize(git_root)
-  local state = vim.deepcopy(GitStatus.store[git_root])
-  if not state then
-    return nil, false
-  end
-  local is_fresh = os.time() < state.expires_at
-  return state, is_fresh
 end
 
 GitStatus.expire = function()
@@ -359,18 +381,29 @@ end
 
 _G.MiniFilesStatus = {} -- NOTE: Public API
 
-MiniFilesStatus.get_status = function(path)
-  path = vim.fs.normalize(path)
-  local status, source, children
-  local outer_root = vim.iter(vim.fs.parents(path)):find(function(dir)
-    return GitStatus.store[dir] ~= nil
-  end)
-  local outer_state = outer_root and GitStatus.get_cached(outer_root)
-  if outer_state then
-    status, source = get_status(path, outer_state.map)
+local find_parent_state = function(path)
+  for dir in vim.fs.parents(path) do
+    local state = GitStatus.peek(dir)
+    if state then
+      return state
+    end
   end
-  local inner_state = GitStatus.store[path] and GitStatus.get_cached(path) or outer_state
-  children = inner_state and get_descendant_statuses(path, inner_state.map) or {}
+end
+
+---@param path string
+MiniFilesStatus.status_of = function(path)
+  path = vim.fs.normalize(path)
+  local outer_state = find_parent_state(path)
+  local status, source
+  if outer_state then
+    status, source = resolve_status(path, outer_state.map)
+  end
+  local inner_state = GitStatus.peek(path)
+  local state = inner_state or outer_state
+  local children = {}
+  if state then
+    children = get_nested_statuses(path, state.map)
+  end
   if not status and vim.tbl_isempty(children) then
     return nil
   end
@@ -381,21 +414,24 @@ MiniFilesStatus.get_status = function(path)
   }
 end
 
-local get_rooted_branches = function(filter_root)
-  local rooted_branches = {}
+local get_branch_roots = function(filter_root)
+  local roots = {}
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     local buf_root = find_branch_root(buf)
-    if buf_root and (filter_root == nil or filter_root == buf_root) then
-      rooted_branches[buf] = buf_root
+    if buf_root and (not filter_root or filter_root == buf_root) then
+      roots[buf] = buf_root
     end
   end
-  return rooted_branches
+  return roots
 end
 
-MiniFilesStatus.synchronize = function(git_root) ---@param git_root? string
-  for buf, buf_root in pairs(get_rooted_branches(git_root)) do
-    GitStatus.query(buf_root, function(state)
-      render_git(buf, state.map)
+-- NOTE: Only refreshes statuses of listed items.
+--       When files are added or removed, prefer `MiniFiles.synchronize()`
+---@param git_root? string
+MiniFilesStatus.refresh = function(git_root)
+  for buf, buf_root in pairs(get_branch_roots(git_root)) do
+    GitStatus.query(buf_root, function(status_map)
+      render_git(buf, status_map)
     end)
   end
 end
@@ -404,20 +440,16 @@ end
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesWindowUpdate",
-  group = au,
-  desc = "Increase window height to fit deleted entries",
+  group = au_status,
+  desc = "Adjust `mini.files` window to fit git deleted entries",
   callback = function(e)
     local win, buf = e.data.win_id, e.data.buf_id
-    local git_deleted = vim.b[buf].git_deleted
-    if not git_deleted then
-      return
-    end
-    local lnum_count = vim.api.nvim_buf_line_count(buf)
-    vim.api.nvim_win_set_height(win, lnum_count + #git_deleted)
+    local git_deleted = vim.b[buf].git_deleted or {}
+    refresh_deleted(win, git_deleted)
   end,
 })
 
-local update_status = function(buf, force)
+local update_buf_status = function(buf, force)
   local git_root = find_branch_root(buf)
   if not git_root then
     return
@@ -425,7 +457,7 @@ local update_status = function(buf, force)
   local is_new = vim.b[buf].git_root == nil
   vim.b[buf].git_root = git_root
   -- NOTE: Stale-while-revalidate: render now, refresh later
-  local cached, is_fresh = GitStatus.get_cached(git_root)
+  local cached, is_fresh = GitStatus.peek(git_root)
   if cached then
     render_git(buf, cached.map)
   end
@@ -433,48 +465,44 @@ local update_status = function(buf, force)
   if not force and is_new and is_fresh then
     return
   end
-  GitStatus.query(git_root, function(state)
-    render_git(buf, state.map)
+  GitStatus.query(git_root, function(status_map)
+    render_git(buf, status_map)
   end)
 end
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesBufferUpdate",
-  group = au,
+  group = au_status,
   desc = "Update/render `mini.files` git status",
   callback = function(e)
-    update_status(e.data.buf_id)
+    update_buf_status(e.data.buf_id)
   end,
 })
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniGitUpdated",
-  group = au,
+  group = au_status,
   desc = "Synchronize `mini.files` git status after `mini.git` updates",
   callback = function(e)
-    local MiniGit = require("mini.git")
-    local git_root = (MiniGit.get_buf_data(e.buf) or {}).root
-    if git_root then
-      MiniFilesStatus.synchronize(git_root)
-    end
+    local git_root = vim.b[e.buf].minigit_summary.root
+    MiniFilesStatus.refresh(git_root)
   end,
 })
 
 vim.api.nvim_create_autocmd("FocusGained", {
-  group = au,
+  group = au_status,
   desc = "Synchronize `mini.files` git status after gaining focus",
   callback = function()
-    MiniFilesStatus.synchronize()
+    MiniFilesStatus.refresh()
   end,
 })
 
 vim.api.nvim_create_autocmd("User", {
   pattern = "MiniFilesExplorerClose",
-  group = au,
+  group = au_status,
   desc = "Clean up `mini.files` git status",
   callback = function()
     GitStatus.prune()
-    -- NOTE: Force statuses to refresh when reopening
-    GitStatus.expire()
+    GitStatus.expire() -- NOTE: Force refresh when reopening
   end,
 })

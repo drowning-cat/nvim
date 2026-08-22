@@ -1,6 +1,5 @@
 {
   "diagnostics": {
-    "disable": ["unnecessary-if"],
     "globals": ["vim"]
   },
   "runtime": {

@@ -13,6 +13,8 @@ pack.plug(function()
 
   -- Overrides (colors)
 
+  -- See https://github.com/nvim-mini/mini.nvim/discussions/2377
+  -- Depends on lua/shared/mini_pick.lua < lua/util/highlight.lua
   for name, gen_show in pairs(mini_pick.gen_show) do
     local pick = MiniPick.builtin[name] or MiniExtra.pickers[name]
     MiniPick.registry[name] = function(local_opts, opts)
@@ -49,6 +51,7 @@ pack.plug(function()
     return MiniExtra.pickers.git_hunks(local_opts, opts)
   end
 
+  -- See https://github.com/nvim-mini/mini.nvim/discussions/2171
   MiniPick.registry.grep_live = function(local_opts, opts)
     local_opts = vim.tbl_extend("keep", local_opts or {}, { globs = {} })
     opts = vim.tbl_extend("keep", opts or {}, { source = {} })
@@ -130,9 +133,10 @@ pack.plug(function()
 
   -- Overrides (other)
 
+  -- See https://github.com/nvim-mini/mini.nvim/discussions/2146
   MiniPick.registry.colorschemes = function(local_opts, opts)
     local fake_buf = vim.api.nvim_create_buf(false, true)
-    local au = vim.api.nvim_create_augroup("pick_colors", { clear = true })
+    local au_pick_colors = vim.api.nvim_create_augroup("config/minipick.pick_colors", { clear = true })
     local cl = vim.g.colors_name or "default"
     local bg = vim.o.background or "dark"
     local preview = function(colors)
@@ -156,14 +160,14 @@ pack.plug(function()
     local on_move = function()
       vim.schedule(preview)
     end
-    vim.api.nvim_create_autocmd("User", { pattern = "MiniPickStart", group = au, callback = match_current })
-    vim.api.nvim_create_autocmd("User", { pattern = "MiniPickMatch", group = au, callback = on_move })
+    vim.api.nvim_create_autocmd("User", { pattern = "MiniPickStart", group = au_pick_colors, callback = match_current })
+    vim.api.nvim_create_autocmd("User", { pattern = "MiniPickMatch", group = au_pick_colors, callback = on_move })
     vim.api.nvim_create_autocmd("User", {
       pattern = "MiniPickStop",
-      group = au,
+      group = au_pick_colors,
       once = true,
       callback = function()
-        vim.api.nvim_clear_autocmds({ group = au })
+        vim.api.nvim_clear_autocmds({ group = au_pick_colors })
         vim.api.nvim_buf_delete(fake_buf, { unload = true })
       end,
     })
@@ -396,6 +400,7 @@ pack.plug(function()
           pick_move_caret(math.huge)
         end,
       },
+      -- See https://github.com/nvim-mini/mini.nvim/discussions/2169
       prev_word = {
         char = "<C-Left>",
         func = function()

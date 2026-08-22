@@ -1,6 +1,68 @@
 {
-  "Vim Print": {
+  "vim-print": {
     "prefix": "vp",
-    "body": "vim.print($0)"
+    "body": "vim.print($0)",
+    "description": "Print a value"
+  },
+  "vim-keymap": {
+    "prefix": ["vk", "vim.keymap"],
+    "body": [
+      "vim.keymap.set(${1|\"n\",{ \"n\"\\, \"x\" \\}|}, \"${2:<F1>}\", function() ${0} end, { desc = \"${3:Description}\" })"
+    ],
+    "description": "Create a keymap"
+  },
+  "vim-augroup": {
+    "prefix": ["au"],
+    "body": "vim.api.nvim_create_augroup(\"${1:name}\", { clear = true })",
+    "description": "Create an augroup"
+  },
+  "vim-local-augroup": {
+    "prefix": ["lau"],
+    "body": "local ${1:au} = vim.api.nvim_create_augroup(\"${2:name}\", { clear = true })",
+    "description": "Create an augroup variable"
+  },
+  "vim-namespace": {
+    "prefix": ["ns"],
+    "body": "vim.api.nvim_create_namespace(\"${1:name}\")",
+    "description": "Create a namespace"
+  },
+  "vim-local-namespace": {
+    "prefix": ["lns"],
+    "body": "local ${1:ns} = vim.api.nvim_create_namespace(\"${2:name}\")",
+    "description": "Create a namespace variable"
+  },
+  "vim-autocmd": {
+    "prefix": ["autocmd"],
+    "body": [
+      "vim.api.nvim_create_autocmd(\"${1:Event}\", {",
+      "\tgroup = vim.api.nvim_create_augroup(\"${2:name}\", { clear = true }),",
+      "\tdesc = \"${3:Description}\",",
+      "\tcallback = function()",
+      "\t\t${0}",
+      "\tend,",
+      "})"
+    ],
+    "description": "Create an autocmd"
+  },
+  "vim-user-autocmd": {
+    "prefix": ["autocmd.User"],
+    "body": [
+      "vim.api.nvim_create_autocmd(\"User\", {",
+      "\tpattern = \"${1:pattern}\",",
+      "\tgroup = vim.api.nvim_create_augroup(\"${2:name}\", { clear = true }),",
+      "\tdesc = \"${3:Description}\",",
+      "\tcallback = function()",
+      "\t\t${0}",
+      "\tend,",
+      "})"
+    ],
+    "description": "Create a User autocmd"
+  },
+  "vim-command": {
+    "prefix": ["user_command"],
+    "body": [
+      "vim.api.nvim_create_user_command(\"${1:MyCommand}\", function(opts) ${0} end, {})"
+    ],
+    "description": "Create a command"
   }
 }

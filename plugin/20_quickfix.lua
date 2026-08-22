@@ -30,6 +30,6 @@ pack.plug(function()
     quicker.toggle(vim.tbl_extend("keep", opts or {}, { min_height = 10 }))
   end
   -- stylua: ignore start
-  vim.keymap.set("n", "=q", function() toggle_qf() end, { desc = "Toggle quickfix" })
-  vim.keymap.set("n", "=Q", function() toggle_qf({ loclist = true }) end, { desc = "Toggle loclist" })
+  vim.keymap.set("n", "<Leader>l", function() toggle_qf() end, { desc = "Toggle quickfix" })
+  vim.keymap.set("n", "<Leader>L", function() toggle_qf({ loclist = true }) end, { desc = "Toggle loclist" })
 end)

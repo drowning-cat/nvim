@@ -1,3 +1,4 @@
+-- See https://github.com/neovim/neovim/discussions/38198
 local setcmdpos = function(pos, next_pos)
   local move = next_pos - pos
   local keys = string.rep(move >= 0 and "<Right>" or "<Left>", math.abs(move))

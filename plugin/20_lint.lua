@@ -7,18 +7,23 @@ pack.add({
 })
 
 pack.plug(function()
-  local lint = require("lint")
+  local au_lint = vim.api.nvim_create_augroup("config/lint", { clear = true })
 
+  local lint = require("lint")
   lint.linters_by_ft = vim.tbl_extend("force", lint.linters_by_ft, linters_by_ft)
 
-  local au_lint = vim.api.nvim_create_augroup("lint", { clear = true })
   vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost", "InsertLeave" }, {
     group = au_lint,
     desc = "Run linting on buffer events",
-    callback = function()
-      if vim.bo.modifiable then
-        lint.try_lint()
+    callback = function(e)
+      local buf = e.buf
+      if not vim.api.nvim_buf_is_valid(buf) or not vim.bo[buf].modifiable then
+        return
       end
+      if e.event == "InsertLeave" and vim.bo[buf].ft == "bigfile" then
+        return
+      end
+      lint.try_lint()
     end,
   })
 end)

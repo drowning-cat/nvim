@@ -8,7 +8,7 @@ function M.setup()
   vim.g.cwd_auto = vim.fn.getcwd()
 
   vim.api.nvim_create_autocmd("DirChangedPre", {
-    group = vim.api.nvim_create_augroup("find_root", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/root", { clear = true }),
     callback = function(e)
       if e.match == "global" then
         vim.g.cwd_glob = e.file

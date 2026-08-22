@@ -5,18 +5,15 @@ local to_install = vim.nonnil(vim.g.ts_install, {})
 vim.g.ts_auto_install = vim.nonnil(vim.g.ts_auto_install, false)
 vim.g.ts_auto_install_ignore = vim.nonnil(vim.g.ts_auto_install_ignore, {})
 
-vim.api.nvim_create_autocmd("PackChanged", {
-  group = vim.api.nvim_create_augroup("ts_update", { clear = true }),
-  desc = "Update `nvim-treesitter`",
-  callback = function(e)
-    if e.data.kind == "update" and e.data.spec.name == "nvim-treesitter" then
-      require("nvim-treesitter").update()
-    end
-  end,
-})
-
 pack.add({
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+  {
+    src = "https://github.com/nvim-treesitter/nvim-treesitter",
+    data = {
+      build = function()
+        require("nvim-treesitter").update()
+      end,
+    },
+  },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-textobjects" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter-context" },
   { src = "https://github.com/Wansmer/treesj" },
@@ -32,16 +29,15 @@ pack.plug(function()
 
   local attach = function(buf, lang)
     vim.treesitter.start(buf, lang)
+    vim.wo[0][0].foldmethod = "expr"
+    vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+    -- PERF: `indentexpr` can be slow on large files (see `bigfile.lua`)
     vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-    for _, win in ipairs(vim.fn.win_findbuf(buf)) do
-      vim.wo[win][0].foldmethod = "expr"
-      vim.wo[win][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
-    end
   end
   local ts_supported = ts.get_available()
   vim.api.nvim_create_autocmd("FileType", {
     pattern = "*",
-    group = vim.api.nvim_create_augroup("ts_setup", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/treesitter", { clear = true }),
     desc = "Attach treesitter to a buffer, install its parser if missing",
     callback = function(e)
       local ft, buf = e.match, e.buf
@@ -105,7 +101,7 @@ pack.plug(function()
   local treesj = require("treesj")
   treesj.setup({ use_default_keymaps = false })
   -- stylua: ignore start
-  vim.keymap.set("n", "<Leader>S", function() treesj.toggle() end, { desc = "Tsj toggle" })
+  vim.keymap.set("n", "<Leader>S", function() treesj.toggle() end, { desc = "Split toggle" })
 end)
 
 pack.plug(function()
@@ -116,7 +112,7 @@ pack.plug(function()
   tw.setup({ highlight = false })
 
   local swap = function(dir)
-    assert(dir:match("left") or dir:match("right"))
+    assert(string.match(dir, "left") or string.match(dir, "right"))
     local cursor = vim.api.nvim_win_get_cursor(0)
     sw["swap_with_" .. dir]()
     if vim.deep_equal(cursor, vim.api.nvim_win_get_cursor(0)) then

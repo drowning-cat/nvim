@@ -61,6 +61,7 @@ pack.plug(function()
         fallback = MiniAi.gen_spec.argument({ separator = ",%s*" }),
       }),
       d = { "%d+" },
+      -- See https://github.com/nvim-mini/mini.nvim/discussions/1434#discussioncomment-13238259
       e = function(ai_type, id, opts)
         local SEP = "_%-"
         if ai_type == "a" then
@@ -104,14 +105,6 @@ pack.plug(function()
         i = "@call.inner",
         fallback = MiniAi.gen_spec.function_call(),
       }),
-      g = function()
-        local from = { line = 1, col = 1 }
-        local to = {
-          line = vim.fn.line("$"),
-          col = math.max(vim.fn.getline("$"):len(), 1),
-        }
-        return { from = from, to = to }
-      end,
       t = { "<([%p%w]-)%f[^<%w][^<>]->.-</%1>", "^<.->().*()</[^/]->$" },
     },
   })
@@ -135,7 +128,7 @@ pack.plug(function()
           else
             new_opts.search_method = search_method:gsub("next", "prev")
           end
-          new_side = new_opts.search_method:match("next") and "left" or "right"
+          new_side = string.match(new_opts.search_method, "next") and "left" or "right"
           miniai_move_cursor(new_side, ai_type, id, new_opts)
         end,
       })
@@ -150,14 +143,13 @@ pack.plug(function()
     q = { id = "q", ai_type = "a", desc = "quote" },
     t = { id = "t", ai_type = "a", desc = "tag" },
   }
-
   for key, opts in pairs(move_opts) do
     local id, ai_type, desc = opts.id or key, opts.ai_type or "a", opts.desc
     -- stylua: ignore start
     vim.keymap.set({ "n", "x", "o" }, "]]" .. key, function() MiniAi.move_cursor("left", ai_type, id, { search_method = "next" }) end, { desc = desc })
     vim.keymap.set({ "n", "x", "o" }, "[[" .. key, function() MiniAi.move_cursor("left", ai_type, id, { search_method = "prev" }) end, { desc = desc })
-    vim.keymap.set({ "n", "x", "o" }, "][" .. key, function() MiniAi.move_cursor("right", ai_type, id,{ search_method =  "next" }) end, { desc = desc })
-    vim.keymap.set({ "n", "x", "o" }, "[]" .. key, function() MiniAi.move_cursor("right", ai_type, id,{ search_method =  "prev" }) end, { desc = desc })
+    vim.keymap.set({ "n", "x", "o" }, "][" .. key, function() MiniAi.move_cursor("right", ai_type, id, { search_method = "next" }) end, { desc = desc })
+    vim.keymap.set({ "n", "x", "o" }, "[]" .. key, function() MiniAi.move_cursor("right", ai_type, id, { search_method = "prev" }) end, { desc = desc })
   end
 
   local has_pos = function(reg, pos)
@@ -193,8 +185,7 @@ pack.plug(function()
   vim.keymap.set({ "n", "x", "o" }, "g]", function() go_edge("right") end, { desc = "Go edge right" })
   vim.keymap.set({ "n", "x", "o" }, "g[", function() go_edge("left") end, { desc = "Go edge left" })
   -- stylua: ignore end
-
-  vim.keymap.set("i", "<M-w>", "<Esc>ciw", { remap = true, desc = "Delete word" })
+  vim.keymap.set("i", "<M-w>", "<C-o>diw", { remap = true, desc = "Delete word" })
   vim.keymap.set("i", "<M-e>", function()
     local reg = MiniAi.find_textobject("i", "e", {
       search_method = "cover_or_prev",
@@ -268,6 +259,7 @@ pack.plug(function()
           end
         end,
       },
+      -- See https://github.com/nvim-mini/mini.nvim/discussions/2037#discussioncomment-14562736
       l = nil, -- Reserved for `log`
       L = {
         output = function()

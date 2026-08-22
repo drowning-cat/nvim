@@ -5,6 +5,7 @@ pack.plug(function()
 
   MiniPairs.setup({
     -- modes = { command = true },
+    -- See https://github.com/nvim-mini/mini.nvim/discussions/2030
     mappings = {
       ["("] = { neigh_pattern = "[^\\][%s>)%]},:]" },
       ["["] = { neigh_pattern = "[^\\][%s>)%]},:]" },

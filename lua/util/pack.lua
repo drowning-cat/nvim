@@ -29,7 +29,8 @@ local pull_pending = function(src)
 end
 
 vim.api.nvim_create_autocmd("PackChanged", {
-  group = vim.api.nvim_create_augroup("pack_build", { clear = true }),
+  group = vim.api.nvim_create_augroup("config/pack", { clear = true }),
+  desc = "Run `vim.pack` build callbacks (`data.build`)",
   callback = function(e)
     local build = e.data.build
     if e.data.active == false then

@@ -8,7 +8,7 @@ pack.add({
 
 pack.plug(function()
   vim.api.nvim_create_autocmd("ColorScheme", {
-    group = vim.api.nvim_create_augroup("custom_highlights", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/highlights", { clear = true }),
     desc = "Define permanent highlights",
     callback = function()
       -- LSP notifications
@@ -24,7 +24,6 @@ pack.plug(function()
       vim.api.nvim_set_hl(0, "MatchParen", {})
     end,
   })
-
   require("tokyonight").setup({
     on_highlights = function(hl, c)
       hl.LspProgress = { fg = c.comment }
@@ -33,25 +32,21 @@ pack.plug(function()
 end)
 
 -- Persistent colors
-
 pack.plug(function()
   local colors_file = vim.fn.stdpath("state") .. "/colorscheme"
-
   vim.api.nvim_create_autocmd("ColorScheme", {
-    group = vim.api.nvim_create_augroup("save_colors", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/save_colors", { clear = true }),
     desc = "Save the current colorscheme to a file",
     callback = function()
       vim.fn.writefile({ vim.g.colors_name, vim.o.background }, colors_file)
     end,
   })
-
   local set_colorscheme = function(name, bg)
     return pcall(function()
       vim.o.background = bg
-      vim.cmd.colorscheme(name)
+      vim.cmd("silent! colorscheme " .. name)
     end)
   end
-
   local _, lines = pcall(vim.fn.readfile, colors_file)
   if not set_colorscheme(lines[1], lines[2]) then
     set_colorscheme("tokyonight", "dark")

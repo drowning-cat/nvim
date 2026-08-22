@@ -44,36 +44,37 @@ pack.plug(function()
 
   -- Setup
 
-  local au_load = vim.api.nvim_create_augroup("session_load", { clear = true })
-  local au_save = vim.api.nvim_create_augroup("session_save", { clear = true })
+  local au_load = vim.api.nvim_create_augroup("config/session.load", { clear = true })
+  local au_save = vim.api.nvim_create_augroup("config/session.save", { clear = true })
 
   if vim.fn.argc() == 0 then
     local is_manpage = vim.iter(vim.v.argv):find(function(arg)
       return arg == "+Man!"
     end)
     -- NOTE: Autoload session
-    if not vim.v.startreason == "restart" and not is_manpage and vim.bo.buftype == "" then
+    if vim.v.startreason ~= "restart" and not is_manpage and vim.bo.buftype == "" then
       vim.cmd("silent! Load")
     end
     -- NOTE: Ask to open Git conflict files
     vim.system({ "git", "diff", "--relative", "--name-only", "--diff-filter=U" }, {}, function(out)
-      if out.code == 0 then
-        vim.schedule(function()
-          local files = vim.split(out.stdout or "", "\n", { trimempty = true })
-          if vim.tbl_isempty(files) then
-            return
-          end
-          local abs_files = vim.tbl_map(vim.fs.abspath, files)
-          if vim.fn.confirm("Open conflict files?", "&Yes\n&No", 1) ~= 1 then
-            return
-          end
-          vim.cmd("silent tabonly")
-          for _, file in ipairs(abs_files) do
-            vim.cmd.tabedit(vim.fn.fnameescape(file))
-          end
-          vim.cmd.tabclose(1)
-        end)
+      if out.code ~= 0 then
+        return
       end
+      vim.schedule(function()
+        local files = vim.split(out.stdout or "", "\n", { trimempty = true })
+        if vim.tbl_isempty(files) then
+          return
+        end
+        local abs_files = vim.tbl_map(vim.fs.abspath, files)
+        if vim.fn.confirm("Open conflict files?", "&Yes\n&No", 1) ~= 1 then
+          return
+        end
+        vim.cmd("silent tabonly")
+        for _, file in ipairs(abs_files) do
+          vim.cmd.tabedit(vim.fn.fnameescape(file))
+        end
+        vim.cmd.tabclose(1)
+      end)
     end)
   end
 

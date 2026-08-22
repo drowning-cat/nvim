@@ -26,7 +26,7 @@ pack.plug(function()
     if MiniJump.state.jumping and key == esc_key then
       MiniJump.stop_jumping()
     end
-  end, vim.api.nvim_create_namespace("mini_jump_esc"))
+  end, vim.api.nvim_create_namespace("config/minijump.esc"))
 
   vim.api.nvim_create_autocmd("ModeChanged", {
     pattern = "no*:*",

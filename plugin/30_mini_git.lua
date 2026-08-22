@@ -10,12 +10,14 @@ pack.plug(function()
   vim.cmd.cnoreabbrev("Gcm", "Git commit --message")
   vim.cmd.cnoreabbrev("Gca", "Git commit --amend")
   vim.cmd.cnoreabbrev("Gcan", "Git commit --amend --no-edit")
+end)
 
-  -- Git blame
-
+-- Git blame
+-- See https://github.com/nvim-mini/mini.nvim/discussions/2029
+pack.plug(function()
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniGitCommandSplit",
-    group = vim.api.nvim_create_augroup("mini_gitblame", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/minigit.blame", { clear = true }),
     desc = "Enhance `Git blame`: colorize buffer and set width for vertical split",
     callback = function(e)
       if e.data.git_subcommand ~= "blame" then
@@ -48,7 +50,6 @@ pack.plug(function()
       --[[ date   ]] vim.fn.matchadd("Comment", leftmost .. [[[0-9-]\{10} [0-9:]\{8} [+-]\d\+]])
     end,
   })
-
   vim.api.nvim_create_user_command("GitBlame", function()
     local git_wins = vim
       .iter(vim.api.nvim_tabpage_list_wins(0))
@@ -71,14 +72,14 @@ pack.plug(function()
       end
     end
   end, {})
-  vim.keymap.set("n", "<Leader>gb", "<Cmd>GitBlame<Enter>", { desc = "Git blame" })
+end)
 
-  -- Checkout
-
-  local conflict_ns = vim.api.nvim_create_namespace("git_conflict")
-  local conflict_au = vim.api.nvim_create_augroup("git_conflict", { clear = false })
-
-  local function find_conflicts(buf)
+-- Git conflicts
+-- See https://github.com/nvim-mini/mini.nvim/discussions/2091
+pack.plug(function()
+  local ns_conflict = vim.api.nvim_create_namespace("config/minigit.conflict")
+  local au_conflict = vim.api.nvim_create_augroup("config/minigit.conflict", { clear = false })
+  local find_conflicts = function(buf)
     buf = buf or 0
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
     local ours, base, theirs = {}, {}, {}
@@ -102,9 +103,8 @@ pack.plug(function()
     end
     return conflicts
   end
-
   local conflict_state = {}
-  local function toggle_conflicts(buf)
+  local toggle_conflicts = function(buf)
     buf = buf or 0
     if not vim.api.nvim_buf_is_valid(buf) then
       vim.notify(string.format("Invalid buffer: %d", buf), vim.log.levels.ERROR)
@@ -112,16 +112,16 @@ pack.plug(function()
     end
     conflict_state[buf] = not conflict_state[buf]
     if not conflict_state[buf] then
-      vim.api.nvim_clear_autocmds({ group = conflict_au, buffer = buf })
-      vim.api.nvim_buf_clear_namespace(buf, conflict_ns, 0, -1)
+      vim.api.nvim_clear_autocmds({ group = au_conflict, buffer = buf })
+      vim.api.nvim_buf_clear_namespace(buf, ns_conflict, 0, -1)
       vim.b[buf].minigit_conflicts = nil
     else
       local update = function() ---@diagnostic disable-line: redefined-local
         local conflicts = find_conflicts(buf)
         vim.b[buf].minigit_conflicts = conflicts
-        vim.api.nvim_buf_clear_namespace(buf, conflict_ns, 0, -1)
+        vim.api.nvim_buf_clear_namespace(buf, ns_conflict, 0, -1)
         local hi = function(from, to, hl)
-          vim.api.nvim_buf_set_extmark(buf, conflict_ns, from - 1, 0, {
+          vim.api.nvim_buf_set_extmark(buf, ns_conflict, from - 1, 0, {
             end_row = to,
             hl_group = hl,
             hl_eol = true,
@@ -137,12 +137,11 @@ pack.plug(function()
         end
       end
       update()
-      vim.api.nvim_clear_autocmds({ group = conflict_au, buffer = buf })
-      vim.api.nvim_create_autocmd("ModeChanged", { pattern = "i:*", group = conflict_au, callback = update })
-      vim.api.nvim_create_autocmd("TextChanged", { group = conflict_au, buffer = buf, callback = update })
+      vim.api.nvim_clear_autocmds({ group = au_conflict, buffer = buf })
+      vim.api.nvim_create_autocmd("ModeChanged", { pattern = "i:*", group = au_conflict, callback = update })
+      vim.api.nvim_create_autocmd("TextChanged", { group = au_conflict, buffer = buf, callback = update })
     end
   end
-
   local conflict_acts = {}
   do
     local get_conflict = function()
@@ -220,30 +219,33 @@ pack.plug(function()
       search(1, "^<<<<<<< ", "cW")
     end
   end
-
-  local function minigit_is_merge(buf)
+  local minigit_is_merge = function(buf)
     buf = buf or 0
-    local git_summary = vim.b[buf].minigit_summary or {}
-    local in_progress = git_summary.in_progress
-    return in_progress and (in_progress:find("merge") or in_progress:find("rebase"))
+    local in_progress = (vim.b[buf].minigit_summary or {}).in_progress
+    if not in_progress then
+      return false
+    end
+    return vim.iter({ "merge", "rebase" }):any(function(pat)
+      return string.match(in_progress, pat) ~= nil
+    end)
   end
-
   vim.api.nvim_create_autocmd("User", {
     pattern = "MiniGitUpdated",
-    group = conflict_au,
+    group = au_conflict,
     callback = function(e)
       local buf = e.buf
       if minigit_is_merge(buf) then
         if not vim.b[buf].minigit_conflicts then
           toggle_conflicts(buf)
-          vim.keymap.set("n", "co", conflict_acts.ours, { buffer = buf, desc = "Checkout ours" })
-          vim.keymap.set("n", "ct", conflict_acts.theirs, { buffer = buf, desc = "Checkout theirs" })
-          vim.keymap.set("n", "cb", conflict_acts.both, { buffer = buf, desc = "Checkout both" })
-          vim.keymap.set("n", "c0", conflict_acts.none, { buffer = buf, desc = "Checkout none" })
-          vim.keymap.set("n", "]c", conflict_acts.forward, { buffer = buf, desc = "Conflict forward" })
-          vim.keymap.set("n", "[c", conflict_acts.backward, { buffer = buf, desc = "Conflict backward" })
-          vim.keymap.set("n", "]C", conflict_acts.last, { buffer = buf, desc = "Conflict last" })
-          vim.keymap.set("n", "[C", conflict_acts.first, { buffer = buf, desc = "Conflict first" })
+          -- stylua: ignore start
+          vim.keymap.set("n", "co", function() conflict_acts.ours() end, { buffer = buf, desc = "Checkout ours" })
+          vim.keymap.set("n", "ct", function() conflict_acts.theirs() end, { buffer = buf, desc = "Checkout theirs" })
+          vim.keymap.set("n", "cb", function() conflict_acts.both() end, { buffer = buf, desc = "Checkout both" })
+          vim.keymap.set("n", "c0", function() conflict_acts.none() end, { buffer = buf, desc = "Checkout none" })
+          vim.keymap.set("n", "]c", function() conflict_acts.forward() end, { buffer = buf, desc = "Conflict forward" })
+          vim.keymap.set("n", "[c", function() conflict_acts.backward() end, { buffer = buf, desc = "Conflict backward" })
+          vim.keymap.set("n", "]C", function() conflict_acts.last() end, { buffer = buf, desc = "Conflict last" })
+          vim.keymap.set("n", "[C", function() conflict_acts.first() end, { buffer = buf, desc = "Conflict first" })
         end
       else
         if vim.b[buf].minigit_conflicts then

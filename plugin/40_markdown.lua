@@ -10,10 +10,9 @@ pack.plug(function()
     code = { sign = false, width = "full" },
     heading = { icons = {} },
   })
-
   vim.api.nvim_create_autocmd("FileType", {
     pattern = "markdown",
-    group = vim.api.nvim_create_augroup("render_md_keymaps", { clear = true }),
+    group = vim.api.nvim_create_augroup("config/markdown", { clear = true }),
     desc = "Define `render-markdown` keymaps",
     callback = function()
       vim.keymap.set("n", "\\", "<Cmd>RenderMarkdown buf_toggle<Enter>", { desc = "Toggle md preview" })
